@@ -73,6 +73,39 @@ def add_shop():
         "shop_id": new_shop_id
     }), 201
 
+@app.route("/api/locations/<location_code>", methods=["GET"])
+def get_location(location_code):
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    query = """
+        SELECT
+            l.id,
+            l.location_name,
+            l.location_code,
+            l.floor_id,
+            f.floor_name,
+            f.floor_code,
+            l.x_position,
+            l.y_position
+        FROM locations l
+        JOIN floors f ON l.floor_id = f.id
+        WHERE l.location_code = %s
+    """
+
+    cursor.execute(query, (location_code,))
+    location = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+
+    if location is None:
+        return jsonify({
+            "error": "Location not found"
+        }), 404
+
+    return jsonify(location)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
