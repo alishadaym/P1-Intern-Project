@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Scan History{% endblock %}
+{% block content %}
+  <h1>Recent Scans</h1>
+  {% if scans %}
+    <table class="scans">
+      <tr><th>Time (UTC)</th><th>Location</th></tr>
+      {% for scan in scans %}
+        <tr>
+          <td>{{ scan.timestamp }}</td>
+          <td>{{ locations[scan.location].label if scan.location in locations else scan.location }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p class="muted">No scans recorded yet.</p>
+  {% endif %}
+{% endblock %}

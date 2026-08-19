@@ -4,5 +4,11 @@
   <h1>Your Current Location</h1>
   <div class="place">📍 {{ location.floor }}</div>
   <div class="floor">{{ location.label }}</div>
+
+  <div class="map-wrap">
+    <img class="map-img" src="{{ url_for('static', filename='map.jpg') }}" alt="Mall map">
+    <div class="map-pin" style="left: {{ (location.map.x / map_width * 100) | round(2) }}%; top: {{ (location.map.y / map_height * 100) | round(2) }}%;"></div>
+  </div>
+
   <a class="button" href="{{ url_for('shops') }}">Find a Shop</a>
 {% endblock %}

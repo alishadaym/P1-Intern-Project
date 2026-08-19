@@ -2,7 +2,8 @@ import os
 
 from flask import Flask, abort, render_template, session
 
-from locations import LOCATIONS
+from locations import LOCATIONS, MAP_WIDTH, MAP_HEIGHT
+from scan_log import read_scans, record_scan
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
@@ -20,7 +21,19 @@ def location(name):
         abort(404)
 
     session["current_location"] = name
-    return render_template("location.html", name=name, location=LOCATIONS[name])
+    record_scan(name)
+    return render_template(
+        "location.html",
+        name=name,
+        location=LOCATIONS[name],
+        map_width=MAP_WIDTH,
+        map_height=MAP_HEIGHT,
+    )
+
+
+@app.route("/scans")
+def scans():
+    return render_template("scans.html", scans=read_scans(), locations=LOCATIONS)
 
 
 @app.route("/shops")
