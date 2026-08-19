@@ -1,0 +1,32 @@
+CREATE TABLE floors (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    floor_name VARCHAR(50) NOT NULL,
+    floor_code VARCHAR(10) NOT NULL UNIQUE
+);
+
+INSERT INTO floors (floor_name, floor_code)
+VALUES ('Upper Ground', 'UG');
+
+CREATE TABLE locations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    location_name VARCHAR(100) NOT NULL,
+    location_code VARCHAR(50) NOT NULL UNIQUE,
+    floor_id INT NOT NULL,
+    x_position INT NOT NULL,
+    y_position INT NOT NULL,
+
+    FOREIGN KEY (floor_id) REFERENCES floors(id)
+);
+
+CREATE TABLE shops (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    shop_name VARCHAR(100) NOT NULL,
+    category VARCHAR(100),
+    unit VARCHAR(50),
+    description TEXT,
+    floor_id INT NOT NULL,
+    x_position INT NOT NULL,
+    y_position INT NOT NULL,
+
+    FOREIGN KEY (floor_id) REFERENCES floors(id)
+);
