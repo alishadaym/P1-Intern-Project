@@ -10,3 +10,22 @@ Content-Type: application/json
     "x_position": 300,
     "y_position": 250
 }
+
+###
+
+PUT http://127.0.0.1:5000/api/shops/1
+Content-Type: application/json
+
+{
+    "shop_name": "Coffee Corner Updated",
+    "category": "Food & Beverage",
+    "unit": "G-01",
+    "description": "Updated coffee shop description",
+    "floor_id": 1,
+    "x_position": 300,
+    "y_position": 250
+}
+
+###
+
+DELETE http://127.0.0.1:5000/api/shops/6

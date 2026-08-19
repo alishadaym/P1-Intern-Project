@@ -137,6 +137,33 @@ def update_shop(shop_id):
         "shop_id": shop_id
     })
 
+@app.route("/api/shops/<int:shop_id>", methods=["DELETE"])
+def delete_shop(shop_id):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    # find shop whose id matches the ID from URL and delete it
+    query = "DELETE FROM shops WHERE id = %s"
+
+    cursor.execute(query, (shop_id,))
+    connection.commit()
+
+    if cursor.rowcount == 0:
+        cursor.close()
+        connection.close()
+
+        return jsonify({
+            "error": "Shop not found"
+        }), 404
+
+    cursor.close()
+    connection.close()
+
+    return jsonify({
+        "message": "Shop deleted successfully",
+        "shop_id": shop_id
+    })
+
 @app.route("/api/locations/<location_code>", methods=["GET"])
 def get_location(location_code):
     connection = get_db_connection()
