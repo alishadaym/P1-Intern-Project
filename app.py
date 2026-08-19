@@ -22,8 +22,10 @@ def get_shops():
 
     return jsonify(shops)
 
+#allowing to send data to /api/shops
 @app.route("/api/shops", methods=["POST"])
 def add_shop():
+    # gets information sent by frontend
     data = request.get_json()
 
     shop_name = data.get("shop_name")
