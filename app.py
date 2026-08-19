@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from db import get_db_connection
 
 app = Flask(__name__)
@@ -73,6 +73,70 @@ def add_shop():
         "shop_id": new_shop_id
     }), 201
 
+# the <int:shop_id> means the URL contains the shop's ID
+@app.route("/api/shops/<int:shop_id>", methods=["PUT"])
+def update_shop(shop_id):
+    data = request.get_json()
+
+    shop_name = data.get("shop_name")
+    category = data.get("category")
+    unit = data.get("unit")
+    description = data.get("description")
+    floor_id = data.get("floor_id")
+    x_position = data.get("x_position")
+    y_position = data.get("y_position")
+
+    if not shop_name or not floor_id:
+        return jsonify({
+            "error": "Shop name and floor are required"
+        }), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    query = """
+        UPDATE shops
+        SET
+            shop_name = %s,
+            category = %s,
+            unit = %s,
+            description = %s,
+            floor_id = %s,
+            x_position = %s,
+            y_position = %s
+        WHERE id = %s
+    """
+
+    values = (
+        shop_name,
+        category,
+        unit,
+        description,
+        floor_id,
+        x_position,
+        y_position,
+        shop_id
+    )
+
+    cursor.execute(query, values)
+    connection.commit()
+
+    if cursor.rowcount == 0:
+        cursor.close()
+        connection.close()
+
+        return jsonify({
+            "error": "Shop not found"
+        }), 404
+
+    cursor.close()
+    connection.close()
+
+    return jsonify({
+        "message": "Shop updated successfully",
+        "shop_id": shop_id
+    })
+
 @app.route("/api/locations/<location_code>", methods=["GET"])
 def get_location(location_code):
     connection = get_db_connection()
@@ -106,6 +170,23 @@ def get_location(location_code):
 
     return jsonify(location)
 
+@app.route("/add-shop")
+def add_shop_page():
+    return render_template("add_shop.html")
+
+@app.route("/api/floors", methods=["GET"])
+def get_floors():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM floors ORDER BY id")
+
+    floors = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return jsonify(floors)
 
 if __name__ == "__main__":
     app.run(debug=True)
