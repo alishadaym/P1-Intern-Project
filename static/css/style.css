@@ -100,3 +100,22 @@ main {
     stroke-linecap: round;
     stroke-linejoin: round;
 }
+
+#navigation-lines line {
+    stroke: red;
+    stroke-width: 2;
+    stroke-dasharray: 5 5;
+    opacity: 0.7;
+}
+
+.navigation-node {
+    fill: red;
+    stroke: white;
+    stroke-width: 2;
+}
+
+.navigation-node-label {
+    fill: red;
+    font-size: 10px;
+    font-weight: bold;
+}

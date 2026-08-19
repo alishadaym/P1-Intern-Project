@@ -1,5 +1,5 @@
 {
-    "map-id": "dpulze_ground_floor",
+    "map_id": "dpulze_ground_floor",
     "floor": "ground",
     "name": "Dpulze Shopping Mall - Ground Floor",
 
@@ -13,10 +13,17 @@
         {
             "id": "main_entrance",
             "name": "Main Entrance",
+            "node_id": "node_01",
             "x": 480,
             "y": 505
         }
     ],
+
+    "shop_locations": {
+        "family_mart_001": {
+            "node_id": "node_15"
+        }
+    },
 
     "nodes": {
         "node_01": {
