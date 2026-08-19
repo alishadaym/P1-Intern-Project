@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, abort, render_template, session
 
-from locations import LOCATIONS, MAP_WIDTH, MAP_HEIGHT
+from locations import LOCATIONS, MAP_WIDTH, MAP_HEIGHT, SHOPS
 from scan_log import read_scans, record_scan
 
 app = Flask(__name__)
@@ -28,6 +28,7 @@ def location(name):
         location=LOCATIONS[name],
         map_width=MAP_WIDTH,
         map_height=MAP_HEIGHT,
+        shops=SHOPS,
     )
 
 

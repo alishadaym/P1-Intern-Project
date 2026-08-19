@@ -5,10 +5,52 @@
   <div class="place">📍 {{ location.floor }}</div>
   <div class="floor">{{ location.label }}</div>
 
-  <div class="map-wrap">
+  <div class="map-wrap" id="map-wrap">
     <img class="map-img" src="{{ url_for('static', filename='map.jpg') }}" alt="Mall map">
     <div class="map-pin" style="left: {{ (location.map.x / map_width * 100) | round(2) }}%; top: {{ (location.map.y / map_height * 100) | round(2) }}%;"></div>
+    {% for shop in shops %}
+      <div class="shop-hotspot"
+           data-label="{{ shop.label }}"
+           style="left: {{ (shop.box.x1 / map_width * 100) | round(2) }}%;
+                  top: {{ (shop.box.y1 / map_height * 100) | round(2) }}%;
+                  width: {{ ((shop.box.x2 - shop.box.x1) / map_width * 100) | round(2) }}%;
+                  height: {{ ((shop.box.y2 - shop.box.y1) / map_height * 100) | round(2) }}%;"></div>
+    {% endfor %}
   </div>
 
   <a class="button" href="{{ url_for('shops') }}">Find a Shop</a>
+
+  <div class="shop-modal-backdrop" id="shop-modal-backdrop">
+    <div class="shop-modal-card">
+      <button class="shop-modal-close" id="shop-modal-close" aria-label="Close">&times;</button>
+      <div class="shop-modal-name" id="shop-modal-name"></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const wrap = document.getElementById('map-wrap');
+      const backdrop = document.getElementById('shop-modal-backdrop');
+      const nameEl = document.getElementById('shop-modal-name');
+      const closeBtn = document.getElementById('shop-modal-close');
+
+      wrap.querySelectorAll('.shop-hotspot').forEach(function (hotspot) {
+        hotspot.addEventListener('click', function (e) {
+          nameEl.textContent = hotspot.dataset.label;
+          backdrop.classList.add('visible');
+          e.stopPropagation();
+        });
+      });
+
+      closeBtn.addEventListener('click', function () {
+        backdrop.classList.remove('visible');
+      });
+
+      backdrop.addEventListener('click', function (e) {
+        if (e.target === backdrop) {
+          backdrop.classList.remove('visible');
+        }
+      });
+    })();
+  </script>
 {% endblock %}

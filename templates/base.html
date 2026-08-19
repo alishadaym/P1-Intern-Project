@@ -51,6 +51,54 @@
       transform: rotate(-45deg);
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
     }
+    .shop-hotspot {
+      position: absolute;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.15s ease;
+    }
+    .shop-hotspot:hover {
+      background: rgba(45, 212, 191, 0.35);
+      outline: 1px solid #2dd4bf;
+    }
+    .shop-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    .shop-modal-backdrop.visible {
+      display: flex;
+    }
+    .shop-modal-card {
+      position: relative;
+      background: #1c1c1c;
+      border-radius: 16px;
+      padding: 40px 48px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+    .shop-modal-name {
+      font-size: 22px;
+      font-weight: 600;
+    }
+    .shop-modal-close {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      background: none;
+      border: none;
+      color: #999;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .shop-modal-close:hover {
+      color: #eee;
+    }
     table.scans {
       width: 100%;
       border-collapse: collapse;
