@@ -73,6 +73,52 @@ def add_shop():
         "shop_id": new_shop_id
     }), 201
 
+@app.route("/api/shops/search", methods=["GET"])
+def search_shops():
+    search_query = request.args.get("q", "").strip()
+
+    if not search_query:
+        return jsonify({
+            "error": "Search query is required"
+        }), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    query = """
+        SELECT
+            s.id,
+            s.shop_name,
+            s.category,
+            s.unit,
+            s.description,
+            s.floor_id,
+            f.floor_name,
+            f.floor_code,
+            s.x_position,
+            s.y_position
+        FROM shops s
+        JOIN floors f ON s.floor_id = f.id
+        WHERE
+            s.shop_name LIKE %s
+            OR s.category LIKE %s
+            OR s.unit LIKE %s
+    """
+
+    search_pattern = f"%{search_query}%"
+
+    cursor.execute(
+        query,
+        (search_pattern, search_pattern, search_pattern)
+    )
+
+    shops = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return jsonify(shops)
+
 # the <int:shop_id> means the URL contains the shop's ID
 @app.route("/api/shops/<int:shop_id>", methods=["PUT"])
 def update_shop(shop_id):
