@@ -183,6 +183,41 @@ def update_shop(shop_id):
         "shop_id": shop_id
     })
 
+@app.route("/api/shops/<int:shop_id>", methods=["GET"])
+def get_shop(shop_id):
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    query = """
+        SELECT
+            s.id,
+            s.shop_name,
+            s.category,
+            s.unit,
+            s.description,
+            s.floor_id,
+            f.floor_name,
+            f.floor_code,
+            s.x_position,
+            s.y_position
+        FROM shops s
+        JOIN floors f ON s.floor_id = f.id
+        WHERE s.id = %s
+    """
+
+    cursor.execute(query, (shop_id,))
+    shop = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+
+    if shop is None:
+        return jsonify({
+            "error": "Shop not found"
+        }), 404
+
+    return jsonify(shop)
+
 @app.route("/api/shops/<int:shop_id>", methods=["DELETE"])
 def delete_shop(shop_id):
     connection = get_db_connection()
@@ -260,6 +295,78 @@ def get_floors():
     connection.close()
 
     return jsonify(floors)
+
+@app.route("/api/navigation", methods=["GET"])
+def get_navigation():
+    location_code = request.args.get("from")
+    shop_id = request.args.get("shop_id")
+
+    if not location_code or not shop_id:
+        return jsonify({
+            "error": "Location code and shop ID are required"
+        }), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    # Get user's scanned location
+    location_query = """
+        SELECT
+            l.id,
+            l.location_name,
+            l.location_code,
+            l.floor_id,
+            f.floor_name,
+            f.floor_code,
+            l.x_position,
+            l.y_position
+        FROM locations l
+        JOIN floors f ON l.floor_id = f.id
+        WHERE l.location_code = %s
+    """
+
+    cursor.execute(location_query, (location_code,))
+    user_location = cursor.fetchone()
+
+    if user_location is None:
+        cursor.close()
+        connection.close()
+
+        return jsonify({
+            "error": "Starting location not found"
+        }), 404
+
+    # Get destination shop
+    shop_query = """
+        SELECT
+            s.id,
+            s.shop_name,
+            s.unit,
+            s.floor_id,
+            f.floor_name,
+            f.floor_code,
+            s.x_position,
+            s.y_position
+        FROM shops s
+        JOIN floors f ON s.floor_id = f.id
+        WHERE s.id = %s
+    """
+
+    cursor.execute(shop_query, (shop_id,))
+    shop = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+
+    if shop is None:
+        return jsonify({
+            "error": "Shop not found"
+        }), 404
+
+    return jsonify({
+        "from": user_location,
+        "to": shop
+    })
 
 if __name__ == "__main__":
     app.run(debug=True)
