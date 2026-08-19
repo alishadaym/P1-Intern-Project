@@ -1,8 +1,8 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, session, redirect
 from db import get_db_connection
 
 app = Flask(__name__)
-
+app.secret_key = 'p1-intern-project'
 
 @app.route("/")
 def home():
@@ -366,6 +366,53 @@ def get_navigation():
     return jsonify({
         "from": user_location,
         "to": shop
+    })
+
+@app.route("/login")
+def login_page():
+    return render_template("login.html")
+
+@app.route("/api/login", methods=["POST"])
+def login():
+    data = request.get_json()
+
+    username = data.get("username")
+    password = data.get("password")
+
+    if not username or not password:
+        return jsonify({
+            "error": "Username and password are required"
+        }), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    query = """
+        SELECT
+            so.id,
+            so.username,
+            so.shop_id,
+            s.shop_name
+        FROM store_owners so
+        JOIN shops s ON so.shop_id = s.id
+        WHERE so.username = %s
+        AND so.password = %s
+    """
+
+    cursor.execute(query, (username, password))
+    owner = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+
+    if owner is None:
+        return jsonify({
+            "error": "Invalid username or password"
+        }), 401
+
+    return jsonify({
+        "message": "Login successful",
+        "owner": owner
     })
 
 if __name__ == "__main__":
