@@ -30,3 +30,22 @@ CREATE TABLE shops (
 
     FOREIGN KEY (floor_id) REFERENCES floors(id)
 );
+
+//temporary QR locations
+INSERT INTO locations
+    (location_name, location_code, floor_id, x_position, y_position)
+VALUES
+    ('Main Entrance', 'G_ENT_A', 1, 100, 450),
+    ('Side Entrance', 'G_ENT_B', 1, 700, 450),
+    ('Lift', 'G_LIFT_A', 1, 500, 100),
+    ('Escalator', 'G_ESC_A', 1, 300, 100);
+
+//temporary shops
+INSERT INTO shops
+    (shop_name, category, unit, description, floor_id, x_position, y_position)
+VALUES
+    ('Coffee Corner', 'Food & Beverage', 'G-01', 'Coffee and beverages', 1, 250, 200),
+    ('Fashion Hub', 'Fashion', 'G-02', 'Clothing and accessories', 1, 450, 200),
+    ('Tech World', 'Electronics', 'G-03', 'Electronic devices and accessories', 1, 650, 200),
+    ('Book House', 'Books', 'G-04', 'Books and stationery', 1, 250, 350),
+    ('Beauty Plus', 'Beauty', 'G-05', 'Beauty and personal care products', 1, 550, 350);
