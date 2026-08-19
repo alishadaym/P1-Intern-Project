@@ -49,3 +49,12 @@ VALUES
     ('Tech World', 'Electronics', 'G-03', 'Electronic devices and accessories', 1, 650, 200),
     ('Book House', 'Books', 'G-04', 'Books and stationery', 1, 250, 350),
     ('Beauty Plus', 'Beauty', 'G-05', 'Beauty and personal care products', 1, 550, 350);
+
+//create store owners table
+CREATE TABLE store_owners (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    shop_id INT NOT NULL,
+    FOREIGN KEY (shop_id) REFERENCES shops(id)
+);

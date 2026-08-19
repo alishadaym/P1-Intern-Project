@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Store Owner Login - DPULZE</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-box {
+            background: white;
+            padding: 30px;
+            width: 350px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        #message {
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-box">
+
+    <h1>Store Owner Login</h1>
+
+    <form id="loginForm">
+
+        <label>Username</label>
+        <input type="text" id="username" required>
+
+        <label>Password</label>
+        <input type="password" id="password" required>
+
+        <button type="submit">Login</button>
+
+    </form>
+
+    <p id="message"></p>
+
+</div>
+
+
+<script>
+
+document.getElementById("loginForm").addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    const response = await fetch("/api/login", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            username: username,
+            password: password
+        })
+
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+
+        document.getElementById("message").textContent =
+            "Login successful!";
+
+        console.log(result);
+
+    } else {
+
+        document.getElementById("message").textContent =
+            result.error;
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>
