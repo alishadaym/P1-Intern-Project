@@ -1,5 +1,6 @@
 let mapData = null;
 let selectedShopId = null;
+let shopDatabase = {};
 
 // LOAD MAP DATA FROM FLASK
 async function loadMapData()
@@ -115,6 +116,7 @@ document.addEventListener("DOMContentLoaded", async function()
     console.log("Dpulze navigation applicaiton started.");
 
     await loadMapData();
+    await loadShopDatabase();
 
     // NAVIGATE BUTTON
     const navigateButton = document.getElementById("navigate-btn");
@@ -166,29 +168,29 @@ function drawUserMarker()
 // SHOP DROPDOWN
 function populateShopDropdown()
 {
-    const shopSelect = document.getElementById("shop-select");
+    const shopSelect =
+        document.getElementById("shop-select");
 
-    shopSelect.innerHTML = "";
+    shopSelect.innerHTML =
+        `<option value="">Select a shop</option>`;
 
-    // default option
-    const defaultOption = document.createElement("option");
+    Object.keys(mapData.shop_locations).forEach(
+        shopId =>
+        {
+            const dbShop =
+                shopDatabase[shopId];
 
-    defaultOption.value = "";
-    defaultOption.textContent = "Select a shop";
+            if (!dbShop)
+            {
+                return;
+            }
 
-    shopSelect.appendChild(defaultOption);
-
-    // ADD SHOPS
-    Object.entries(mapData.shop_locations).forEach(
-        ([shopId, shop]) => {
-            const option = document.createElement("option");
+            const option =
+                document.createElement("option");
 
             option.value = shopId;
-
-            // convert shop name
-            const shopName = shopId.replace(/_\d+$/, "").replace(/_/g, " ").replace(/\b\w/g, letter => letter.toUpperCase());
-
-            option.textContent = shopName;
+            option.textContent =
+                dbShop.shop_name;
 
             shopSelect.appendChild(option);
         }
@@ -568,26 +570,44 @@ function drawShopHotspots()
 // SELECT SHOP
 function selectShop(shopId)
 {
-    const shop = mapData.shop_locations[shopId];
+    const mapShop =
+        mapData.shop_locations[shopId];
 
-    if (!shop)
+    const dbShop =
+        shopDatabase[shopId];
+
+    if (!mapShop)
     {
-        console.error("Shop not found:", shopId);
+        console.error(
+            "Shop map location not found:",
+            shopId
+        );
+
+        return;
+    }
+
+    if (!dbShop)
+    {
+        console.error(
+            "Shop database information not found:",
+            shopId
+        );
+
         return;
     }
 
     selectedShopId = shopId;
 
-    // Synchronise dropdown
     const shopSelect =
         document.getElementById("shop-select");
 
     shopSelect.value = shopId;
 
-    // Update Selected Shop panel
-    updateSelectedShopPanel(shopId, shop);
+    updateSelectedShopPanel(
+        shopId,
+        dbShop
+    );
 
-    // Highlight selected shop
     highlightSelectedShop(shopId);
 }
 
@@ -600,31 +620,25 @@ function updateSelectedShopPanel(shopId, shop)
         );
 
     panel.innerHTML = `
-        <div class="shop-details-card">
+        <strong>${shop.shop_name}</strong>
 
-            <strong class="shop-details-name">
-                ${shop.name}
-            </strong>
+        ${
+            shop.category
+            ? `<div>${shop.category}</div>`
+            : ""
+        }
 
-            ${
-                shop.category
-                ? `<div>${shop.category}</div>`
-                : ""
-            }
+        ${
+            shop.floor
+            ? `<div>${shop.floor}</div>`
+            : ""
+        }
 
-            ${
-                shop.floor
-                ? `<div>${shop.floor}</div>`
-                : ""
-            }
-
-            ${
-                shop.opening_hours
-                ? `<div>Hours: ${shop.opening_hours}</div>`
-                : ""
-            }
-
-        </div>
+        ${
+            shop.opening_hours
+            ? `<div>Hours: ${shop.opening_hours}</div>`
+            : ""
+        }
     `;
 }
 
@@ -653,6 +667,39 @@ function highlightSelectedShop(shopId)
     {
         selectedMarker.classList.add(
             "poi-selected"
+        );
+    }
+}
+
+// LOAD DATA STORED IN DB
+async function loadShopDatabase()
+{
+    try
+    {
+        const response = await fetch("/api/shops");
+
+        if (!response.ok)
+        {
+            throw new Error("Failed to load shop database.");
+        }
+
+        const shops = await response.json();
+
+        console.log("Shop database loaded:", shops);
+
+        // Convert array into object keyed by shop_id
+        shops.forEach(shop =>
+        {
+            shopDatabase[shop.shop_id] = shop;
+        });
+
+        console.log("Shop database object:", shopDatabase);
+    }
+    catch (error)
+    {
+        console.error(
+            "Error loading shop database:",
+            error
         );
     }
 }

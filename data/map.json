@@ -21,14 +21,9 @@
 
     "shop_locations": {
         "family_mart_001": {
-            "name": "Family Mart",
             "node_id": "node_31",
             "x": 545,
             "y": 490,
-            
-            "category": "Convenience Store",
-            "floor": "Ground Floor",
-            "opening_hours": "10:00 AM - 10:00 PM",
             
             "hotspot": {
                 "x": 515,
