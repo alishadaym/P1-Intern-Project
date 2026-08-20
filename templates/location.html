@@ -4,9 +4,6 @@
   <h1>Your Current Location</h1>
   <div class="place">📍 {{ location.floor }}</div>
   <div class="floor">{{ location.label }}</div>
-  {% if last_location %}
-    <div class="floor">Last scanned: {{ last_location.label }}</div>
-  {% endif %}
 
   <div class="map-wrap" id="map-wrap">
     <img class="map-img" src="{{ url_for('static', filename='map.jpg') }}" alt="Mall map">
@@ -56,4 +53,9 @@
       });
     })();
   </script>
+{% endblock %}
+{% block bottom_bar %}
+  {% if last_location %}
+    <div class="bottom-bar">Last scanned: {{ last_location.label }}</div>
+  {% endif %}
 {% endblock %}
