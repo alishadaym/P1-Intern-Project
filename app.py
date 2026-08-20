@@ -1,8 +1,15 @@
-from flask import Flask, jsonify, render_template
+from flask import Flask, abort, jsonify, request, render_template, session, redirect
+from werkzeug.security import generate_password_hash, check_password_hash
+from db import get_db_connection
+from locations import LOCATIONS, MAP_WIDTH, MAP_HEIGHT, SHOPS
+from scan_log import read_scans, record_scan
+
 import json
 import os
+import uuid
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 
 def load_map():
     map_path = os.path.join("data", "map.json")
@@ -17,25 +24,6 @@ def index():
 def get_map():
     map_data = load_map()
     return jsonify(map_data)
-
-if __name__ == "__main__":
-    app.run(debug = True)
-import os
-import uuid
-
-from flask import Flask, jsonify, request, render_template, session, redirect
-from werkzeug.security import generate_password_hash, check_password_hash
-from db import get_db_connection
-from locations import LOCATIONS, MAP_WIDTH, MAP_HEIGHT, SHOPS
-from scan_log import read_scans, record_scan
-
-app = Flask(__name__)
-app.secret_key = 'p1-intern-project'
-
-@app.route("/")
-def home():
-    return "DPULZE Mall System is running!"
-
 
 @app.route("/api/shops")
 def get_shops():
@@ -560,16 +548,6 @@ def logout():
     return jsonify({
         "message": "Logged out successfully"
     })
-
-if __name__ == "__main__":
-    app.run(debug=True)
-
-# ---------------------------------------------------------------------------
-
-
-app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
-
 
 def get_session_id() -> str:
     if "session_id" not in session:
