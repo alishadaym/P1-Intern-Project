@@ -142,7 +142,7 @@ async function loadLocation() {
     if (!locationCode) {
 
         document.getElementById("locationName").textContent =
-            "No location provided.";
+            "No QR location provided.";
 
         return;
     }
@@ -167,7 +167,7 @@ async function loadLocation() {
     } else {
 
         document.getElementById("locationName").textContent =
-            result.error;
+            "Invalid QR location.";
 
     }
 
