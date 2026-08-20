@@ -533,7 +533,7 @@ def store_owner_edit():
 
 @app.route("/guest")
 def guest_page():
-    return redirect("/")
+    return render_template("guest.html")
 
 @app.route("/api/logout", methods=["POST"])
 def logout():
