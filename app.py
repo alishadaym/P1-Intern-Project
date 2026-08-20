@@ -545,10 +545,6 @@ if __name__ == "__main__":
 # ---------------------------------------------------------------------------
 
 
-app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
-
-
 def get_session_id() -> str:
     if "session_id" not in session:
         session["session_id"] = uuid.uuid4().hex
