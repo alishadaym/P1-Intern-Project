@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request, render_template, session, redirect
+from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_db_connection
 
 app = Flask(__name__)
@@ -404,21 +405,24 @@ def login():
         SELECT
             so.id,
             so.username,
+            so.password,
             so.shop_id,
             s.shop_name
         FROM store_owners so
         JOIN shops s ON so.shop_id = s.id
         WHERE so.username = %s
-        AND so.password = %s
     """
 
-    cursor.execute(query, (username, password))
+    cursor.execute(query, (username,))
     owner = cursor.fetchone()
 
     cursor.close()
     connection.close()
 
-    if owner is None:
+    if owner is None or not check_password_hash(owner["password"], password):
+        cursor.close()
+        connection.close()
+        
         return jsonify({
             "error": "Invalid username or password"
         }), 401
