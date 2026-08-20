@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>DPULZE Floor Finder</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .login-button {
+            text-decoration: none;
+            padding: 8px 15px;
+            background: #007bff;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .location-box {
+            margin-top: 25px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 8px;
+        }
+
+        .search-box {
+            margin-top: 25px;
+        }
+
+        input {
+            width: 70%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+
+        .shop {
+            margin-top: 15px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .shop:hover {
+            background: #f5f5f5;
+        }
+
+        #message {
+            margin-top: 15px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="top-bar">
+
+        <h1>DPULZE Floor Finder</h1>
+
+        <a href="/login" class="login-button">
+            Store Owner Login
+        </a>
+
+    </div>
+
+
+    <div class="location-box">
+
+        <h2>Your Location</h2>
+
+        <p id="locationName">
+            Loading location...
+        </p>
+
+        <p id="floorName"></p>
+
+    </div>
+
+
+    <div class="search-box">
+
+        <h2>Find a Shop</h2>
+
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Enter shop name..."
+        >
+
+        <button onclick="searchShops()">
+            Search
+        </button>
+
+    </div>
+
+
+    <div id="results"></div>
+
+    <p id="message"></p>
+
+</div>
+
+
+<script>
+
+const urlParams = new URLSearchParams(window.location.search);
+
+const locationCode = urlParams.get("location");
+
+
+async function loadLocation() {
+
+    if (!locationCode) {
+
+        document.getElementById("locationName").textContent =
+            "No location provided.";
+
+        return;
+    }
+
+
+    const response = await fetch(
+        "/api/locations/" + locationCode
+    );
+
+
+    const result = await response.json();
+
+
+    if (response.ok) {
+
+        document.getElementById("locationName").textContent =
+            "📍 " + result.location_name;
+
+        document.getElementById("floorName").textContent =
+            result.floor_name;
+
+    } else {
+
+        document.getElementById("locationName").textContent =
+            result.error;
+
+    }
+
+}
+
+
+async function searchShops() {
+
+    const search = document
+        .getElementById("searchInput")
+        .value
+        .trim();
+
+
+    if (!search) {
+
+        document.getElementById("message").textContent =
+            "Please enter a shop name.";
+
+        return;
+    }
+
+
+    const response = await fetch(
+        "/api/shops/search?q=" + encodeURIComponent(search)
+    );
+
+
+    const shops = await response.json();
+
+
+    const results =
+        document.getElementById("results");
+
+
+    results.innerHTML = "";
+
+
+    if (!response.ok) {
+
+        document.getElementById("message").textContent =
+            shops.error;
+
+        return;
+    }
+
+
+    if (shops.length === 0) {
+
+        document.getElementById("message").textContent =
+            "No shops found.";
+
+        return;
+    }
+
+
+    document.getElementById("message").textContent = "";
+
+
+    shops.forEach(function(shop) {
+
+        const shopDiv =
+            document.createElement("div");
+
+        shopDiv.className = "shop";
+
+
+        shopDiv.innerHTML = `
+
+            <strong>${shop.shop_name}</strong>
+
+            <br>
+
+            Unit: ${shop.unit}
+
+            <br>
+
+            Floor: ${shop.floor_name}
+
+        `;
+
+
+        shopDiv.onclick = function() {
+
+            showNavigation(shop.id);
+
+        };
+
+
+        results.appendChild(shopDiv);
+
+    });
+
+}
+
+
+async function showNavigation(shopId) {
+
+    if (!locationCode) {
+
+        return;
+    }
+
+
+    const response = await fetch(
+        "/api/navigation?from="
+        + encodeURIComponent(locationCode)
+        + "&shop_id="
+        + shopId
+    );
+
+
+    const result = await response.json();
+
+
+    if (!response.ok) {
+
+        document.getElementById("message").textContent =
+            result.error;
+
+        return;
+    }
+
+
+    document.getElementById("message").innerHTML = `
+
+        📍 You are at:
+        <strong>
+            ${result.from.location_name}
+        </strong>
+
+        <br><br>
+
+        ⭐ Destination:
+        <strong>
+            ${result.to.shop_name}
+        </strong>
+
+        <br>
+
+        Unit: ${result.to.unit}
+
+        <br>
+
+        Coordinates:
+        (${result.to.x_position},
+        ${result.to.y_position})
+
+    `;
+
+}
+
+
+loadLocation();
+
+</script>
+
+</body>
+
+</html>

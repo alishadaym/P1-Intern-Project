@@ -422,7 +422,7 @@ def login():
     if owner is None or not check_password_hash(owner["password"], password):
         cursor.close()
         connection.close()
-        
+
         return jsonify({
             "error": "Invalid username or password"
         }), 401
@@ -519,6 +519,10 @@ def store_owner_edit():
         shop=shop,
         floors=floors
     )
+
+@app.route("/guest")
+def guest_page():
+    return render_template("guest.html")
 
 @app.route("/api/logout", methods=["POST"])
 def logout():
