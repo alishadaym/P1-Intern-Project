@@ -1,4 +1,5 @@
 import os
+import uuid
 
 from flask import Flask, abort, render_template, session
 
@@ -7,6 +8,12 @@ from scan_log import read_scans, record_scan
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
+
+
+def get_session_id() -> str:
+    if "session_id" not in session:
+        session["session_id"] = uuid.uuid4().hex
+    return session["session_id"]
 
 
 @app.route("/")
@@ -20,8 +27,10 @@ def location(name):
     if name not in LOCATIONS:
         abort(404)
 
+    previous_location = session.get("current_location")
+    session["last_location"] = previous_location
     session["current_location"] = name
-    record_scan(name)
+    record_scan(name, get_session_id(), previous_location)
     return render_template(
         "location.html",
         name=name,
@@ -29,6 +38,7 @@ def location(name):
         map_width=MAP_WIDTH,
         map_height=MAP_HEIGHT,
         shops=SHOPS,
+        last_location=LOCATIONS.get(previous_location),
     )
 
 

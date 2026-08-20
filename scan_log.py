@@ -5,10 +5,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 LOG_PATH = Path(__file__).resolve().parent / "data" / "scan_log.csv"
-FIELDS = ["timestamp", "location"]
+FIELDS = ["timestamp", "session_id", "location", "previous_location"]
 
 
-def record_scan(location_name: str) -> None:
+def record_scan(location_name: str, session_id: str, previous_location: str | None) -> None:
     LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     is_new = not LOG_PATH.exists()
 
@@ -18,7 +18,9 @@ def record_scan(location_name: str) -> None:
             writer.writeheader()
         writer.writerow({
             "timestamp": datetime.now(timezone.utc).isoformat(),
+            "session_id": session_id,
             "location": location_name,
+            "previous_location": previous_location or "",
         })
 
 
