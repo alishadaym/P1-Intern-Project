@@ -103,10 +103,7 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
 
     if (response.ok) {
 
-        document.getElementById("message").textContent =
-            "Login successful!";
-
-        console.log(result);
+        window.location.href = "/store_owner";
 
     } else {
 

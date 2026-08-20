@@ -410,9 +410,62 @@ def login():
             "error": "Invalid username or password"
         }), 401
 
+    session["owner_id"] = owner["id"]
+    session["username"] = owner["username"]
+    session["shop_id"] = owner["shop_id"]
+
     return jsonify({
         "message": "Login successful",
         "owner": owner
+    })
+
+@app.route("/store-owner")
+def store_owner_dashboard():
+
+    # if not logged in, can't access owner dashboard
+    if "owner_id" not in session:
+        return redirect("/login")
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    query = """
+        SELECT
+            so.id,
+            so.username,
+            so.shop_id,
+            s.shop_name,
+            s.category,
+            s.unit,
+            s.description
+        FROM store_owners so
+        JOIN shops s ON so.shop_id = s.id
+        WHERE so.id = %s
+    """
+
+    cursor.execute(query, (session["owner_id"],))
+    owner = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+
+    if owner is None:
+        session.clear()
+        return redirect("/login")
+
+    return render_template(
+        "store_owner.html",
+        owner=owner
+    )
+
+@app.route("/api/logout", methods=["POST"])
+def logout():
+
+    # forget the session data
+    session.clear()
+
+    return jsonify({
+        "message": "Logged out successfully"
     })
 
 if __name__ == "__main__":
