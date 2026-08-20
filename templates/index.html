@@ -12,6 +12,9 @@
 <body>
     <header>
         <h1>Dpulze Mall Navigation</h1>
+        {% if current %}
+            <p class="scanned-location">You scanned: {{ current.label }}</p>
+        {% endif %}
     </header>
 
     <main>
@@ -71,6 +74,11 @@
         </section>
     </main>
 
+    <script>
+        // Set by scanning a location QR code (see app.py's index route);
+        // falls back to the main entrance when nothing has been scanned yet.
+        window.START_NODE_ID = {{ (start_node or "node_01") | tojson }};
+    </script>
     <script src="{{ url_for('static', filename='js/map.js' )}}"></script>
 </body>
 </html>

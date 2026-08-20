@@ -147,8 +147,8 @@ function drawUserMarker()
 {
     const userMarker = document.getElementById("user-marker");
 
-    //guest starts at Main Entrance
-    const startNodeId = "node_01";
+    // Set by the last scanned QR code; falls back to Main Entrance for guests
+    const startNodeId = window.START_NODE_ID || "node_01";
     const startNode = mapData.nodes[startNodeId];
 
     if (!startNode)
@@ -414,7 +414,7 @@ function startNavigation()
     }
 
 
-    const startNodeId = "node_01";
+    const startNodeId = window.START_NODE_ID || "node_01";
 
     const destinationNodeId =
         selectedShop.node_id;
