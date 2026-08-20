@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Scan History{% endblock %}
+{% block content %}
+  <h1>Recent Scans</h1>
+  {% if scans %}
+    <table class="scans">
+      <tr><th>Time (UTC)</th><th>Session</th><th>Location</th><th>Last Scanned</th></tr>
+      {% for scan in scans %}
+        <tr>
+          <td>{{ scan.timestamp }}</td>
+          <td>{{ scan.session_id[:8] }}</td>
+          <td>{{ locations[scan.location].label if scan.location in locations else scan.location }}</td>
+          <td>{{ locations[scan.previous_location].label if scan.previous_location in locations else "—" }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p class="muted">No scans recorded yet.</p>
+  {% endif %}
+{% endblock %}
