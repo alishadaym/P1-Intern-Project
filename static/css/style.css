@@ -26,6 +26,12 @@ header {
     transform: translateY(-50%);
 }
 
+.scanned-location {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #d9c9c9;
+}
+
 main {
     display: flex;
     min-height: calc(100vh - 80px);

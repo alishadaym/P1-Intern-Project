@@ -1,7 +1,7 @@
 from flask import Flask, abort, jsonify, request, render_template, session, redirect
 from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_db_connection
-from locations import LOCATIONS, MAP_WIDTH, MAP_HEIGHT, SHOPS
+from locations import LOCATIONS, MAP_WIDTH, MAP_HEIGHT, SHOPS, NODE_MAP
 from scan_log import read_scans, record_scan
 
 import json
@@ -554,7 +554,12 @@ def get_session_id() -> str:
 @app.route("/")
 def index():
     current = session.get("current_location")
-    return render_template("index.html", current=LOCATIONS.get(current), current_name=current)
+    return render_template(
+        "index.html",
+        current=LOCATIONS.get(current),
+        current_name=current,
+        start_node=NODE_MAP.get(current),
+    )
 
 
 @app.route("/location/<name>")
