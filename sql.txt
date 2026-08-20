@@ -7,6 +7,7 @@ CREATE TABLE floors (
 INSERT INTO floors (floor_name, floor_code)
 VALUES ('Ground Floor', 'G');
 
+//table for QR locations
 CREATE TABLE locations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     location_name VARCHAR(100) NOT NULL,
@@ -18,6 +19,7 @@ CREATE TABLE locations (
     FOREIGN KEY (floor_id) REFERENCES floors(id)
 );
 
+//table for stores
 CREATE TABLE shops (
     id INT AUTO_INCREMENT PRIMARY KEY,
     shop_name VARCHAR(100) NOT NULL,
