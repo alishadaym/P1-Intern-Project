@@ -26,15 +26,15 @@
             </select>
 
             <label for="shop">Find Shop</label>
-            <select id="shop">
+            <select id="shop-select">
                 <option value="">Select a shop</option>
             </select>
 
-            <button id="navigate-button">Navigate</button>
+            <button id="navigate-btn" class="navigate-btn">Navigate</button>
 
-            <div class="shop-info">
+            <div class="selected-shop-section">
                 <h3>Selected Shop</h3>
-                <p id="selected-shop">No shop selected</p>
+                <div id="selected-shop-details">No shop selected</div>
             </div>
 
             <div class="legend">
@@ -52,21 +52,21 @@
                     id="floor-map" alt="Dpulze Ground Floor Map">
 
                 <svg id="map-overlay" viewBox="0 0 1038 553" preserveAspectRatio="xMidYMid meet">
-                    <!-- Navigation connections -->
                     <g id="navigation-lines"></g>
-
-                    <!-- Navigation nodes -->
-                    <g id="navigation-nodes">
-                        
-                    </g>
-                    <!-- User marker -->
-                    <circle id="user-marker" cx="0" cy="0" r="10"/>
-
+                    <g id="navigation-nodes"></g>
+                
+                    <!-- Clickable shop areas -->
+                    <g id="shop-hotspots"></g>
+                
+                    <!-- POI markers -->
+                    <g id="poi-markers"></g>
+                
                     <!-- Route -->
-                    <polyline id="route-line" points=""/>
-
-                    <!-- Shop markers will be added by JavaScript -->
-                </svg>
+                    <polyline id="route-line" points=""></polyline>
+                
+                    <!-- User -->
+                    <circle id="user-marker" cx="0" cy="0" r="10"></circle>
+                </svg>                
             </div>
         </section>
     </main>

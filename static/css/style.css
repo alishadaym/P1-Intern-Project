@@ -41,13 +41,13 @@ main {
 .sidebar button {
     cursor: pointer;
     border: none;
-    background: #7f644f;
+    background: #EC5B38;
     color: white;
     border-radius: 5px;
 }
 
 .sidebar button:hover {
-    background: rgb(91, 48, 38);
+    background: #F0997D;
 }
 
 .shop-info, .legend {
@@ -95,34 +95,75 @@ main {
 }
 
 #user-marker {
-    fill: red;
+    fill: #EC5B38;
     stroke: white;
-    stroke-width: 3;
+    stroke-width: 4;
 }
 
 #route-line {
     fill: none;
-    stroke: blue;
-    stroke-width: 5;
+    stroke: red;
+    stroke-width: 6;
     stroke-linecap: round;
     stroke-linejoin: round;
 }
 
 .navigation-line {
-    stroke: red;
+    stroke: #777;
     stroke-width: 2;
     stroke-dasharray: 5 5;
-    opacity: 0.7;
+    opacity: 0.5;
 }
 
 .navigation-node {
-    fill: red;
+    fill: #1976d2;
     stroke: white;
     stroke-width: 2;
 }
 
 .navigation-node-label {
-    fill: red;
+    fill: #1976d2;
     font-size: 10px;
     font-weight: bold;
+}
+
+#navigation-lines,
+#navigation-nodes {
+    display: none;
+}
+
+.poi-marker {
+    fill: #ff9800;
+    stroke: white;
+    stroke-width: 3;
+    pointer-events: all;
+    cursor: pointer;
+}
+
+.poi-label {
+    fill: #222;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.shop-hotspot {
+    fill: transparent;
+    pointer-events: all;
+    cursor: pointer;
+    transition: fill 0.2s ease;
+}
+
+.shop-hotspot:hover {
+    fill: rgba(255, 152, 0, 0.20);
+}
+
+.shop-hotspot.selected {
+    fill: rgba(255, 152, 0, 0.12);
+    stroke: #ff9800;
+    stroke-width: 2;
+}
+
+.poi-selected {
+    stroke: #e53935;
+    stroke-width: 5;
 }
