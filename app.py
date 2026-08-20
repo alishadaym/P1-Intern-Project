@@ -533,7 +533,7 @@ def store_owner_edit():
 
 @app.route("/guest")
 def guest_page():
-    return render_template("guest.html")
+    return redirect("/")
 
 @app.route("/api/logout", methods=["POST"])
 def logout():
@@ -566,27 +566,17 @@ def location(name):
     session["last_location"] = previous_location
     session["current_location"] = name
     record_scan(name, get_session_id(), previous_location)
-    return render_template(
-        "location.html",
-        name=name,
-        location=LOCATIONS[name],
-        map_width=MAP_WIDTH,
-        map_height=MAP_HEIGHT,
-        shops=SHOPS,
-        last_location=LOCATIONS.get(previous_location),
-    )
+    return redirect("/")
 
 
 @app.route("/scans")
 def scans():
-    return render_template("scans.html", scans=read_scans(), locations=LOCATIONS)
+    return redirect("/")
 
 
 @app.route("/shops")
 def shops():
-    current_name = session.get("current_location")
-    current = LOCATIONS.get(current_name)
-    return render_template("shops.html", current=current)
+    return redirect("/")
 
 if __name__ == "__main__":
     app.run(debug=True)
