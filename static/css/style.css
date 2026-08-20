@@ -41,13 +41,13 @@ main {
 .sidebar button {
     cursor: pointer;
     border: none;
-    background: #A8A492;
+    background: #7f644f;
     color: white;
     border-radius: 5px;
 }
 
 .sidebar button:hover {
-    background: #EC5B38;
+    background: rgb(91, 48, 38);
 }
 
 .shop-info, .legend {
@@ -69,13 +69,19 @@ main {
 
 .map-container {
     position: relative;
-    max-width: 100%;
+    width: 100%;
+    max-width: 1038px;
+    aspect-ratio: 1038 / 553;
 }
 
 #floor-map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
     display: block;
-    max-width: 100%;
-    height: auto;
 }
 
 #map-overlay {
@@ -85,6 +91,7 @@ main {
     width: 100%;
     height: 100%;
     pointer-events: none;
+    z-index: 10;
 }
 
 #user-marker {
@@ -101,7 +108,7 @@ main {
     stroke-linejoin: round;
 }
 
-#navigation-lines line {
+.navigation-line {
     stroke: red;
     stroke-width: 2;
     stroke-dasharray: 5 5;

@@ -17,6 +17,10 @@ async function loadMapData()
         console.log("Map data loaded:");
         console.log(mapData);
 
+        const overlay = document.getElementById("map-overlay");
+
+        overlay.setAttribute("viewbox", '0 0 ${mapData.image.width} ${mapData.image.height}');
+
         drawNavigationNetwork();
     }
     catch (error)
@@ -35,16 +39,24 @@ function drawNavigationNetwork()
     nodesGroup.innerHTML ="";
     linesGroup.innerHTML = "";
 
+    // TEMPORARY (2 consoles)
+    console.log("Number of nodes:", Object.keys(mapData.nodes).length);
+    console.log("Number of connections:", mapData.connections.length);
+
+    console.log("Nodes group:", nodesGroup);
+    console.log("Lines group:", linesGroup);
+
     // DRAW CONNECTIONS
     mapData.connections.forEach(connection => {
         const startNodeId = connection[0];
         const endNodeId = connection[1];
 
-        const startNode = mapData.nodes[startNode];
+        const startNode = mapData.nodes[startNodeId];
         const endNode = mapData.nodes[endNodeId];
         
         if (!startNode || !endNode)
         {
+            console.warn("Missing node:", startNodeId, endNodeId);
             return;
         }
 
@@ -56,6 +68,8 @@ function drawNavigationNetwork()
 
         line.setAttribute("x2", endNode.x);
         line.setAttribute("y2", endNode.y);
+
+        line.classList.add("navigation-line");
 
         linesGroup.appendChild(line);
     });
@@ -71,6 +85,8 @@ function drawNavigationNetwork()
 
             circle.setAttribute("r", "6");
             circle.classList.add("navigation-node");
+
+            nodesGroup.appendChild(circle);
 
             // NODE LABEL
             const label = document.createElementNS("http://www.w3.org/2000/svg",
