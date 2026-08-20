@@ -122,6 +122,19 @@ def search_shops():
 # the <int:shop_id> means the URL contains the shop's ID
 @app.route("/api/shops/<int:shop_id>", methods=["PUT"])
 def update_shop(shop_id):
+
+    # Check if store owner is logged in
+    if "owner_id" not in session:
+        return jsonify({
+            "error": "Login required"
+        }), 401
+
+    # Make sure this owner owns this shop
+    if session["shop_id"] != shop_id:
+        return jsonify({
+            "error": "You are not authorized to edit this shop"
+        }), 403
+
     data = request.get_json()
 
     shop_name = data.get("shop_name")
@@ -456,6 +469,51 @@ def store_owner_dashboard():
     return render_template(
         "store_owner.html",
         owner=owner
+    )
+
+@app.route("/store-owner/edit")
+def store_owner_edit():
+
+    if "owner_id" not in session:
+        return redirect("/login")
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    # Get owner's shop
+    shop_query = """
+        SELECT *
+        FROM shops
+        WHERE id = %s
+    """
+
+    cursor.execute(
+        shop_query,
+        (session["shop_id"],)
+    )
+
+    shop = cursor.fetchone()
+
+    # Get available floors
+    cursor.execute("""
+        SELECT *
+        FROM floors
+        ORDER BY id
+    """)
+
+    floors = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    if shop is None:
+        session.clear()
+        return redirect("/login")
+
+    return render_template(
+        "store_owner_edit.html",
+        shop=shop,
+        floors=floors
     )
 
 @app.route("/api/logout", methods=["POST"])

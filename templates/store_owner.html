@@ -3,37 +3,114 @@
 
 <head>
     <title>Store Owner Dashboard - DPULZE</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .dashboard {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .shop-details {
+            margin-top: 25px;
+        }
+
+        .detail {
+            margin: 12px 0;
+        }
+
+        button {
+            padding: 10px 18px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        .edit-button {
+            margin-right: 10px;
+        }
+
+    </style>
 </head>
 
 <body>
 
+<div class="dashboard">
+
     <h1>Store Owner Dashboard</h1>
 
-    <p>Welcome, {{ owner.username }}!</p>
-
     <p>
-        Store:
-        <strong>{{ owner.shop_name }}</strong>
+        Welcome, <strong>{{ owner.username }}</strong>!
     </p>
 
-    <button onclick="logout()">Logout</button>
+    <div class="shop-details">
+
+        <h2>Your Store</h2>
+
+        <div class="detail">
+            <strong>Name:</strong>
+            {{ owner.shop_name }}
+        </div>
+
+        <div class="detail">
+            <strong>Category:</strong>
+            {{ owner.category }}
+        </div>
+
+        <div class="detail">
+            <strong>Unit:</strong>
+            {{ owner.unit }}
+        </div>
+
+        <div class="detail">
+            <strong>Description:</strong>
+            {{ owner.description }}
+        </div>
+
+    </div>
+
+    <button
+        class="edit-button"
+        onclick="window.location.href='/store-owner/edit'">
+        Edit Store Details
+    </button>
+
+    <button onclick="logout()">
+        Logout
+    </button>
+
+</div>
 
 
-    <script>
+<script>
 
-        async function logout() {
+async function logout() {
 
-            const response = await fetch("/api/logout", {
-                method: "POST"
-            });
+    const response = await fetch("/api/logout", {
+        method: "POST"
+    });
 
-            if (response.ok) {
-                window.location.href = "/login";
-            }
+    if (response.ok) {
+        window.location.href = "/login";
+    }
 
-        }
+}
 
-    </script>
+</script>
 
 </body>
 
