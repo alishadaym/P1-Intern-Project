@@ -16,10 +16,6 @@ def load_map():
     with open(map_path, "r", encoding="utf-8") as file:
         return json.load(file)
 
-@app.route("/")
-def index():
-    return render_template("index.html")
-
 @app.route("/api/map")
 def get_map():
     map_data = load_map()
