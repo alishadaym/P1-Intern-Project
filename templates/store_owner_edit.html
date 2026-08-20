@@ -8,14 +8,14 @@
 
         body {
             font-family: Arial, sans-serif;
-            background: #f4f4f4;
+            background: #564228;
             padding: 40px;
         }
 
         .edit-box {
             max-width: 500px;
             margin: auto;
-            background: white;
+            background: #e6d4bc;
             padding: 30px;
             border-radius: 10px;
         }
@@ -189,9 +189,13 @@ document.getElementById("editForm").addEventListener("submit", async function(ev
 
         message.textContent = "Store details updated successfully!";
 
+        setTimeout(function() {
+            message.textContent = "";
+        }, 1500);
+
     } else {
 
-        message.textContent = result.error;
+        message.textContent = result.error || "Failed to update store.";
 
     }
 
