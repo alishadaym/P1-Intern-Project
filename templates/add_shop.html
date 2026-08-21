@@ -22,8 +22,8 @@
         <input type="text" id="category">
         <br><br>
 
-        <label>Unit:</label>
-        <input type="text" id="unit">
+        <label>Operating Hours:</label>
+        <input type="text" id="operating_hours" placeholder="e.g. 10am – 10pm">
         <br><br>
 
         <label>Description:</label>
@@ -34,14 +34,6 @@
         <select id="floor_id" required>
             <option value="1">Ground Floor</option>
         </select>
-        <br><br>
-
-        <label>X Position:</label>
-        <input type="number" id="x_position" required>
-        <br><br>
-
-        <label>Y Position:</label>
-        <input type="number" id="y_position" required>
         <br><br>
 
         <button type="submit">Add Shop</button>
@@ -60,11 +52,9 @@
             const shopData = {
                 shop_name: document.getElementById("shop_name").value,
                 category: document.getElementById("category").value,
-                unit: document.getElementById("unit").value,
+                operating_hours: document.getElementById("operating_hours").value,
                 description: document.getElementById("description").value,
-                floor_id: Number(document.getElementById("floor_id").value),
-                x_position: Number(document.getElementById("x_position").value),
-                y_position: Number(document.getElementById("y_position").value)
+                floor_id: Number(document.getElementById("floor_id").value)
             };
 
             const response = await fetch("/api/shops", {

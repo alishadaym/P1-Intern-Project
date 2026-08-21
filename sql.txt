@@ -61,49 +61,62 @@ CREATE TABLE store_owners (
     FOREIGN KEY (shop_id) REFERENCES shops(id)
 );
 
-// shop_code links a DB row back to the matching key in data/map.json's
-// shop_locations, so the frontend can join live shop details (category,
-// description, etc.) onto the map/QR data by a stable id instead of a
-// fragile name match.
+//shop_code links a DB row back to the matching key in data/map.json's
+//shop_locations, so the frontend can join live shop details onto the
+//map/QR data by a stable id instead of a fragile name match.
 ALTER TABLE shops
 ADD COLUMN shop_code VARCHAR(50) UNIQUE AFTER id;
 
-//seed all 33 real mall shops (category/unit/description left blank -
-//that data hasn't been collected yet; fill in via the store owner's
-//"Edit Store Details" page once each shop has an account)
+//x_position/y_position dropped - shop positions live in data/map.json,
+//no need to duplicate them here
+ALTER TABLE shops
+DROP COLUMN unit,
+DROP COLUMN x_position,
+DROP COLUMN y_position;
+
+ALTER TABLE shops
+ADD COLUMN operating_hours VARCHAR(100) AFTER shop_name;
+
+DELETE FROM store_owners;
+
+DELETE FROM shops;
+
+//seed all 33 real mall shops with category + operating hours
+//(description still blank - fill in via the store owner's "Edit Store
+//Details" page once each shop has an account)
 INSERT INTO shops
-    (shop_code, shop_name, category, unit, description, floor_id, x_position, y_position)
+    (shop_code, shop_name, operating_hours, category, description, floor_id)
 VALUES
-    ('fos_shop', 'F.O.S', NULL, NULL, NULL, 1, 258, 156),
-    ('tone_mann_shop', 'Tone & Mann.', NULL, NULL, NULL, 1, 159, 222),
-    ('ssf_shop', 'SSF', NULL, NULL, NULL, 1, 140, 380),
-    ('good2u_shop', 'Good2U', NULL, NULL, NULL, 1, 864, 262),
-    ('family_mart_shop', 'Family Mart', NULL, NULL, NULL, 1, 546, 484),
-    ('zus_coffee_shop', 'Zus Coffee', NULL, NULL, NULL, 1, 175, 620),
-    ('hong_leong_shop', 'Hong Leong Islamic Bank', NULL, NULL, NULL, 1, 779, 230),
-    ('mi_store_shop', 'Mi Store', NULL, NULL, NULL, 1, 425, 231),
-    ('ajumma_shop', 'Ajumma', NULL, NULL, NULL, 1, 342, 236),
-    ('elianto_shop', 'Elianto', NULL, NULL, NULL, 1, 375, 244),
-    ('world_of_perfumes_shop', 'World of Perfumes', NULL, NULL, NULL, 1, 478, 244),
-    ('jacs_optometry_shop', 'Jac''s Optometry', NULL, NULL, NULL, 1, 517, 257),
-    ('mnb_shop', 'MNB', NULL, NULL, NULL, 1, 621, 225),
-    ('mc_vogue_shop', 'MC Vogue', NULL, NULL, NULL, 1, 662, 228),
-    ('kunzense_bodyline_shop', 'Kunzense Bodyline', NULL, NULL, NULL, 1, 704, 232),
-    ('skechers_shop', 'Skechers', NULL, NULL, NULL, 1, 744, 235),
-    ('jewellery_kiosk_shop', 'Sparkle & Silver Fine Jewellery', NULL, NULL, NULL, 1, 545, 280),
-    ('parca_fashion_shop', 'Parca Fashion', NULL, NULL, NULL, 1, 384, 302),
-    ('maxis_shop', 'Maxis', NULL, NULL, NULL, 1, 586, 328),
-    ('royal_sporting_house_shop', 'Royal Sporting House', NULL, NULL, NULL, 1, 847, 341),
-    ('starbucks_shop', 'Starbucks', NULL, NULL, NULL, 1, 667, 357),
-    ('sarong_by_ar_shop', 'Sarong By A&R', NULL, NULL, NULL, 1, 258, 376),
-    ('solight_shop', 'Solight', NULL, NULL, NULL, 1, 304, 369),
-    ('nandos_shop', 'Nando''s', NULL, NULL, NULL, 1, 337, 369),
-    ('al_ikhsan_sports_shop', 'Al-Ikhsan Sports', NULL, NULL, NULL, 1, 376, 372),
-    ('baskin_robbins_shop', 'Baskin Robbins', NULL, NULL, NULL, 1, 423, 371),
-    ('coffee_bean_shop', 'The Coffee Bean & Tea Leaf', NULL, NULL, NULL, 1, 468, 425),
-    ('the_body_shop_shop', 'The Body Shop', NULL, NULL, NULL, 1, 528, 424),
-    ('sox_world_shop', 'Sox World', NULL, NULL, NULL, 1, 561, 418),
-    ('mr_dakgalbi_shop', 'Mr. Dakgalbi', NULL, NULL, NULL, 1, 619, 460),
-    ('go_noodle_house_shop', 'Go Noodle House', NULL, NULL, NULL, 1, 665, 460),
-    ('happikiddo_shop', 'Happikiddo', NULL, NULL, NULL, 1, 711, 460),
-    ('homes_harmony_shop', 'Home''s Harmony', NULL, NULL, NULL, 1, 761, 460);
+    ('fos_shop', 'F.O.S', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('tone_mann_shop', 'Tone & Mann.', '10am – 10pm', 'Fashion accessories store', NULL, 1),
+    ('ssf_shop', 'SSF', '10am – 10pm', 'Furniture store', NULL, 1),
+    ('good2u_shop', 'Good2U', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('family_mart_shop', 'Family Mart', '7am – 12am', 'Convenience Store', NULL, 1),
+    ('zus_coffee_shop', 'Zus Coffee', '10am – 10pm', 'Cafe', NULL, 1),
+    ('hong_leong_shop', 'Hong Leong Islamic Bank', 'Permanently Closed', 'Bank', NULL, 1),
+    ('mi_store_shop', 'Mi Store', '10am – 10pm', 'Cell phone Store', NULL, 1),
+    ('ajumma_shop', 'Ajumma', '10am – 11pm', 'Korean Restaurant', NULL, 1),
+    ('elianto_shop', 'Elianto', '10am – 10pm', 'Cosmetics Store', NULL, 1),
+    ('world_of_perfumes_shop', 'World of Perfumes', '10am – 10pm', 'Perfume Store', NULL, 1),
+    ('jacs_optometry_shop', 'Jac''s Optometry', '10am – 10pm', 'Optician', NULL, 1),
+    ('mnb_shop', 'MNB', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('mc_vogue_shop', 'MC Vogue', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('kunzense_bodyline_shop', 'Kunzense Bodyline', '10:30am – 8:30pm', 'Facial Spa', NULL, 1),
+    ('skechers_shop', 'Skechers', '10am – 10pm', 'Shoe Store', NULL, 1),
+    ('jewellery_kiosk_shop', 'Sparkle & Silver Fine Jewellery', '10am – 10pm', 'Jeweller', NULL, 1),
+    ('parca_fashion_shop', 'Parca Fashion', 'Permanently Closed', 'Boutique', NULL, 1),
+    ('maxis_shop', 'Maxis', '10am – 9:30pm', 'Telecommunications service provider', NULL, 1),
+    ('royal_sporting_house_shop', 'Royal Sporting House', 'Permanently Closed', 'Sportswear Store', NULL, 1),
+    ('starbucks_shop', 'Starbucks', 'Permanently Closed', 'Cafe', NULL, 1),
+    ('sarong_by_ar_shop', 'Sarong By A&R', '10am – 10pm', 'Boutique', NULL, 1),
+    ('solight_shop', 'Solight', '10am – 8pm', 'Shoe Store', NULL, 1),
+    ('nandos_shop', 'Nando''s', '10am – 10pm', 'Chicken Restaurant', NULL, 1),
+    ('al_ikhsan_sports_shop', 'Al-Ikhsan Sports', '10am – 10pm', 'Sporting Goods Store', NULL, 1),
+    ('baskin_robbins_shop', 'Baskin Robbins', '10am – 10pm', 'Ice Cream Shop', NULL, 1),
+    ('coffee_bean_shop', 'The Coffee Bean & Tea Leaf', '10am – 10pm', 'Cafe', NULL, 1),
+    ('the_body_shop_shop', 'The Body Shop', '10am – 10pm', 'Beauty Supply Store', NULL, 1),
+    ('sox_world_shop', 'Sox World', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('mr_dakgalbi_shop', 'Mr. Dakgalbi', '10am – 9pm', 'Korean Restaurant', NULL, 1),
+    ('go_noodle_house_shop', 'Go Noodle House', '10am – 9:15pm', 'Chinese Noodle Restaurant', NULL, 1),
+    ('happikiddo_shop', 'Happikiddo', '10am – 10pm', 'Baby Store', NULL, 1),
+    ('homes_harmony_shop', 'Home''s Harmony', '10am – 10pm', 'Furniture Store', NULL, 1);
