@@ -3,6 +3,9 @@
 `map` coordinates are pixel positions on static/map.jpg, which is MAP_WIDTH x MAP_HEIGHT.
 """
 
+import json
+from pathlib import Path
+
 MAP_WIDTH = 1080
 MAP_HEIGHT = 628
 
@@ -37,3 +40,17 @@ NODE_MAP = {
     "restroom-3": "node_07",
     "restroom-4": "node_24",
 }
+
+# Every shop in data/map.json is also a valid QR-scannable location - a shop
+# owner's QR code works exactly like a waypoint's (see app.py's /location
+# route), just starting navigation from that shop's own position instead.
+# Loaded from data/map.json rather than duplicated here so the two files
+# can't drift out of sync.
+_MAP_JSON_PATH = Path(__file__).resolve().parent.parent / "data" / "map.json"
+
+with _MAP_JSON_PATH.open(encoding="utf-8") as _f:
+    _shop_locations = json.load(_f)["shop_locations"]
+
+for _shop_id, _shop in _shop_locations.items():
+    LOCATIONS[_shop_id] = {"label": _shop["name"], "floor": _shop.get("floor", "Ground Floor")}
+    NODE_MAP[_shop_id] = _shop["node_id"]
