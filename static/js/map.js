@@ -21,11 +21,10 @@ async function loadMapData()
 
         const overlay = document.getElementById("map-overlay");
 
-        overlay.setAttribute("viewbox", '0 0 ${mapData.image.width} ${mapData.image.height}');
+        overlay.setAttribute("viewBox", `0 0 ${mapData.image.width} ${mapData.image.height}`);
 
         drawNavigationNetwork();
         drawUserMarker();
-        populateShopDropdown();
         drawPOIMarkers();
         drawShopHotspots();
     }
@@ -117,6 +116,7 @@ document.addEventListener("DOMContentLoaded", async function()
 
     await loadMapData();
     await loadShopDatabase();
+    populateShopDropdown();
 
     // NAVIGATE BUTTON
     const navigateButton = document.getElementById("navigate-btn");
@@ -177,20 +177,19 @@ function populateShopDropdown()
     Object.keys(mapData.shop_locations).forEach(
         shopId =>
         {
-            const dbShop =
-                shopDatabase[shopId];
+            const dbShop = shopDatabase[shopId];
 
             if (!dbShop)
             {
+                console.warn("No database record for:", shopId);
                 return;
             }
 
-            const option =
-                document.createElement("option");
+            const option = document.createElement("option");
 
             option.value = shopId;
-            option.textContent =
-                dbShop.shop_name;
+
+            option.textContent = dbShop.display_name;;
 
             shopSelect.appendChild(option);
         }
@@ -620,7 +619,7 @@ function updateSelectedShopPanel(shopId, shop)
         );
 
     panel.innerHTML = `
-        <strong>${shop.shop_name}</strong>
+        <strong>${shop.display_name}</strong>
 
         ${
             shop.category
@@ -629,14 +628,20 @@ function updateSelectedShopPanel(shopId, shop)
         }
 
         ${
-            shop.floor
-            ? `<div>${shop.floor}</div>`
+            shop.unit
+            ? `<div>Unit: ${shop.unit}</div>`
             : ""
         }
 
         ${
-            shop.opening_hours
-            ? `<div>Hours: ${shop.opening_hours}</div>`
+            shop.floor_name
+            ? `<div>${shop.floor_name}</div>`
+            : ""
+        }
+
+        ${
+            shop.description
+            ? `<div>${shop.description}</div>`
             : ""
         }
     `;
@@ -685,15 +690,36 @@ async function loadShopDatabase()
 
         const shops = await response.json();
 
-        console.log("Shop database loaded:", shops);
+        console.log("Raw shop database:", shops);
 
-        // Convert array into object keyed by shop_id
+        shopDatabase = {};
+
         shops.forEach(shop =>
         {
-            shopDatabase[shop.shop_id] = shop;
+            if (!shop.shop_code)
+            {
+                return;
+            }
+
+            // Normalise shop information
+            const normalisedShop = {
+                ...shop,
+
+                display_name:
+                    shop.shop_name ||
+                    shop.name ||
+                    shop.label ||
+                    "Unnamed Shop"
+            };
+
+            shopDatabase[shop.shop_code] =
+                normalisedShop;
         });
 
-        console.log("Shop database object:", shopDatabase);
+        console.log(
+            "Normalised shop database:",
+            shopDatabase
+        );
     }
     catch (error)
     {

@@ -60,3 +60,31 @@ CREATE TABLE store_owners (
     shop_id INT NOT NULL,
     FOREIGN KEY (shop_id) REFERENCES shops(id)
 );
+
+// add coloumn shop_code
+ALTER TABLE shops
+ADD COLUMN shop_code VARCHAR(50) UNIQUE AFTER id;
+
+//add sample shop
+INSERT INTO shops
+(
+    shop_code,
+    shop_name,
+    category,
+    unit,
+    description,
+    floor_id,
+    x_position,
+    y_position
+)
+VALUES
+(
+    'family_mart_001',
+    'Family Mart',
+    'Convenience Store',
+    'G',
+    'Convenience store',
+    1,
+    545,
+    490
+);
