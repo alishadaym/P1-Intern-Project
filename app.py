@@ -26,7 +26,26 @@ def get_shops():
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM shops")
+    query = """
+        SELECT
+            s.id,
+            s.shop_code,
+            s.shop_name,
+            s.category,
+            s.unit,
+            s.description,
+            s.floor_id,
+            f.floor_name,
+            f.floor_code,
+            s.x_position,
+            s.y_position
+        FROM shops s
+        JOIN floors f
+            ON s.floor_id = f.id
+        ORDER BY s.shop_name
+    """
+
+    cursor.execute(query)
     shops = cursor.fetchall()
 
     cursor.close()

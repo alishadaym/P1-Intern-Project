@@ -1,5 +1,6 @@
 let mapData = null;
 let selectedShopId = null;
+let shopDatabase = {};
 
 // LOAD MAP DATA FROM FLASK
 async function loadMapData()
@@ -20,11 +21,10 @@ async function loadMapData()
 
         const overlay = document.getElementById("map-overlay");
 
-        overlay.setAttribute("viewbox", '0 0 ${mapData.image.width} ${mapData.image.height}');
+        overlay.setAttribute("viewBox", `0 0 ${mapData.image.width} ${mapData.image.height}`);
 
         drawNavigationNetwork();
         drawUserMarker();
-        populateShopDropdown();
         drawPOIMarkers();
         drawShopHotspots();
     }
@@ -115,6 +115,8 @@ document.addEventListener("DOMContentLoaded", async function()
     console.log("Dpulze navigation applicaiton started.");
 
     await loadMapData();
+    await loadShopDatabase();
+    populateShopDropdown();
 
     // NAVIGATE BUTTON
     const navigateButton = document.getElementById("navigate-btn");
@@ -182,12 +184,17 @@ function populateShopDropdown()
             const shop =
                 mapData.shop_locations[shopId];
 
+            const dbShop =
+                shopDatabase[shopId];
+
             const option =
                 document.createElement("option");
 
             option.value = shopId;
             option.textContent =
-                shop.name || shopId.replace(/_\d+$/, "").replace(/_/g, " ").replace(/\b\w/g, letter => letter.toUpperCase());
+                (dbShop && dbShop.display_name) ||
+                shop.name ||
+                shopId.replace(/_\d+$/, "").replace(/_/g, " ").replace(/\b\w/g, letter => letter.toUpperCase());
 
             shopSelect.appendChild(option);
         }
@@ -567,10 +574,10 @@ function drawShopHotspots()
 // SELECT SHOP
 function selectShop(shopId)
 {
-    const shop =
+    const mapShop =
         mapData.shop_locations[shopId];
 
-    if (!shop)
+    if (!mapShop)
     {
         console.error(
             "Shop not found:",
@@ -579,6 +586,18 @@ function selectShop(shopId)
 
         return;
     }
+
+    const dbShop = shopDatabase[shopId];
+
+    // Prefer live database details (name, category, description) once
+    // connected; fall back to the map's own data so this still works
+    // without a database.
+    const shop = {
+        name: (dbShop && dbShop.display_name) || mapShop.name,
+        category: dbShop && dbShop.category,
+        floor: (dbShop && dbShop.floor_name) || mapShop.floor,
+        description: dbShop && dbShop.description,
+    };
 
     selectedShopId = shopId;
 
@@ -623,8 +642,8 @@ function updateSelectedShopPanel(shopId, shop)
             }
 
             ${
-                shop.opening_hours
-                ? `<div>Hours: ${shop.opening_hours}</div>`
+                shop.description
+                ? `<div>${shop.description}</div>`
                 : ""
             }
 
@@ -657,6 +676,62 @@ function highlightSelectedShop(shopId)
     {
         selectedMarker.classList.add(
             "poi-selected"
+        );
+    }
+}
+
+// LOAD DATA STORED IN DB
+async function loadShopDatabase()
+{
+    try
+    {
+        const response = await fetch("/api/shops");
+
+        if (!response.ok)
+        {
+            throw new Error("Failed to load shop database.");
+        }
+
+        const shops = await response.json();
+
+        console.log("Raw shop database:", shops);
+
+        shopDatabase = {};
+
+        shops.forEach(shop =>
+        {
+            if (!shop.shop_code)
+            {
+                return;
+            }
+
+            // Normalise shop information
+            const normalisedShop = {
+                ...shop,
+
+                display_name:
+                    shop.shop_name ||
+                    shop.name ||
+                    shop.label ||
+                    "Unnamed Shop"
+            };
+
+            shopDatabase[shop.shop_code] =
+                normalisedShop;
+        });
+
+        console.log(
+            "Normalised shop database:",
+            shopDatabase
+        );
+    }
+    catch (error)
+    {
+        // Expected until a real database is connected - the app still
+        // works fine using data/map.json's own shop info as a fallback.
+        console.warn(
+            "Shop database unavailable, using map.json data instead:",
+            error
         );
     }
 }

@@ -29,16 +29,16 @@ LOCATIONS = {
 # are the same floor plan at a slightly different crop/scale) and picking
 # each node graph's closest point.
 NODE_MAP = {
-    "entrance-main": "node_01",
-    "escalator-1": "node_17",
-    "escalator-2": "node_33",
-    "escalator-3": "node_35",
-    "escalator-4": "node_24",
-    "atm": "node_21",
-    "restroom-1": "node_09",
-    "restroom-2": "node_13",
-    "restroom-3": "node_07",
-    "restroom-4": "node_24",
+    "entrance-main": "node_39",
+    "escalator-1": "node_24",
+    "escalator-2": "node_18",
+    "escalator-3": "node_25",
+    "escalator-4": "node_31",
+    "atm": "node_28",
+    "restroom-1": "node_13",
+    "restroom-2": "node_18",
+    "restroom-3": "node_11",
+    "restroom-4": "node_31",
 }
 
 # Every shop in data/map.json is also a valid QR-scannable location - a shop
