@@ -622,182 +622,62 @@
         }
     },
     "connections": [
-        [
-            "node_01",
-            "node_02"
-        ],
-        [
-            "node_02",
-            "node_03"
-        ],
-        [
-            "node_03",
-            "node_04"
-        ],
-        [
-            "node_04",
-            "node_05"
-        ],
-        [
-            "node_05",
-            "node_06"
-        ],
-        [
-            "node_06",
-            "node_07"
-        ],
-        [
-            "node_07",
-            "node_08"
-        ],
-        [
-            "node_08",
-            "node_09"
-        ],
-        [
-            "node_09",
-            "node_10"
-        ],
-        [
-            "node_10",
-            "node_11"
-        ],
-        [
-            "node_11",
-            "node_12"
-        ],
-        [
-            "node_13",
-            "node_14"
-        ],
-        [
-            "node_14",
-            "node_15"
-        ],
-        [
-            "node_15",
-            "node_16"
-        ],
-        [
-            "node_10",
-            "node_13"
-        ],
-        [
-            "node_16",
-            "node_17"
-        ],
-        [
-            "node_17",
-            "node_18"
-        ],
-        [
-            "node_18",
-            "node_19"
-        ],
-        [
-            "node_19",
-            "node_20"
-        ],
-        [
-            "node_20",
-            "node_21"
-        ],
-        [
-            "node_21",
-            "node_22"
-        ],
-        [
-            "node_22",
-            "node_23"
-        ],
-        [
-            "node_23",
-            "node_24"
-        ],
-        [
-            "node_24",
-            "node_25"
-        ],
-        [
-            "node_25",
-            "node_26"
-        ],
-        [
-            "node_26",
-            "node_27"
-        ],
-        [
-            "node_27",
-            "node_28"
-        ],
-        [
-            "node_28",
-            "node_29"
-        ],
-        [
-            "node_29",
-            "node_30"
-        ],
-        [
-            "node_30",
-            "node_31"
-        ],
-        [
-            "node_31",
-            "node_32"
-        ],
-        [
-            "node_32",
-            "node_33"
-        ],
-        [
-            "node_33",
-            "node_34"
-        ],
-        [
-            "node_34",
-            "node_35"
-        ],
-        [
-            "node_35",
-            "node_36"
-        ],
-        [
-            "node_36",
-            "node_37"
-        ],
-        [
-            "node_37",
-            "node_38"
-        ],
-        [
-            "node_38",
-            "node_39"
-        ],
-        [
-            "node_39",
-            "node_01"
-        ],
-        [
-            "node_38",
-            "node_02"
-        ],
-        [
-            "node_08",
-            "node_40"
-        ],
-        [
-            "node_07",
-            "node_41"
-        ],
-        [
-            "node_36",
-            "node_42"
-        ],
-        [
-            "node_35",
-            "node_43"
-        ],
-        ["node_02", "node_21"]
+        ["node_01", "node_02"],
+        ["node_02", "node_03"],
+        ["node_03", "node_04"],
+        ["node_04", "node_05"],
+        ["node_05", "node_06"],
+        ["node_06", "node_07"],
+
+        ["node_07", "node_08"],
+        ["node_08", "node_09"],
+        ["node_09", "node_10"],
+        ["node_10", "node_11"],
+        ["node_11", "node_12"],
+        ["node_13", "node_14"],
+        ["node_14", "node_15"],
+        ["node_15", "node_16"],
+
+        ["node_10", "node_13"],
+
+        ["node_16", "node_17"],
+        ["node_17", "node_18"],
+        ["node_18", "node_19"],
+        ["node_19", "node_20"],
+        ["node_20", "node_21"],
+        ["node_21", "node_22"],
+        ["node_22", "node_23"],
+        ["node_23", "node_24"],
+        ["node_24", "node_25"],
+        ["node_25", "node_26"],
+        ["node_26", "node_27"],
+
+        ["node_27", "node_28"],
+        ["node_28", "node_29"],
+        ["node_29", "node_30"],
+        ["node_30", "node_31"],
+        ["node_31", "node_32"],
+        ["node_32", "node_33"],
+        ["node_33", "node_34"],
+        ["node_34", "node_35"],
+        ["node_35", "node_36"],
+        ["node_36", "node_37"],
+        ["node_37", "node_38"],
+        ["node_38", "node_39"],
+
+        ["node_39", "node_01"],
+        ["node_38", "node_02"],
+        ["node_08", "node_40"],
+        ["node_07", "node_41"],
+        ["node_36", "node_42"],
+        ["node_35", "node_43"],
+        ["node_40", "node_15"],
+        ["node_05", "node_18"],
+        ["node_04", "node_19"],
+        ["node_04", "node_20"],
+        ["node_02", "node_21"],
+        ["node_24", "node_43"],
+        ["node_32", "node_27"],
+        ["node_33", "node_27"]
     ]
 }
