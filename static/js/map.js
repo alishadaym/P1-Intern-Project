@@ -574,80 +574,98 @@ function drawShopHotspots()
 // SELECT SHOP
 function selectShop(shopId)
 {
+    console.log("selectShop called:", shopId);
+
     const mapShop =
         mapData.shop_locations[shopId];
+
+    const dbShop =
+        shopDatabase[shopId];
+
+    console.log("Map shop:", mapShop);
+    console.log("DB shop:", dbShop);
 
     if (!mapShop)
     {
         console.error(
-            "Shop not found:",
+            "Shop map location not found:",
             shopId
         );
-
         return;
     }
 
-    const dbShop = shopDatabase[shopId];
-
-    // Prefer live database details (name, category, description) once
-    // connected; fall back to the map's own data so this still works
-    // without a database.
-    const shop = {
-        name: (dbShop && dbShop.display_name) || mapShop.name,
-        category: dbShop && dbShop.category,
-        floor: (dbShop && dbShop.floor_name) || mapShop.floor,
-        description: dbShop && dbShop.description,
-    };
+    if (!dbShop)
+    {
+        console.error(
+            "Shop database information not found:",
+            shopId
+        );
+        return;
+    }
 
     selectedShopId = shopId;
 
+    // Update dropdown
     const shopSelect =
         document.getElementById("shop-select");
 
     shopSelect.value = shopId;
 
-    updateSelectedShopPanel(
-        shopId,
-        shop
-    );
+    // IMPORTANT: pass only the actual DB object
+    updateSelectedShopPanel(dbShop);
 
     highlightSelectedShop(shopId);
 }
 
 // UPDATE SELECTED SHOP PANEL
-function updateSelectedShopPanel(shopId, shop)
+function updateSelectedShopPanel(shop)
 {
     const panel =
         document.getElementById(
             "selected-shop-details"
         );
 
+    console.log(
+        "Details panel received:",
+        shop
+    );
+
+    if (!shop)
+    {
+        panel.textContent =
+            "Shop information unavailable.";
+        return;
+    }
+
     panel.innerHTML = `
-        <div class="shop-details-card">
+        <strong>${shop.shop_name || "Unnamed Shop"}</strong>
 
-            <strong class="shop-details-name">
-                ${shop.name}
-            </strong>
+        ${
+            shop.category
+            ? `<div><strong>Category:</strong> ${shop.category}</div>`
+            : ""
+        }
 
-            ${
-                shop.category
-                ? `<div>${shop.category}</div>`
-                : ""
-            }
+        ${
+            shop.floor_name
+            ? `<div><strong>Floor:</strong> ${shop.floor_name}</div>`
+            : ""
+        }
 
-            ${
-                shop.floor
-                ? `<div>${shop.floor}</div>`
-                : ""
-            }
+        ${
+            shop.operating_hours
+            ? `<div><strong>Operating Hours:</strong> ${shop.operating_hours}</div>`
+            : ""
+        }
 
-            ${
-                shop.description
-                ? `<div>${shop.description}</div>`
-                : ""
-            }
-
-        </div>
+        ${
+            shop.description
+            ? `<div>
+                   <strong>Description:</strong>
+                   ${shop.description}
+               </div>`
+            : ""
+        }
     `;
 }
 

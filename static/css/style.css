@@ -136,10 +136,10 @@ main {
     font-weight: bold;
 }
 
-#navigation-lines,
+/* #navigation-lines,
 #navigation-nodes {
     display: none;
-}
+} */
 
 .poi-marker {
     fill: #ff9800;

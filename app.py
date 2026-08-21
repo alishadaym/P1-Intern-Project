@@ -31,14 +31,12 @@ def get_shops():
             s.id,
             s.shop_code,
             s.shop_name,
+            s.operating_hours,
             s.category,
-            s.unit,
             s.description,
             s.floor_id,
             f.floor_name,
-            f.floor_code,
-            s.x_position,
-            s.y_position
+            f.floor_code
         FROM shops s
         JOIN floors f
             ON s.floor_id = f.id
