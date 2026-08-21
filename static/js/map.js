@@ -574,99 +574,90 @@ function drawShopHotspots()
 // SELECT SHOP
 function selectShop(shopId)
 {
-    console.log("selectShop called:", shopId);
-
     const mapShop =
         mapData.shop_locations[shopId];
-
-    const dbShop =
-        shopDatabase[shopId];
-
-    console.log("Map shop:", mapShop);
-    console.log("DB shop:", dbShop);
 
     if (!mapShop)
     {
         console.error(
-            "Shop map location not found:",
+            "Shop not found:",
             shopId
         );
+
         return;
     }
 
-    if (!dbShop)
-    {
-        console.error(
-            "Shop database information not found:",
-            shopId
-        );
-        return;
-    }
+    const dbShop = shopDatabase[shopId];
+
+    // Prefer live database details (category, hours, description) once
+    // connected; fall back to the map's own data so this still works
+    // without a database.
+    const shop = {
+        name: (dbShop && dbShop.shop_name) || mapShop.name,
+        category: dbShop && dbShop.category,
+        unit: dbShop && dbShop.unit,
+        operatingHours: (dbShop && dbShop.operating_hours) || null,
+        floor: (dbShop && dbShop.floor_name) || mapShop.floor,
+        description: dbShop && dbShop.description,
+    };
 
     selectedShopId = shopId;
 
-    // Update dropdown
     const shopSelect =
         document.getElementById("shop-select");
 
     shopSelect.value = shopId;
 
-    // IMPORTANT: pass only the actual DB object
-    updateSelectedShopPanel(dbShop);
+    updateSelectedShopPanel(
+        shopId,
+        shop
+    );
 
     highlightSelectedShop(shopId);
 }
 
 // UPDATE SELECTED SHOP PANEL
-function updateSelectedShopPanel(shop)
+function updateSelectedShopPanel(shopId, shop)
 {
     const panel =
         document.getElementById(
             "selected-shop-details"
         );
 
-    console.log(
-        "Details panel received:",
-        shop
-    );
-
-    if (!shop)
-    {
-        panel.textContent =
-            "Shop information unavailable.";
-        return;
-    }
-
     panel.innerHTML = `
-        <strong>${shop.shop_name || "Unnamed Shop"}</strong>
+    <div class="shop-details-card">
 
-        ${
-            shop.category
-            ? `<div><strong>Category:</strong> ${shop.category}</div>`
+        <strong class="shop-details-name">
+            ${shop.name}
+        </strong>
+
+        ${shop.category
+            ? `<div>${shop.category}</div>`
             : ""
         }
 
-        ${
-            shop.floor_name
-            ? `<div><strong>Floor:</strong> ${shop.floor_name}</div>`
+        ${shop.unit
+            ? `<div>Unit: ${shop.unit}</div>`
             : ""
         }
 
-        ${
-            shop.operating_hours
-            ? `<div><strong>Operating Hours:</strong> ${shop.operating_hours}</div>`
+        ${shop.floor
+            ? `<div>${shop.floor}</div>`
             : ""
         }
 
-        ${
-            shop.description
-            ? `<div>
-                   <strong>Description:</strong>
-                   ${shop.description}
-               </div>`
+        ${shop.operatingHours
+            ? `<div>Hours: ${shop.operatingHours}</div>`
             : ""
         }
-    `;
+
+        ${shop.description
+            ? `<div>${shop.description}</div>`
+            : ""
+        }
+
+    </div>
+`;
 }
 
 // HIGHLIGHT SELECTED SHOP

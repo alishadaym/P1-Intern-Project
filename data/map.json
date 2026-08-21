@@ -306,7 +306,7 @@
         "solight_shop": {
             "name": "Solight",
             "node_id": "node_08",
-            "x": 304,
+            "x": 297,
             "y": 369,
             "floor": "Ground Floor",
             "hotspot": {
