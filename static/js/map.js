@@ -157,8 +157,12 @@ function drawUserMarker()
         return;
     }
 
-    userMarker.setAttribute("cx", startNode.x);
-    userMarker.setAttribute("cy", startNode.y);
+    // Anchor the pin's bottom tip (not its top-left corner) to the node
+    const pinWidth = Number(userMarker.getAttribute("width"));
+    const pinHeight = Number(userMarker.getAttribute("height"));
+
+    userMarker.setAttribute("x", startNode.x - pinWidth / 2);
+    userMarker.setAttribute("y", startNode.y - pinHeight);
 
     console.log("User location:", startNodeId);
 };
