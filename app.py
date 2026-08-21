@@ -545,6 +545,47 @@ def logout():
         "message": "Logged out successfully"
     })
 
+@app.route("/forgot-password")
+def forgot_password():
+    return render_template("forgot_password.html")
+
+@app.route("/api/forgot-password", methods=["POST"])
+def forgot_password_api():
+
+    data = request.get_json()
+
+    username = data.get("username")
+
+    if not username:
+        return jsonify({
+            "message": "Please enter your username."
+        }), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    query = """
+        SELECT id
+        FROM store_owners
+        WHERE username = %s
+    """
+
+    cursor.execute(query, (username,))
+    owner = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+
+    if owner is None:
+
+        return jsonify({
+            "message": "If this account exists, please contact the system administrator to reset your password."
+        })
+
+    return jsonify({
+        "message": "Please contact the system administrator to reset your password."
+    })
+
 def get_session_id() -> str:
     if "session_id" not in session:
         session["session_id"] = uuid.uuid4().hex
