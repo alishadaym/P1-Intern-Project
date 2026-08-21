@@ -2,13 +2,11 @@
     "map_id": "dpulze_ground_floor",
     "floor": "ground",
     "name": "Dpulze Shopping Mall - Ground Floor",
-
     "image": {
         "filename": "dpulze_ground_floor.png",
         "width": 1038,
         "height": 553
     },
-
     "entrances": [
         {
             "id": "main_entrance",
@@ -18,239 +16,719 @@
             "y": 505
         }
     ],
-
     "shop_locations": {
-        "family_mart_001": {
-            "node_id": "node_31",
-            "x": 545,
-            "y": 490,
-            
+        "fos_shop": {
+            "name": "F.O.S",
+            "node_id": "node_10",
+            "x": 258,
+            "y": 156,
+            "floor": "Ground Floor",
             "hotspot": {
-                "x": 515,
-                "y": 443,
-                "width": 62,
+                "x": 127,
+                "y": 53,
+                "width": 263,
+                "height": 206
+            }
+        },
+        "tone_mann_shop": {
+            "name": "Tone & Mann.",
+            "node_id": "node_09",
+            "x": 159,
+            "y": 222,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 82,
+                "y": 159,
+                "width": 155,
+                "height": 127
+            }
+        },
+        "ssf_shop": {
+            "name": "SSF",
+            "node_id": "node_08",
+            "x": 140,
+            "y": 380,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 62,
+                "y": 254,
+                "width": 156,
+                "height": 251
+            }
+        },
+        "good2u_shop": {
+            "name": "Good2U",
+            "node_id": "node_22",
+            "x": 864,
+            "y": 262,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 809,
+                "y": 211,
+                "width": 111,
+                "height": 102
+            }
+        },
+        "family_mart_shop": {
+            "name": "Family Mart",
+            "node_id": "node_31",
+            "x": 546,
+            "y": 484,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 514,
+                "y": 442,
+                "width": 63,
+                "height": 84
+            }
+        },
+        "zus_coffee_shop": {
+            "name": "Zus Coffee",
+            "node_id": "node_08",
+            "x": 175,
+            "y": 620,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 111,
+                "y": 601,
+                "width": 127,
+                "height": 37
+            }
+        },
+        "hong_leong_shop": {
+            "name": "Hong Leong Islamic Bank",
+            "node_id": "node_21",
+            "x": 779,
+            "y": 230,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 764,
+                "y": 213,
+                "width": 31,
+                "height": 35
+            }
+        },
+        "mi_store_shop": {
+            "name": "Mi Store",
+            "node_id": "node_13",
+            "x": 425,
+            "y": 231,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 410,
+                "y": 219,
+                "width": 30,
+                "height": 23
+            }
+        },
+        "ajumma_shop": {
+            "name": "Ajumma",
+            "node_id": "node_11",
+            "x": 342,
+            "y": 236,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 326,
+                "y": 223,
+                "width": 32,
+                "height": 26
+            }
+        },
+        "elianto_shop": {
+            "name": "Elianto",
+            "node_id": "node_12",
+            "x": 377,
+            "y": 242,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 356,
+                "y": 225,
+                "width": 42,
+                "height": 34
+            }
+        },
+        "world_of_perfumes_shop": {
+            "name": "World of Perfumes",
+            "node_id": "node_14",
+            "x": 478,
+            "y": 244,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 457,
+                "y": 224,
+                "width": 42,
+                "height": 40
+            }
+        },
+        "jacs_optometry_shop": {
+            "name": "Jac's Optometry",
+            "node_id": "node_15",
+            "x": 517,
+            "y": 257,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 493,
+                "y": 219,
+                "width": 49,
+                "height": 76
+            }
+        },
+        "mnb_shop": {
+            "name": "MNB",
+            "node_id": "node_17",
+            "x": 621,
+            "y": 225,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 603,
+                "y": 176,
+                "width": 37,
+                "height": 97
+            }
+        },
+        "mc_vogue_shop": {
+            "name": "MC Vogue",
+            "node_id": "node_18",
+            "x": 662,
+            "y": 228,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 643,
+                "y": 183,
+                "width": 37,
+                "height": 90
+            }
+        },
+        "kunzense_bodyline_shop": {
+            "name": "Kunzense Bodyline",
+            "node_id": "node_19",
+            "x": 704,
+            "y": 232,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 685,
+                "y": 190,
+                "width": 37,
                 "height": 83
+            }
+        },
+        "skechers_shop": {
+            "name": "Skechers",
+            "node_id": "node_20",
+            "x": 744,
+            "y": 235,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 726,
+                "y": 196,
+                "width": 37,
+                "height": 77
+            }
+        },
+        "jewellery_kiosk_shop": {
+            "name": "Sparkle & Silver Fine Jewellery",
+            "node_id": "node_16",
+            "x": 545,
+            "y": 280,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 528,
+                "y": 270,
+                "width": 34,
+                "height": 19
+            }
+        },
+        "parca_fashion_shop": {
+            "name": "Parca Fashion",
+            "node_id": "node_33",
+            "x": 384,
+            "y": 302,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 344,
+                "y": 274,
+                "width": 80,
+                "height": 56
+            }
+        },
+        "maxis_shop": {
+            "name": "Maxis",
+            "node_id": "node_34",
+            "x": 586,
+            "y": 328,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 577,
+                "y": 312,
+                "width": 18,
+                "height": 32
+            }
+        },
+        "royal_sporting_house_shop": {
+            "name": "Royal Sporting House",
+            "node_id": "node_23",
+            "x": 847,
+            "y": 341,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 827,
+                "y": 327,
+                "width": 41,
+                "height": 29
+            }
+        },
+        "starbucks_shop": {
+            "name": "Starbucks",
+            "node_id": "node_35",
+            "x": 667,
+            "y": 357,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 627,
+                "y": 342,
+                "width": 81,
+                "height": 32
+            }
+        },
+        "sarong_by_ar_shop": {
+            "name": "Sarong By A&R",
+            "node_id": "node_07",
+            "x": 258,
+            "y": 376,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 238,
+                "y": 354,
+                "width": 40,
+                "height": 43
+            }
+        },
+        "solight_shop": {
+            "name": "Solight",
+            "node_id": "node_06",
+            "x": 304,
+            "y": 369,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 287,
+                "y": 361,
+                "width": 34,
+                "height": 15
+            }
+        },
+        "nandos_shop": {
+            "name": "Nando's",
+            "node_id": "node_05",
+            "x": 337,
+            "y": 369,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 320,
+                "y": 361,
+                "width": 34,
+                "height": 15
+            }
+        },
+        "al_ikhsan_sports_shop": {
+            "name": "Al-Ikhsan Sports",
+            "node_id": "node_04",
+            "x": 376,
+            "y": 372,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 356,
+                "y": 361,
+                "width": 41,
+                "height": 21
+            }
+        },
+        "baskin_robbins_shop": {
+            "name": "Baskin Robbins",
+            "node_id": "node_03",
+            "x": 423,
+            "y": 371,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 406,
+                "y": 360,
+                "width": 35,
+                "height": 22
+            }
+        },
+        "coffee_bean_shop": {
+            "name": "The Coffee Bean & Tea Leaf",
+            "node_id": "node_02",
+            "x": 468,
+            "y": 425,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 449,
+                "y": 382,
+                "width": 39,
+                "height": 88
+            }
+        },
+        "the_body_shop_shop": {
+            "name": "The Body Shop",
+            "node_id": "node_30",
+            "x": 528,
+            "y": 424,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 514,
+                "y": 398,
+                "width": 28,
+                "height": 52
+            }
+        },
+        "sox_world_shop": {
+            "name": "Sox World",
+            "node_id": "node_29",
+            "x": 561,
+            "y": 418,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 546,
+                "y": 398,
+                "width": 32,
+                "height": 41
+            }
+        },
+        "mr_dakgalbi_shop": {
+            "name": "Mr. Dakgalbi",
+            "node_id": "node_28",
+            "x": 619,
+            "y": 460,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 598,
+                "y": 396,
+                "width": 43,
+                "height": 129
+            }
+        },
+        "go_noodle_house_shop": {
+            "name": "Go Noodle House",
+            "node_id": "node_27",
+            "x": 665,
+            "y": 460,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 643,
+                "y": 396,
+                "width": 43,
+                "height": 129
+            }
+        },
+        "happikiddo_shop": {
+            "name": "Happikiddo",
+            "node_id": "node_26",
+            "x": 711,
+            "y": 460,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 689,
+                "y": 396,
+                "width": 43,
+                "height": 129
+            }
+        },
+        "homes_harmony_shop": {
+            "name": "Home's Harmony",
+            "node_id": "node_25",
+            "x": 761,
+            "y": 460,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 735,
+                "y": 396,
+                "width": 52,
+                "height": 129
             }
         }
     },
-
     "nodes": {
         "node_01": {
             "x": 480,
             "y": 505
         },
-
         "node_02": {
             "x": 460,
             "y": 400
         },
-
         "node_03": {
             "x": 420,
             "y": 380
         },
-
         "node_04": {
             "x": 375,
             "y": 380
         },
-
         "node_05": {
             "x": 335,
             "y": 380
         },
-
         "node_06": {
             "x": 298,
             "y": 380
         },
-
         "node_07": {
             "x": 255,
             "y": 380
         },
-
         "node_08": {
             "x": 150,
             "y": 380
         },
-
         "node_09": {
             "x": 150,
             "y": 230
         },
-
         "node_10": {
             "x": 280,
             "y": 180
         },
-
         "node_11": {
             "x": 340,
             "y": 235
         },
-
         "node_12": {
             "x": 375,
             "y": 244
         },
-
         "node_13": {
             "x": 417,
             "y": 250
         },
-
         "node_14": {
             "x": 475,
             "y": 260
         },
-
         "node_15": {
             "x": 515,
             "y": 270
         },
-
         "node_16": {
             "x": 550,
             "y": 288
         },
-
         "node_17": {
             "x": 620,
             "y": 250
         },
-
         "node_18": {
             "x": 665,
             "y": 250
         },
-
         "node_19": {
             "x": 705,
             "y": 250
         },
-
         "node_20": {
             "x": 745,
             "y": 250
         },
-
         "node_21": {
             "x": 785,
             "y": 250
         },
-
         "node_22": {
             "x": 830,
             "y": 290
         },
-
         "node_23": {
             "x": 830,
             "y": 337
         },
-
         "node_24": {
             "x": 830,
             "y": 375
         },
-
         "node_25": {
             "x": 760,
             "y": 420
         },
-
         "node_26": {
             "x": 710,
             "y": 420
         },
-
         "node_27": {
             "x": 665,
             "y": 420
         },
-
         "node_28": {
             "x": 620,
             "y": 420
         },
-
         "node_29": {
             "x": 565,
             "y": 420
         },
-
         "node_30": {
             "x": 528,
             "y": 420
         },
-
         "node_31": {
             "x": 528,
             "y": 490
         },
-
         "node_32": {
             "x": 275,
             "y": 300
         },
-
         "node_33": {
             "x": 370,
             "y": 325
         },
-
         "node_34": {
             "x": 585,
             "y": 333
         },
-
         "node_35": {
             "x": 665,
             "y": 357
         }
     },
-
     "connections": [
-        ["node_01", "node_02"],
-        ["node_02", "node_03"],
-        ["node_03", "node_04"],
-        ["node_04", "node_05"],
-        ["node_05", "node_06"],
-        ["node_06", "node_07"],
-
-        ["node_07", "node_08"],
-        ["node_08", "node_09"],
-        ["node_09", "node_10"],
-        ["node_10", "node_11"],
-        ["node_11", "node_12"],
-        ["node_12", "node_13"],
-        ["node_13", "node_14"],
-        ["node_14", "node_15"],
-        ["node_15", "node_16"],
-
-        ["node_16", "node_17"],
-        ["node_17", "node_18"],
-        ["node_18", "node_19"],
-        ["node_19", "node_20"],
-        ["node_20", "node_21"],
-        ["node_21", "node_22"],
-        ["node_22", "node_23"],
-        ["node_23", "node_24"],
-        ["node_24", "node_25"],
-        ["node_25", "node_26"],
-        ["node_26", "node_27"],
-
-        ["node_27", "node_28"],
-        ["node_28", "node_29"],
-        ["node_29", "node_30"],
-        ["node_30", "node_31"],
-
-        ["node_31", "node_01"],
-
-        ["node_06", "node_32"],
-        ["node_04", "node_33"],
-        ["node_29", "node_34"],
-        ["node_27", "node_35"]
+        [
+            "node_01",
+            "node_02"
+        ],
+        [
+            "node_02",
+            "node_03"
+        ],
+        [
+            "node_03",
+            "node_04"
+        ],
+        [
+            "node_04",
+            "node_05"
+        ],
+        [
+            "node_05",
+            "node_06"
+        ],
+        [
+            "node_06",
+            "node_07"
+        ],
+        [
+            "node_07",
+            "node_08"
+        ],
+        [
+            "node_08",
+            "node_09"
+        ],
+        [
+            "node_09",
+            "node_10"
+        ],
+        [
+            "node_10",
+            "node_11"
+        ],
+        [
+            "node_11",
+            "node_12"
+        ],
+        [
+            "node_12",
+            "node_13"
+        ],
+        [
+            "node_13",
+            "node_14"
+        ],
+        [
+            "node_14",
+            "node_15"
+        ],
+        [
+            "node_15",
+            "node_16"
+        ],
+        [
+            "node_16",
+            "node_17"
+        ],
+        [
+            "node_17",
+            "node_18"
+        ],
+        [
+            "node_18",
+            "node_19"
+        ],
+        [
+            "node_19",
+            "node_20"
+        ],
+        [
+            "node_20",
+            "node_21"
+        ],
+        [
+            "node_21",
+            "node_22"
+        ],
+        [
+            "node_22",
+            "node_23"
+        ],
+        [
+            "node_23",
+            "node_24"
+        ],
+        [
+            "node_24",
+            "node_25"
+        ],
+        [
+            "node_25",
+            "node_26"
+        ],
+        [
+            "node_26",
+            "node_27"
+        ],
+        [
+            "node_27",
+            "node_28"
+        ],
+        [
+            "node_28",
+            "node_29"
+        ],
+        [
+            "node_29",
+            "node_30"
+        ],
+        [
+            "node_30",
+            "node_31"
+        ],
+        [
+            "node_31",
+            "node_01"
+        ],
+        [
+            "node_06",
+            "node_32"
+        ],
+        [
+            "node_04",
+            "node_33"
+        ],
+        [
+            "node_29",
+            "node_34"
+        ],
+        [
+            "node_27",
+            "node_35"
+        ]
     ]
 }
