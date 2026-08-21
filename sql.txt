@@ -88,3 +88,20 @@ VALUES
     545,
     490
 );
+
+//add shop
+UPDATE shops
+SET shop_code = 'fos_001'
+WHERE shop_name = 'F.O.S';
+
+UPDATE shops
+SET shop_code = 'tone_mann_001'
+WHERE shop_name = 'Tone & Mann.';
+
+UPDATE shops
+SET shop_code = 'ssf_001'
+WHERE shop_name = 'SSF';
+
+UPDATE shops
+SET shop_code = 'good2u_001'
+WHERE shop_name = 'Good2U';
