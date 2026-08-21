@@ -60,11 +60,11 @@ main {
     background: #F0997D;
 }
 
-.shop-info, .legend {
+.shop-info {
     margin-top:30px;
 }
 
-.shop-info h3, .legend h3 {
+.shop-info h3 {
     margin-bottom: 10px;
 }
 
@@ -202,8 +202,7 @@ main {
         margin-bottom: 14px;
     }
 
-    .shop-info,
-    .legend {
+    .shop-info {
         margin-top: 20px;
     }
 
