@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dpulze Mall Navigation</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css' )}}">
+</head>
+
+<body>
+    <header class="site-header">
+        <h1>Dpulze Mall Navigation</h1>
+        {% if current %}
+            <p class="scanned-location">You scanned: {{ current.label }}</p>
+        {% endif %}
+    </header>
+
+    <main>
+        <aside class="sidebar">
+            <h2>Navigation</h2>
+
+            <label for="floor">Floor</label>
+
+            <select id="floor">
+                <option value="ground">Ground Floor</option>
+                <!-- <option value="first">First Floor</option> -->
+            </select>
+
+            <label for="shop">Find Shop</label>
+            <select id="shop-select">
+                <option value="">Select a shop</option>
+            </select>
+
+            <button id="navigate-btn" class="navigate-btn">Navigate</button>
+
+            <div class="selected-shop-section">
+                <h3>Selected Shop</h3>
+                <div id="selected-shop-details">No shop selected</div>
+            </div>
+
+            <div class="legend">
+                <p>📍 Your Location</p>
+                <p>🛍️ Selected Shop</p>
+                <p>🚶 Navigate</p>
+            </div>
+
+        </aside>
+
+        <section class="map-section">
+            <div class="map-container">
+                <img src="{{ url_for('static', filename='img/dpulze_ground_floor.png') }}"
+                    id="floor-map" alt="Dpulze Ground Floor Map">
+
+                <svg id="map-overlay" viewBox="0 0 1038 553" preserveAspectRatio="xMidYMid meet">
+                    <g id="navigation-lines"></g>
+                    <g id="navigation-nodes"></g>
+                
+                    <!-- Clickable shop areas -->
+                    <g id="shop-hotspots"></g>
+                
+                    <!-- POI markers -->
+                    <g id="poi-markers"></g>
+                
+                    <!-- Route -->
+                    <polyline id="route-line" points=""></polyline>
+                
+                    <!-- User -->
+                    <image id="user-marker" href="{{ url_for('static', filename='img/user-pin.png') }}" width="24" height="36"></image>
+                </svg>                
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <a href="/login" class="login-button">Store Owner Login</a>
+    </footer>
+
+    <script>
+        // Set by scanning a location QR code (see app.py's index route);
+        // falls back to the main entrance when nothing has been scanned yet.
+        window.START_NODE_ID = {{ (start_node or "node_01") | tojson }};
+    </script>
+    <script src="{{ url_for('static', filename='js/map.js' )}}"></script>
+</body>
+</html>
+<!-- {% extends "base.html" %}
+{% block title %}Mall App{% endblock %}
+{% block content %}
+  <h1>Mall Wayfinding</h1>
+  {% if current %}
+    <div class="place">📍 {{ current.floor }}</div>
+    <div class="floor">{{ current.label }}</div>
+  {% else %}
+    <p class="muted">Scan a location QR code to get started.</p>
+  {% endif %}
+{% endblock %} -->

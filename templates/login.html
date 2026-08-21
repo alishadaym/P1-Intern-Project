@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Store Owner Login - DPULZE</title>
 
     <style>
@@ -10,31 +12,39 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .login-box {
             background: #e6d4bc;
-            padding: 30px;
-            width: 350px;
-            border-radius: 10px;
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 440px;
+            border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         }
 
         h1 {
             text-align: center;
+            font-size: 1.6rem;
         }
 
         label {
             display: block;
-            margin-top: 15px;
+            margin-top: 18px;
+            font-size: 16px;
         }
 
         input {
             width: 100%;
-            padding: 10px;
-            margin-top: 5px;
+            padding: 14px;
+            margin-top: 6px;
+            font-size: 16px;
+            border: 1px solid #bda57d;
+            border-radius: 6px;
             box-sizing: border-box;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -65,6 +75,22 @@
             color: white;
         }
 
+        #loginButton {
+            margin-top: 22px;
+            background: #70461e;
+            color: white;
+        }
+
+        #forgotPasswordButton {
+            background: #e72828;
+            color: white;
+        }
+
+        #guestBackButton {
+            background: #464f57;
+            color: white;
+        }
+
         #message {
             text-align: center;
             margin-top: 15px;
@@ -76,7 +102,9 @@
 
 <div class="login-box">
 
-    <h1>Store Owner Login</h1>
+    <h1>
+        Store Owner Login
+    </h1>
 
     <form id="loginForm">
 
@@ -102,7 +130,7 @@
         <button
             type="button"
             id="guestBackButton"
-            onclick="window.location.href='/guest'">
+            onclick="window.location.href='/'">
             Back to Guest Page
         </button>
 

@@ -2,6 +2,8 @@
 <html>
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Store - DPULZE</title>
 
     <style>
@@ -91,11 +93,12 @@
             value="{{ shop.category }}"
         >
 
-        <label>Unit</label>
+        <label>Operating Hours</label>
         <input
             type="text"
-            id="unit"
-            value="{{ shop.unit }}"
+            id="operating_hours"
+            value="{{ shop.operating_hours }}"
+            placeholder="e.g. 10am – 10pm"
         >
 
         <label>Description</label>
@@ -151,20 +154,12 @@ document.getElementById("editForm").addEventListener("submit", async function(ev
 
         category: document.getElementById("category").value,
 
-        unit: document.getElementById("unit").value,
+        operating_hours: document.getElementById("operating_hours").value,
 
         description: document.getElementById("description").value,
 
         floor_id: Number(
             document.getElementById("floor_id").value
-        ),
-
-        x_position: Number(
-            document.getElementById("x_position").value
-        ),
-
-        y_position: Number(
-            document.getElementById("y_position").value
         )
 
     };

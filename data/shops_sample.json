@@ -1,0 +1,22 @@
+{
+    "shops": [
+        {
+            "shop_id": "fos_001",
+            "name": "F.O.S",
+            "floor": "ground",
+            "node_id": "node_25"
+        },
+        {
+            "shop_id": "tone_mann_001",
+            "name": "Tone Mann",
+            "floor": "ground",
+            "node_id": "node_27"
+        },
+        {
+            "shop_id": "family_mart_001",
+            "name": "Family Mart",
+            "floor": "ground",
+            "node_id": "node_15"
+        }
+    ]
+}

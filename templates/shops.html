@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Find a Shop{% endblock %}
+{% block content %}
+  <h1>Find a Shop</h1>
+  {% if current %}
+    <p class="muted">Near you: {{ current.label }}</p>
+  {% endif %}
+  <p class="muted">Shop directory coming soon.</p>
+{% endblock %}
