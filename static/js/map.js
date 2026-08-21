@@ -1,6 +1,5 @@
 let mapData = null;
 let selectedShopId = null;
-let shopDatabase = {};
 
 // LOAD MAP DATA FROM FLASK
 async function loadMapData()
@@ -116,7 +115,6 @@ document.addEventListener("DOMContentLoaded", async function()
     console.log("Dpulze navigation applicaiton started.");
 
     await loadMapData();
-    await loadShopDatabase();
 
     // NAVIGATE BUTTON
     const navigateButton = document.getElementById("navigate-btn");
@@ -177,20 +175,15 @@ function populateShopDropdown()
     Object.keys(mapData.shop_locations).forEach(
         shopId =>
         {
-            const dbShop =
-                shopDatabase[shopId];
-
-            if (!dbShop)
-            {
-                return;
-            }
+            const shop =
+                mapData.shop_locations[shopId];
 
             const option =
                 document.createElement("option");
 
             option.value = shopId;
             option.textContent =
-                dbShop.shop_name;
+                shop.name || shopId.replace(/_\d+$/, "").replace(/_/g, " ").replace(/\b\w/g, letter => letter.toUpperCase());
 
             shopSelect.appendChild(option);
         }
@@ -570,26 +563,13 @@ function drawShopHotspots()
 // SELECT SHOP
 function selectShop(shopId)
 {
-    const mapShop =
+    const shop =
         mapData.shop_locations[shopId];
 
-    const dbShop =
-        shopDatabase[shopId];
-
-    if (!mapShop)
+    if (!shop)
     {
         console.error(
-            "Shop map location not found:",
-            shopId
-        );
-
-        return;
-    }
-
-    if (!dbShop)
-    {
-        console.error(
-            "Shop database information not found:",
+            "Shop not found:",
             shopId
         );
 
@@ -605,7 +585,7 @@ function selectShop(shopId)
 
     updateSelectedShopPanel(
         shopId,
-        dbShop
+        shop
     );
 
     highlightSelectedShop(shopId);
@@ -620,25 +600,31 @@ function updateSelectedShopPanel(shopId, shop)
         );
 
     panel.innerHTML = `
-        <strong>${shop.shop_name}</strong>
+        <div class="shop-details-card">
 
-        ${
-            shop.category
-            ? `<div>${shop.category}</div>`
-            : ""
-        }
+            <strong class="shop-details-name">
+                ${shop.name}
+            </strong>
 
-        ${
-            shop.floor
-            ? `<div>${shop.floor}</div>`
-            : ""
-        }
+            ${
+                shop.category
+                ? `<div>${shop.category}</div>`
+                : ""
+            }
 
-        ${
-            shop.opening_hours
-            ? `<div>Hours: ${shop.opening_hours}</div>`
-            : ""
-        }
+            ${
+                shop.floor
+                ? `<div>${shop.floor}</div>`
+                : ""
+            }
+
+            ${
+                shop.opening_hours
+                ? `<div>Hours: ${shop.opening_hours}</div>`
+                : ""
+            }
+
+        </div>
     `;
 }
 
@@ -667,39 +653,6 @@ function highlightSelectedShop(shopId)
     {
         selectedMarker.classList.add(
             "poi-selected"
-        );
-    }
-}
-
-// LOAD DATA STORED IN DB
-async function loadShopDatabase()
-{
-    try
-    {
-        const response = await fetch("/api/shops");
-
-        if (!response.ok)
-        {
-            throw new Error("Failed to load shop database.");
-        }
-
-        const shops = await response.json();
-
-        console.log("Shop database loaded:", shops);
-
-        // Convert array into object keyed by shop_id
-        shops.forEach(shop =>
-        {
-            shopDatabase[shop.shop_id] = shop;
-        });
-
-        console.log("Shop database object:", shopDatabase);
-    }
-    catch (error)
-    {
-        console.error(
-            "Error loading shop database:",
-            error
         );
     }
 }
