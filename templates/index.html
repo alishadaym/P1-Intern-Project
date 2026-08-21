@@ -12,11 +12,6 @@
 <body>
     <header class="site-header">
         <h1>Dpulze Mall Navigation</h1>
-        <div class="top-bar">
-            <a href="/login" class="login-button">
-                Store Owner Login
-            </a>
-        </div>
         {% if current %}
             <p class="scanned-location">You scanned: {{ current.label }}</p>
         {% endif %}
@@ -78,6 +73,10 @@
             </div>
         </section>
     </main>
+
+    <footer class="site-footer">
+        <a href="/login" class="login-button">Store Owner Login</a>
+    </footer>
 
     <script>
         // Set by scanning a location QR code (see app.py's index route);

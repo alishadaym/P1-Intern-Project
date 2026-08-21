@@ -19,13 +19,6 @@ header {
     text-align: center;
 }
 
-.site-header .top-bar {
-    position: absolute;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
-}
-
 .scanned-location {
     margin-top: 6px;
     font-size: 14px;
@@ -192,11 +185,6 @@ main {
     header h1 {
         font-size: 1.35rem;
         line-height: 1.2;
-        padding: 0 150px;
-    }
-
-    .site-header .top-bar {
-        right: 12px;
     }
 
     main {
@@ -230,17 +218,17 @@ main {
     }
 }
 
-.login-button {
-    text-decoration: none;
-    padding: 8px 15px;
-    background: #007bff;
-    color: white;
-    border-radius: 5px;
+.site-footer {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
 }
 
-.top-bar {
-    display: flex;
-    justify-content: end;
-    align-items: center;
-    /* padding: 20px; */
+.login-button {
+    text-decoration: none;
+    padding: 4px 10px;
+    font-size: 12px;
+    background: #007bff;
+    color: white;
+    border-radius: 4px;
 }
