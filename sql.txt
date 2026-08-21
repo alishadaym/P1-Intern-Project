@@ -58,3 +58,55 @@ CREATE TABLE store_owners (
     shop_id INT NOT NULL,
     FOREIGN KEY (shop_id) REFERENCES shops(id)
 );
+
+ALTER TABLE shops
+DROP COLUMN unit,
+DROP COLUMN x_position,
+DROP COLUMN y_position;
+
+ALTER TABLE shops
+ADD COLUMN operating_hours VARCHAR(100) AFTER shop_name;
+
+DELETE FROM store_owners;
+
+DELETE FROM shops;
+
+INSERT INTO shops
+    (shop_name, operating_hours, category, description, floor_id)
+VALUES
+    ('F.O.S', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('Tone & Mann.', '10am – 10pm', 'Fashion accessories store', NULL, 1),
+    ('SSF', '10am – 10pm', 'Furniture store', NULL, 1),
+    ('Sarong By A&R', '10am – 10pm', 'Boutique', NULL, 1),
+    ('Solight', '10am – 8pm', 'Shoe Store', NULL, 1),
+    ('Nando''s', '10am – 10pm', 'Chicken Restaurant', NULL, 1),
+    ('Al-ikhsan Sports', '10am – 10pm', 'Sporting Goods Store', NULL, 1),
+    ('Baskin Robbins', '10am – 10pm', 'Ice Cream Shop', NULL, 1),
+    ('The Coffee Bean & Tea Leaf', '10am – 10pm', 'Cafe', NULL, 1),
+    ('The Body Shop', '10am – 10pm', 'Beauty Supply Store', NULL, 1),
+    ('Family Mart', '7am – 12am', 'Convenience Store', NULL, 1),
+    ('Sox World', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('Mr. Dakgalbi', '10am – 9pm', 'Korean Restaurant', NULL, 1),
+    ('Go Noodle House', '10am – 9:15pm', 'Chinese Noodle Restaurant', NULL, 1),
+    ('Happikiddo', '10am – 10pm', 'Baby Store', NULL, 1),
+    ('Home''s Harmony', '10am – 10pm', 'Furniture Store', NULL, 1),
+    ('Royal Sporting House', 'Permanently Closed', 'Sportswear Store', NULL, 1),
+    ('Good2U', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('Hong Leong Islamic Bank', 'Permanently Closed', 'Bank', NULL, 1),
+    ('Skechers', '10am – 10pm', 'Shoe Store', NULL, 1),
+    ('Kunzense Bodyline', '10:30am – 8:30pm', 'Facial Spa', NULL, 1),
+    ('MC Vogue', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('MNB', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('Sparkle & Silver Fine Jewellery', '10am – 10pm', 'Jeweller', NULL, 1),
+    ('Jac''s Optometry', '10am – 10pm', 'Optician', NULL, 1),
+    ('World of Perfumes', '10am – 10pm', 'Perfume Store', NULL, 1),
+    ('Mi Store', '10am – 10pm', 'Cell phone Store', NULL, 1),
+    ('Elianto', '10am – 10pm', 'Cosmetics Store', NULL, 1),
+    ('Ajumma', '10am – 11pm', 'Korean Restaurant', NULL, 1),
+    ('Parca Fashion', 'Permanently Closed', 'Boutique', NULL, 1),
+    ('Maxis', '10am – 9:30pm', 'Telecommunications service provider', NULL, 1),
+    ('Starbucks', 'Permanently Closed', 'Cafe', NULL, 1),
+    ('Zus Coffee', '10am – 10pm', 'Cafe', NULL, 1);
+
+    
+
