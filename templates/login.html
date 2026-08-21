@@ -40,9 +40,27 @@
 
         button {
             width: 100%;
-            padding: 10px;
+            padding: 10px 18px;
             margin-top: 20px;
+            margin-right: 10px;
             cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #loginButton {
+            background: #70461e;
+            color: white;
+        }
+
+        #guestBackButton {
+            background: #464f57;
+            color: white;
+        }
+
+        #forgotPasswordButton {
+            background: #e72828;
+            color: white;
         }
 
         #message {
@@ -66,16 +84,22 @@
         <label>Password</label>
         <input type="password" id="password" required>
 
-        <button type="submit">Login</button>
+        <button 
+            type="submit" 
+            id="loginButton">
+            Login
+        </button>
 
         <button
             type="button"
+            id="forgotPasswordButton"
             onclick="window.location.href='/forgot-password'">
             Forgot Password?
         </button>
 
         <button
             type="button"
+            id="guestBackButton"
             onclick="window.location.href='/guest'">
             Back to Guest Page
         </button>
