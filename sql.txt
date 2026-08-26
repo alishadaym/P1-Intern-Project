@@ -224,3 +224,16 @@ UPDATE shops SET unit = 'G-35' WHERE shop_code = 'mr_dakgalbi_shop';
 UPDATE shops SET unit = 'G-34' WHERE shop_code = 'go_noodle_house_shop';
 UPDATE shops SET unit = 'G-33' WHERE shop_code = 'happikiddo_shop';
 UPDATE shops SET unit = 'G-32' WHERE shop_code = 'homes_harmony_shop';
+
+UPDATE shops
+SET shop_code = CASE id
+    WHEN 33 THEN 'world_of_perfumes_shop'
+    WHEN 34 THEN 'mi_store_shop'
+    WHEN 35 THEN 'elianto_shop'
+    WHEN 36 THEN 'ajumma_shop'
+    WHEN 37 THEN 'parca_fashion_shop'
+    WHEN 38 THEN 'maxis_shop'
+    WHEN 39 THEN 'starbucks_shop'
+    ELSE shop_code
+END
+WHERE id BETWEEN 33 AND 39;
