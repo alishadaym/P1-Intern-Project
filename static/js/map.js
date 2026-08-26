@@ -547,9 +547,12 @@ function selectShop(shopId) {
         name: (dbShop && dbShop.shop_name) || mapShop.name,
         category: dbShop && dbShop.category,
         unit: dbShop && dbShop.unit,
-        operatingHours: (dbShop && dbShop.operating_hours) || null,
-        floor: (dbShop && dbShop.floor_name) || mapShop.floor,
-        description: dbShop && dbShop.description,
+        operatingHours:
+            (dbShop && dbShop.operating_hours) || null,
+        floor:
+            (dbShop && dbShop.floor_name) || mapShop.floor,
+        description:
+            dbShop && dbShop.description,
     };
 
     selectedShopId = shopId;
@@ -575,38 +578,39 @@ function updateSelectedShopPanel(shopId, shop) {
         );
 
     panel.innerHTML = `
-    <div class="shop-details-card">
+        <div class="shop-details-card">
 
-    <strong class="shop-details-name">
-            ${shop.name}
-        </strong>
+            <strong>
+                ${shop.name}
+            </strong>
 
-        ${shop.category
+            ${shop.category
             ? `<div>${shop.category}</div>`
             : ""
         }
 
-        ${shop.unit
+            ${shop.unit
             ? `<div>Unit: ${shop.unit}</div>`
             : ""
         }
 
-        ${shop.floor
+            ${shop.floor
             ? `<div>${shop.floor}</div>`
             : ""
         }
 
-        ${shop.operatingHours
+            ${shop.operatingHours
             ? `<div>Hours: ${shop.operatingHours}</div>`
             : ""
         }
 
-        ${shop.description
+            ${shop.description
             ? `<div>${shop.description}</div>`
             : ""
         }
-    </div>
-`;
+
+        </div>
+    `;
 }
 
 // HIGHLIGHT SELECTED SHOP
