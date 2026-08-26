@@ -240,7 +240,7 @@
         },
         "parca_fashion_shop": {
             "name": "Parca Fashion",
-            "node_id": "node_18",
+            "node_id": "node_41",
             "x": 384,
             "y": 302,
             "floor": "Ground Floor",
@@ -253,7 +253,7 @@
         },
         "maxis_shop": {
             "name": "Maxis",
-            "node_id": "node_23",
+            "node_id": "node_42",
             "x": 586,
             "y": 328,
             "floor": "Ground Floor",
@@ -279,7 +279,7 @@
         },
         "starbucks_shop": {
             "name": "Starbucks",
-            "node_id": "node_34",
+            "node_id": "node_43",
             "x": 667,
             "y": 357,
             "floor": "Ground Floor",
@@ -357,7 +357,7 @@
         },
         "coffee_bean_shop": {
             "name": "The Coffee Bean & Tea Leaf",
-            "node_id": "node_38",
+            "node_id": "node_03",
             "x": 468,
             "y": 425,
             "floor": "Ground Floor",
@@ -797,6 +797,38 @@
         [
             "node_35",
             "node_43"
+        ],
+        [
+            "node_40",
+            "node_15"
+        ],
+        [
+            "node_05",
+            "node_18"
+        ],
+        [
+            "node_04",
+            "node_19"
+        ],
+        [
+            "node_04",
+            "node_20"
+        ],
+        [
+            "node_02",
+            "node_21"
+        ],
+        [
+            "node_24",
+            "node_43"
+        ],
+        [
+            "node_32",
+            "node_27"
+        ],
+        [
+            "node_33",
+            "node_27"
         ]
     ]
 }
