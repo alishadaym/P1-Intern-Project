@@ -3,14 +3,11 @@ let selectedShopId = null;
 let shopDatabase = {};
 
 // LOAD MAP DATA FROM FLASK
-async function loadMapData()
-{
-    try
-    {
+async function loadMapData() {
+    try {
         const response = await fetch("/api/map");
 
-        if (!response.ok)
-        {
+        if (!response.ok) {
             throw new Error("Failed to load map data.");
         }
 
@@ -28,20 +25,18 @@ async function loadMapData()
         drawPOIMarkers();
         drawShopHotspots();
     }
-    catch (error)
-    {
+    catch (error) {
         console.error("Error loading map:", error);
     }
 }
 
 // DRAW NAVIGATION NETWORK
-function drawNavigationNetwork()
-{
+function drawNavigationNetwork() {
     const nodesGroup = document.getElementById("navigation-nodes");
     const linesGroup = document.getElementById("navigation-lines");
 
     // clear previous drawings
-    nodesGroup.innerHTML ="";
+    nodesGroup.innerHTML = "";
     linesGroup.innerHTML = "";
 
     // TEMPORARY (2 consoles)
@@ -58,15 +53,14 @@ function drawNavigationNetwork()
 
         const startNode = mapData.nodes[startNodeId];
         const endNode = mapData.nodes[endNodeId];
-        
-        if (!startNode || !endNode)
-        {
+
+        if (!startNode || !endNode) {
             console.warn("Missing node:", startNodeId, endNodeId);
             return;
         }
 
         const line = document.createElementNS("http://www.w3.org/2000/svg",
-                "line");
+            "line");
 
         line.setAttribute("x1", startNode.x);
         line.setAttribute("y1", startNode.y);
@@ -83,7 +77,7 @@ function drawNavigationNetwork()
     Object.entries(mapData.nodes).forEach(
         ([nodeId, node]) => {
             const circle = document.createElementNS("http://www.w3.org/2000/svg",
-                    "circle");
+                "circle");
 
             circle.setAttribute("cx", node.x);
             circle.setAttribute("cy", node.y);
@@ -95,8 +89,8 @@ function drawNavigationNetwork()
 
             // NODE LABEL
             const label = document.createElementNS("http://www.w3.org/2000/svg",
-                        "text");
-            
+                "text");
+
             label.setAttribute("x", node.x + 8);
             label.setAttribute("y", node.y - 8);
 
@@ -110,8 +104,7 @@ function drawNavigationNetwork()
 }
 
 // START APPLICATION
-document.addEventListener("DOMContentLoaded", async function()
-{
+document.addEventListener("DOMContentLoaded", async function () {
     console.log("Dpulze navigation applicaiton started.");
 
     await loadMapData();
@@ -121,13 +114,11 @@ document.addEventListener("DOMContentLoaded", async function()
     // NAVIGATE BUTTON
     const navigateButton = document.getElementById("navigate-btn");
 
-    if (navigateButton)
-    {
+    if (navigateButton) {
         navigateButton.addEventListener("click", startNavigation);
         console.log("Navigate button ready.");
     }
-    else
-    {
+    else {
         console.error("Navigate button not found.");
     }
 
@@ -145,16 +136,14 @@ document.addEventListener("DOMContentLoaded", async function()
 });
 
 // DRAW USER CURRENT LOCATION
-function drawUserMarker()
-{
+function drawUserMarker() {
     const userMarker = document.getElementById("user-marker");
 
     // Set by the last scanned QR code; falls back to Main Entrance for guests
     const startNodeId = window.START_NODE_ID || "node_01";
     const startNode = mapData.nodes[startNodeId];
 
-    if (!startNode)
-    {
+    if (!startNode) {
         console.error("User start node not found:", startNodeId);
         return;
     }
@@ -170,8 +159,7 @@ function drawUserMarker()
 };
 
 // SHOP DROPDOWN
-function populateShopDropdown()
-{
+function populateShopDropdown() {
     const shopSelect =
         document.getElementById("shop-select");
 
@@ -179,8 +167,7 @@ function populateShopDropdown()
         `<option value="">Select a shop</option>`;
 
     Object.keys(mapData.shop_locations).forEach(
-        shopId =>
-        {
+        shopId => {
             const shop =
                 mapData.shop_locations[shopId];
 
@@ -202,8 +189,7 @@ function populateShopDropdown()
 }
 
 // FIND SHORTEST PATH (DIJKSTRA)
-function findShortestPath(startNodeId, endNodeId)
-{
+function findShortestPath(startNodeId, endNodeId) {
     console.log(
         "Finding shortest-distance route from:",
         startNodeId,
@@ -216,8 +202,7 @@ function findShortestPath(startNodeId, endNodeId)
     const unvisited = new Set();
 
     // Initialize all nodes
-    Object.keys(mapData.nodes).forEach(nodeId =>
-    {
+    Object.keys(mapData.nodes).forEach(nodeId => {
         distances[nodeId] = Infinity;
         previous[nodeId] = null;
         unvisited.add(nodeId);
@@ -225,54 +210,45 @@ function findShortestPath(startNodeId, endNodeId)
 
     distances[startNodeId] = 0;
 
-    while (unvisited.size > 0)
-    {
+    while (unvisited.size > 0) {
         let currentNode = null;
         let smallestDistance = Infinity;
 
         // Find unvisited node with smallest known distance
-        unvisited.forEach(nodeId =>
-        {
-            if (distances[nodeId] < smallestDistance)
-            {
+        unvisited.forEach(nodeId => {
+            if (distances[nodeId] < smallestDistance) {
                 smallestDistance = distances[nodeId];
                 currentNode = nodeId;
             }
         });
 
         // No remaining reachable nodes
-        if (currentNode === null)
-        {
+        if (currentNode === null) {
             break;
         }
 
         // Destination reached
-        if (currentNode === endNodeId)
-        {
+        if (currentNode === endNodeId) {
             break;
         }
 
         unvisited.delete(currentNode);
 
         // Find neighbours of current node
-        mapData.connections.forEach(connection =>
-        {
+        mapData.connections.forEach(connection => {
             const nodeA = connection[0];
             const nodeB = connection[1];
 
             let neighbour = null;
 
-            if (nodeA === currentNode)
-            {
+            if (nodeA === currentNode) {
                 neighbour = nodeB;
             }
-            else if (nodeB === currentNode)
-            {
+            else if (nodeB === currentNode) {
                 neighbour = nodeA;
             }
 
-            if (!neighbour || !unvisited.has(neighbour))
-            {
+            if (!neighbour || !unvisited.has(neighbour)) {
                 return;
             }
 
@@ -297,8 +273,7 @@ function findShortestPath(startNodeId, endNodeId)
             const newDistance =
                 distances[currentNode] + edgeDistance;
 
-            if (newDistance < distances[neighbour])
-            {
+            if (newDistance < distances[neighbour]) {
                 distances[neighbour] =
                     newDistance;
 
@@ -309,8 +284,7 @@ function findShortestPath(startNodeId, endNodeId)
     }
 
     // No route found
-    if (distances[endNodeId] === Infinity)
-    {
+    if (distances[endNodeId] === Infinity) {
         console.error(
             "No route found between",
             startNodeId,
@@ -326,16 +300,14 @@ function findShortestPath(startNodeId, endNodeId)
 
     let currentNode = endNodeId;
 
-    while (currentNode !== null)
-    {
+    while (currentNode !== null) {
         path.unshift(currentNode);
 
         currentNode =
             previous[currentNode];
     }
 
-    if (path[0] !== startNodeId)
-    {
+    if (path[0] !== startNodeId) {
         console.error("Route reconstruction failed.");
         return null;
     }
@@ -354,30 +326,26 @@ function findShortestPath(startNodeId, endNodeId)
 }
 
 // DRAW ROUTE ON MAP
-function drawRoute(path)
-{
+function drawRoute(path) {
     const routeLine =
         document.getElementById("route-line");
 
-    if (!path || path.length === 0)
-    {
+    if (!path || path.length === 0) {
         routeLine.setAttribute("points", "");
         return;
     }
 
-    const points = path.map(nodeId =>
-    {
+    const points = path.map(nodeId => {
         const node = mapData.nodes[nodeId];
 
-        if (!node)
-        {
+        if (!node) {
             return null;
         }
 
         return `${node.x},${node.y}`;
     })
-    .filter(point => point !== null)
-    .join(" ");
+        .filter(point => point !== null)
+        .join(" ");
 
     routeLine.setAttribute("points", points);
 
@@ -385,8 +353,7 @@ function drawRoute(path)
 }
 
 // START NAVIGATION
-function startNavigation()
-{
+function startNavigation() {
     const shopSelect =
         document.getElementById("shop-select");
 
@@ -398,8 +365,7 @@ function startNavigation()
         selectedShopId || shopSelect.value;
 
 
-    if (!chosenShopId)
-    {
+    if (!chosenShopId) {
         alert("Please select a shop.");
         return;
     }
@@ -409,8 +375,7 @@ function startNavigation()
         mapData.shop_locations[chosenShopId];
 
 
-    if (!selectedShop)
-    {
+    if (!selectedShop) {
         console.error(
             "Selected shop not found:",
             chosenShopId
@@ -435,8 +400,7 @@ function startNavigation()
         findShortestPath(startNodeId, destinationNodeId);
 
 
-    if (!path)
-    {
+    if (!path) {
         alert("No route found.");
         return;
     }
@@ -445,18 +409,16 @@ function startNavigation()
 }
 
 // DRAW POINT OF INTEREST (POI)
-function createPOIMarker(poiId, poi)
-{
+function createPOIMarker(poiId, poi) {
     const poiGroup = document.getElementById("poi-markers");
 
-    if (poi.x === undefined || poi.y === undefined)
-    {
+    if (poi.x === undefined || poi.y === undefined) {
         console.warn("POI coordinates missing:", poiId);
         return;
     }
 
     const marker = document.createElementNS("http://www.w3.org/2000/svg",
-            "circle");
+        "circle");
 
     marker.setAttribute("cx", poi.x);
     marker.setAttribute("cy", poi.y);
@@ -467,11 +429,11 @@ function createPOIMarker(poiId, poi)
     marker.dataset.poiId = poiId;
     marker.dataset.poiType = poi.type;
 
-     marker.addEventListener(
+    marker.addEventListener(
         "click",
         function () {
             selectShop(poiId);
-    });
+        });
 
     poiGroup.appendChild(marker);
 
@@ -488,24 +450,20 @@ function createPOIMarker(poiId, poi)
     // poiGroup.appendChild(label);
 }
 
-function drawPOIMarkers()
-{
+function drawPOIMarkers() {
     const poiGroup = document.getElementById("poi-markers");
 
     poiGroup.innerHTML = "";
 
     Object.entries(mapData.shop_locations).forEach(
-        ([shopId, shop]) =>
-        {
+        ([shopId, shop]) => {
             createPOIMarker(shopId, shop);
         }
     );
 
-    if (mapData.facilities)
-    {
+    if (mapData.facilities) {
         Object.entries(mapData.facilities).forEach(
-            ([facilityId, facility]) =>
-            {
+            ([facilityId, facility]) => {
                 createPOIMarker(facilityId, facility);
             }
         );
@@ -513,18 +471,15 @@ function drawPOIMarkers()
 }
 
 // DETAILS OF SHOP POP UP
-function drawShopHotspots()
-{
+function drawShopHotspots() {
     const hotspotGroup =
         document.getElementById("shop-hotspots");
 
     hotspotGroup.innerHTML = "";
 
     Object.entries(mapData.shop_locations).forEach(
-        ([shopId, shop]) =>
-        {
-            if (!shop.hotspot)
-            {
+        ([shopId, shop]) => {
+            if (!shop.hotspot) {
                 return;
             }
 
@@ -560,8 +515,7 @@ function drawShopHotspots()
 
             hotspot.addEventListener(
                 "click",
-                function()
-                {
+                function () {
                     selectShop(shopId);
                 }
             );
@@ -572,18 +526,15 @@ function drawShopHotspots()
 }
 
 // SELECT SHOP
-function selectShop(shopId)
-{
+function selectShop(shopId) {
     const mapShop =
         mapData.shop_locations[shopId];
 
-    if (!mapShop)
-    {
+    if (!mapShop) {
         console.error(
             "Shop not found:",
             shopId
         );
-
         return;
     }
 
@@ -596,9 +547,12 @@ function selectShop(shopId)
         name: (dbShop && dbShop.shop_name) || mapShop.name,
         category: dbShop && dbShop.category,
         unit: dbShop && dbShop.unit,
-        operatingHours: (dbShop && dbShop.operating_hours) || null,
-        floor: (dbShop && dbShop.floor_name) || mapShop.floor,
-        description: dbShop && dbShop.description,
+        operatingHours:
+            (dbShop && dbShop.operating_hours) || null,
+        floor:
+            (dbShop && dbShop.floor_name) || mapShop.floor,
+        description:
+            dbShop && dbShop.description,
     };
 
     selectedShopId = shopId;
@@ -617,57 +571,54 @@ function selectShop(shopId)
 }
 
 // UPDATE SELECTED SHOP PANEL
-function updateSelectedShopPanel(shopId, shop)
-{
+function updateSelectedShopPanel(shopId, shop) {
     const panel =
         document.getElementById(
             "selected-shop-details"
         );
 
     panel.innerHTML = `
-    <div class="shop-details-card">
+        <div class="shop-details-card">
 
-        <strong class="shop-details-name">
-            ${shop.name}
-        </strong>
+            <strong>
+                ${shop.name}
+            </strong>
 
-        ${shop.category
+            ${shop.category
             ? `<div>${shop.category}</div>`
             : ""
         }
 
-        ${shop.unit
+            ${shop.unit
             ? `<div>Unit: ${shop.unit}</div>`
             : ""
         }
 
-        ${shop.floor
+            ${shop.floor
             ? `<div>${shop.floor}</div>`
             : ""
         }
 
-        ${shop.operatingHours
+            ${shop.operatingHours
             ? `<div>Hours: ${shop.operatingHours}</div>`
             : ""
         }
 
-        ${shop.description
+            ${shop.description
             ? `<div>${shop.description}</div>`
             : ""
         }
 
-    </div>
-`;
+        </div>
+    `;
 }
 
 // HIGHLIGHT SELECTED SHOP
-function highlightSelectedShop(shopId)
-{
+function highlightSelectedShop(shopId) {
     // Remove previous highlight
     document
         .querySelectorAll(".poi-marker")
-        .forEach(marker =>
-        {
+        .forEach(marker => {
             marker.classList.remove(
                 "poi-selected"
             );
@@ -681,8 +632,7 @@ function highlightSelectedShop(shopId)
         );
 
 
-    if (selectedMarker)
-    {
+    if (selectedMarker) {
         selectedMarker.classList.add(
             "poi-selected"
         );
@@ -690,14 +640,11 @@ function highlightSelectedShop(shopId)
 }
 
 // LOAD DATA STORED IN DB
-async function loadShopDatabase()
-{
-    try
-    {
+async function loadShopDatabase() {
+    try {
         const response = await fetch("/api/shops");
 
-        if (!response.ok)
-        {
+        if (!response.ok) {
             throw new Error("Failed to load shop database.");
         }
 
@@ -707,10 +654,8 @@ async function loadShopDatabase()
 
         shopDatabase = {};
 
-        shops.forEach(shop =>
-        {
-            if (!shop.shop_code)
-            {
+        shops.forEach(shop => {
+            if (!shop.shop_code) {
                 return;
             }
 
@@ -734,8 +679,7 @@ async function loadShopDatabase()
             shopDatabase
         );
     }
-    catch (error)
-    {
+    catch (error) {
         // Expected until a real database is connected - the app still
         // works fine using data/map.json's own shop info as a fallback.
         console.warn(
