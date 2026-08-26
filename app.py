@@ -33,7 +33,6 @@ def get_shops():
             s.shop_name,
             s.operating_hours,
             s.category,
-            s.unit,
             s.description,
             s.floor_id,
             f.floor_name,
