@@ -641,17 +641,6 @@ function updateSelectedShopPanel(shopId, shop)
             : ""
         }
 
-            ${
-                shop.operatingHours
-                ? `<div>Hours: ${shop.operatingHours}</div>`
-                : ""
-            }
-
-            ${
-                shop.description
-                ? `<div>${shop.description}</div>`
-                : ""
-            }
         ${shop.floor
             ? `<div>${shop.floor}</div>`
             : ""
