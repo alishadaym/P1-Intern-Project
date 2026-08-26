@@ -593,8 +593,9 @@ function selectShop(shopId)
     // connected; fall back to the map's own data so this still works
     // without a database.
     const shop = {
-        name: (dbShop && dbShop.display_name) || mapShop.name,
+        name: (dbShop && dbShop.shop_name) || mapShop.name,
         category: dbShop && dbShop.category,
+        unit: dbShop && dbShop.unit,
         operatingHours: (dbShop && dbShop.operating_hours) || null,
         floor: (dbShop && dbShop.floor_name) || mapShop.floor,
         description: dbShop && dbShop.description,
@@ -624,23 +625,21 @@ function updateSelectedShopPanel(shopId, shop)
         );
 
     panel.innerHTML = `
-        <div class="shop-details-card">
+    <div class="shop-details-card">
 
-            <strong class="shop-details-name">
-                ${shop.name}
-            </strong>
+        <strong class="shop-details-name">
+            ${shop.name}
+        </strong>
 
-            ${
-                shop.category
-                ? `<div>${shop.category}</div>`
-                : ""
-            }
+        ${shop.category
+            ? `<div>${shop.category}</div>`
+            : ""
+        }
 
-            ${
-                shop.floor
-                ? `<div>${shop.floor}</div>`
-                : ""
-            }
+        ${shop.unit
+            ? `<div>Unit: ${shop.unit}</div>`
+            : ""
+        }
 
             ${
                 shop.operatingHours
@@ -653,9 +652,23 @@ function updateSelectedShopPanel(shopId, shop)
                 ? `<div>${shop.description}</div>`
                 : ""
             }
+        ${shop.floor
+            ? `<div>${shop.floor}</div>`
+            : ""
+        }
 
-        </div>
-    `;
+        ${shop.operatingHours
+            ? `<div>Hours: ${shop.operatingHours}</div>`
+            : ""
+        }
+
+        ${shop.description
+            ? `<div>${shop.description}</div>`
+            : ""
+        }
+
+    </div>
+`;
 }
 
 // HIGHLIGHT SELECTED SHOP
