@@ -7,6 +7,7 @@ CREATE TABLE floors (
 INSERT INTO floors (floor_name, floor_code)
 VALUES ('Ground Floor', 'G');
 
+//table for QR locations
 CREATE TABLE locations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     location_name VARCHAR(100) NOT NULL,
@@ -18,6 +19,7 @@ CREATE TABLE locations (
     FOREIGN KEY (floor_id) REFERENCES floors(id)
 );
 
+//table for stores
 CREATE TABLE shops (
     id INT AUTO_INCREMENT PRIMARY KEY,
     shop_name VARCHAR(100) NOT NULL,
@@ -59,6 +61,14 @@ CREATE TABLE store_owners (
     FOREIGN KEY (shop_id) REFERENCES shops(id)
 );
 
+//shop_code links a DB row back to the matching key in data/map.json's
+//shop_locations, so the frontend can join live shop details onto the
+//map/QR data by a stable id instead of a fragile name match.
+ALTER TABLE shops
+ADD COLUMN shop_code VARCHAR(50) UNIQUE AFTER id;
+
+//x_position/y_position dropped - shop positions live in data/map.json,
+//no need to duplicate them here
 ALTER TABLE shops
 DROP COLUMN unit,
 DROP COLUMN x_position,
@@ -73,7 +83,6 @@ DELETE FROM shops;
 
 INSERT INTO shops
     (shop_name, operating_hours, category, description, floor_id)
-VALUES
     ('F.O.S', '10am – 10pm', 'Clothing Store', NULL, 1),
     ('Tone & Mann.', '10am – 10pm', 'Fashion accessories store', NULL, 1),
     ('SSF', '10am – 10pm', 'Furniture store', NULL, 1),
@@ -110,3 +119,149 @@ VALUES
 
     
 
+//seed all 33 real mall shops with category + operating hours
+//(description still blank - fill in via the store owner's "Edit Store
+INSERT INTO shops
+    (shop_code, shop_name, operating_hours, category, description, floor_id)
+VALUES
+    ('fos_shop', 'F.O.S', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('tone_mann_shop', 'Tone & Mann.', '10am – 10pm', 'Fashion accessories store', NULL, 1),
+    ('ssf_shop', 'SSF', '10am – 10pm', 'Furniture store', NULL, 1),
+    ('good2u_shop', 'Good2U', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('family_mart_shop', 'Family Mart', '7am – 12am', 'Convenience Store', NULL, 1),
+    ('zus_coffee_shop', 'Zus Coffee', '10am – 10pm', 'Cafe', NULL, 1),
+    ('hong_leong_shop', 'Hong Leong Islamic Bank', 'Permanently Closed', 'Bank', NULL, 1),
+    ('mi_store_shop', 'Mi Store', '10am – 10pm', 'Cell phone Store', NULL, 1),
+    ('ajumma_shop', 'Ajumma', '10am – 11pm', 'Korean Restaurant', NULL, 1),
+    ('elianto_shop', 'Elianto', '10am – 10pm', 'Cosmetics Store', NULL, 1),
+    ('world_of_perfumes_shop', 'World of Perfumes', '10am – 10pm', 'Perfume Store', NULL, 1),
+    ('jacs_optometry_shop', 'Jac''s Optometry', '10am – 10pm', 'Optician', NULL, 1),
+    ('mnb_shop', 'MNB', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('mc_vogue_shop', 'MC Vogue', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('kunzense_bodyline_shop', 'Kunzense Bodyline', '10:30am – 8:30pm', 'Facial Spa', NULL, 1),
+    ('skechers_shop', 'Skechers', '10am – 10pm', 'Shoe Store', NULL, 1),
+    ('jewellery_kiosk_shop', 'Sparkle & Silver Fine Jewellery', '10am – 10pm', 'Jeweller', NULL, 1),
+    ('parca_fashion_shop', 'Parca Fashion', 'Permanently Closed', 'Boutique', NULL, 1),
+    ('maxis_shop', 'Maxis', '10am – 9:30pm', 'Telecommunications service provider', NULL, 1),
+    ('royal_sporting_house_shop', 'Royal Sporting House', 'Permanently Closed', 'Sportswear Store', NULL, 1),
+    ('starbucks_shop', 'Starbucks', 'Permanently Closed', 'Cafe', NULL, 1),
+    ('sarong_by_ar_shop', 'Sarong By A&R', '10am – 10pm', 'Boutique', NULL, 1),
+    ('solight_shop', 'Solight', '10am – 8pm', 'Shoe Store', NULL, 1),
+    ('nandos_shop', 'Nando''s', '10am – 10pm', 'Chicken Restaurant', NULL, 1),
+    ('al_ikhsan_sports_shop', 'Al-Ikhsan Sports', '10am – 10pm', 'Sporting Goods Store', NULL, 1),
+    ('baskin_robbins_shop', 'Baskin Robbins', '10am – 10pm', 'Ice Cream Shop', NULL, 1),
+    ('coffee_bean_shop', 'The Coffee Bean & Tea Leaf', '10am – 10pm', 'Cafe', NULL, 1),
+    ('the_body_shop_shop', 'The Body Shop', '10am – 10pm', 'Beauty Supply Store', NULL, 1),
+    ('sox_world_shop', 'Sox World', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('mr_dakgalbi_shop', 'Mr. Dakgalbi', '10am – 9pm', 'Korean Restaurant', NULL, 1),
+    ('go_noodle_house_shop', 'Go Noodle House', '10am – 9:15pm', 'Chinese Noodle Restaurant', NULL, 1),
+    ('happikiddo_shop', 'Happikiddo', '10am – 10pm', 'Baby Store', NULL, 1),
+    ('homes_harmony_shop', 'Home''s Harmony', '10am – 10pm', 'Furniture Store', NULL, 1);
+
+//re-add unit (physical unit number, e.g. "G-14") - dropped earlier
+//alongside x_position/y_position, but that also removed real per-shop
+//unit labels store owners and visitors expect to see
+ALTER TABLE shops
+ADD COLUMN unit VARCHAR(50) AFTER category;
+
+UPDATE shops SET unit = 'G-14' WHERE shop_code = 'fos_shop';
+UPDATE shops SET unit = 'G-13' WHERE shop_code = 'tone_mann_shop';
+UPDATE shops SET unit = 'G-12' WHERE shop_code = 'ssf_shop';
+UPDATE shops SET unit = 'G-29' WHERE shop_code = 'good2u_shop';
+UPDATE shops SET unit = 'G-39' WHERE shop_code = 'family_mart_shop';
+UPDATE shops SET unit = 'G-12' WHERE shop_code = 'zus_coffee_shop';
+UPDATE shops SET unit = 'G-28' WHERE shop_code = 'hong_leong_shop';
+UPDATE shops SET unit = 'G-18' WHERE shop_code = 'mi_store_shop';
+UPDATE shops SET unit = 'G-16' WHERE shop_code = 'ajumma_shop';
+UPDATE shops SET unit = 'G-17' WHERE shop_code = 'elianto_shop';
+UPDATE shops SET unit = 'G-19' WHERE shop_code = 'world_of_perfumes_shop';
+UPDATE shops SET unit = 'G-20' WHERE shop_code = 'jacs_optometry_shop';
+UPDATE shops SET unit = 'G-24' WHERE shop_code = 'mnb_shop';
+UPDATE shops SET unit = 'G-25' WHERE shop_code = 'mc_vogue_shop';
+UPDATE shops SET unit = 'G-26' WHERE shop_code = 'kunzense_bodyline_shop';
+UPDATE shops SET unit = 'G-27' WHERE shop_code = 'skechers_shop';
+UPDATE shops SET unit = 'G-22' WHERE shop_code = 'jewellery_kiosk_shop';
+UPDATE shops SET unit = 'G-41' WHERE shop_code = 'parca_fashion_shop';
+UPDATE shops SET unit = 'G-42' WHERE shop_code = 'maxis_shop';
+UPDATE shops SET unit = 'G-30' WHERE shop_code = 'royal_sporting_house_shop';
+UPDATE shops SET unit = 'G-43' WHERE shop_code = 'starbucks_shop';
+UPDATE shops SET unit = 'G-09' WHERE shop_code = 'sarong_by_ar_shop';
+UPDATE shops SET unit = 'G-08' WHERE shop_code = 'solight_shop';
+UPDATE shops SET unit = 'G-07' WHERE shop_code = 'nandos_shop';
+UPDATE shops SET unit = 'G-06' WHERE shop_code = 'al_ikhsan_sports_shop';
+UPDATE shops SET unit = 'G-05' WHERE shop_code = 'baskin_robbins_shop';
+UPDATE shops SET unit = 'G-03' WHERE shop_code = 'coffee_bean_shop';
+UPDATE shops SET unit = 'G-37' WHERE shop_code = 'the_body_shop_shop';
+UPDATE shops SET unit = 'G-36' WHERE shop_code = 'sox_world_shop';
+UPDATE shops SET unit = 'G-35' WHERE shop_code = 'mr_dakgalbi_shop';
+UPDATE shops SET unit = 'G-34' WHERE shop_code = 'go_noodle_house_shop';
+UPDATE shops SET unit = 'G-33' WHERE shop_code = 'happikiddo_shop';
+UPDATE shops SET unit = 'G-32' WHERE shop_code = 'homes_harmony_shop';
+
+
+//UPDATE SHOPS CATEGORY
+UPDATE shops
+SET category = CASE shop_code
+    -- Fashion & Apparel
+    WHEN 'fos_shop' THEN 'Fashion'
+    WHEN 'tone_mann_shop' THEN 'Fashion'
+    WHEN 'good2u_shop' THEN 'Fashion'
+    WHEN 'mnb_shop' THEN 'Fashion'
+    WHEN 'mc_vogue_shop' THEN 'Fashion'
+    WHEN 'skechers_shop' THEN 'Fashion'
+    WHEN 'parca_fashion_shop' THEN 'Fashion'
+    WHEN 'sarong_by_ar_shop' THEN 'Fashion'
+    WHEN 'solight_shop' THEN 'Fashion'
+    WHEN 'sox_world_shop' THEN 'Fashion'
+    WHEN 'royal_sporting_house_shop' THEN 'Fashion'
+    WHEN 'jewellery_kiosk_shop' THEN 'Fashion'
+
+    -- Food & Beverages
+    WHEN 'zus_coffee_shop' THEN 'Food & Beverages'
+    WHEN 'ajumma_shop' THEN 'Food & Beverages'
+    WHEN 'nandos_shop' THEN 'Food & Beverages'
+    WHEN 'baskin_robbins_shop' THEN 'Food & Beverages'
+    WHEN 'coffee_bean_shop' THEN 'Food & Beverages'
+    WHEN 'mr_dakgalbi_shop' THEN 'Food & Beverages'
+    WHEN 'go_noodle_house_shop' THEN 'Food & Beverages'
+    WHEN 'starbucks_shop' THEN 'Food & Beverages'
+
+    -- Cosmetics & Beauty
+    WHEN 'elianto_shop' THEN 'Cosmetics & Beauty'
+    WHEN 'world_of_perfumes_shop' THEN 'Cosmetics & Beauty'
+    WHEN 'the_body_shop_shop' THEN 'Cosmetics & Beauty'
+    WHEN 'kunzense_bodyline_shop' THEN 'Cosmetics & Beauty'
+
+    -- Electronics & Telco
+    WHEN 'mi_store_shop' THEN 'Electronics'
+    WHEN 'maxis_shop' THEN 'Electronics'
+
+    -- Banking & Finance
+    WHEN 'hong_leong_shop' THEN 'Banking & Finance'
+
+    -- Health & Wellness
+    WHEN 'jacs_optometry_shop' THEN 'Health & Wellness'
+
+    -- Sports & Outdoor
+    WHEN 'al_ikhsan_sports_shop' THEN 'Sports & Outdoor'
+
+    -- Home & Living
+    WHEN 'ssf_shop' THEN 'Home & Living'
+    WHEN 'homes_harmony_shop' THEN 'Home & Living'
+
+    -- Retail / General
+    WHEN 'family_mart_shop' THEN 'Convenience Store'
+    WHEN 'happikiddo_shop' THEN 'Retail'
+
+    ELSE category
+END
+WHERE shop_code IN (
+    'fos_shop','tone_mann_shop','ssf_shop','good2u_shop','family_mart_shop',
+    'zus_coffee_shop','hong_leong_shop','mi_store_shop','ajumma_shop','elianto_shop',
+    'world_of_perfumes_shop','jacs_optometry_shop','mnb_shop','mc_vogue_shop',
+    'kunzense_bodyline_shop','skechers_shop','jewellery_kiosk_shop','parca_fashion_shop',
+    'maxis_shop','royal_sporting_house_shop','starbucks_shop','sarong_by_ar_shop',
+    'solight_shop','nandos_shop','al_ikhsan_sports_shop','baskin_robbins_shop',
+    'coffee_bean_shop','the_body_shop_shop','sox_world_shop','mr_dakgalbi_shop',
+    'go_noodle_house_shop','happikiddo_shop','homes_harmony_shop'
+);

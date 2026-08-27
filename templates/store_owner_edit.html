@@ -2,6 +2,8 @@
 <html>
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Store - DPULZE</title>
 
     <style>
@@ -44,6 +46,7 @@
         button {
             padding: 10px 18px;
             margin-top: 20px;
+            margin-right: 10px;
             cursor: pointer;
             margin-right: 10px;
             cursor: pointer;
@@ -96,6 +99,15 @@
             type="text"
             id="unit"
             value="{{ shop.unit }}"
+            placeholder="e.g. G-14"
+        >
+
+        <label>Operating Hours</label>
+        <input
+            type="text"
+            id="operating_hours"
+            value="{{ shop.operating_hours }}"
+            placeholder="e.g. 10am – 10pm"
         >
 
         <label>Description</label>
@@ -153,18 +165,12 @@ document.getElementById("editForm").addEventListener("submit", async function(ev
 
         unit: document.getElementById("unit").value,
 
+        operating_hours: document.getElementById("operating_hours").value,
+
         description: document.getElementById("description").value,
 
         floor_id: Number(
             document.getElementById("floor_id").value
-        ),
-
-        x_position: Number(
-            document.getElementById("x_position").value
-        ),
-
-        y_position: Number(
-            document.getElementById("y_position").value
         )
 
     };

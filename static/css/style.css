@@ -1,0 +1,348 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-width: 0;
+    font-family: 'Times New Roman', Times, serif;
+    background: #f4f4f4;
+    overflow-x: hidden;
+}
+
+header {
+    position: relative;
+    background: #524646;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    /* Tall enough that .login-button (absolutely positioned, next to
+       the "You scanned" line) still fits inside the header even when
+       that line isn't rendered yet (nothing scanned this session). */
+    min-height: 93px;
+}
+
+.scanned-location {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #d9c9c9;
+}
+
+main {
+    display: flex;
+    min-height: calc(100vh - 80px);
+}
+
+.sidebar {
+    flex: 0 0 280px;
+    width: 280px;
+    padding: 20px;
+    background: #FCF2E5;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar h2 {
+    margin-bottom: 25px;
+}
+
+.sidebar select, .sidebar input, .sidebar button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.sidebar input {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font: inherit;
+}
+
+.sidebar button {
+    cursor: pointer;
+    border: none;
+    background: #EC5B38;
+    color: white;
+    border-radius: 5px;
+}
+
+.sidebar button:hover {
+    background: #F0997D;
+}
+
+.hidden-select {
+    display: none;
+}
+
+.shop-autocomplete {
+    position: relative;
+}
+
+.shop-suggestions {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    margin: 0 0 10px;
+    padding: 0;
+    list-style: none;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    max-height: 240px;
+    overflow-y: auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.shop-suggestions.visible {
+    display: block;
+}
+
+.shop-suggestions li {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.shop-suggestions li:hover,
+.shop-suggestions li.active {
+    background: #FCF2E5;
+}
+
+.shop-suggestions li.no-results {
+    color: #888;
+    cursor: default;
+}
+
+.shop-suggestions li.no-results:hover {
+    background: none;
+}
+
+.shop-info, .legend {
+    margin-top:30px;
+}
+
+.shop-info h3, .legend h3 {
+    margin-bottom: 10px;
+}
+
+.map-section {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: auto;
+    padding: 20px;
+}
+
+.map-container {
+    position: relative;
+    width: 100%;
+    max-width: 1038px;
+    aspect-ratio: 1038 / 553;
+}
+
+#floor-map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+#map-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#user-marker {
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+}
+
+#route-line {
+    fill: none;
+    stroke: red;
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.navigation-line {
+    stroke: #777;
+    stroke-width: 2;
+    stroke-dasharray: 5 5;
+    opacity: 0.5;
+}
+
+.navigation-node {
+    fill: #1976d2;
+    stroke: white;
+    stroke-width: 2;
+}
+
+.navigation-node-label {
+    fill: #1976d2;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+#navigation-lines,
+#navigation-nodes {
+    display: none;
+}
+
+.poi-marker {
+    fill: #ff9800;
+    stroke: white;
+    stroke-width: 3;
+    pointer-events: all;
+    cursor: pointer;
+}
+
+.poi-label {
+    fill: #222;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.shop-hotspot {
+    fill: transparent;
+    pointer-events: all;
+    cursor: pointer;
+    transition: fill 0.2s ease;
+}
+
+.shop-hotspot:hover {
+    fill: rgba(255, 152, 0, 0.20);
+}
+
+.shop-hotspot.selected {
+    fill: rgba(255, 152, 0, 0.12);
+    stroke: #ff9800;
+    stroke-width: 2;
+}
+
+.poi-selected {
+    stroke: #e53935;
+    stroke-width: 5;
+}
+
+@media (max-width: 700px) {
+    header {
+        padding: 16px 12px;
+    }
+
+    header h1 {
+        font-size: 1.35rem;
+        line-height: 1.2;
+    }
+
+    main {
+        display: block;
+        min-height: 0;
+    }
+
+    .sidebar {
+        width: 100%;
+        padding: 16px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar h2 {
+        margin-bottom: 14px;
+    }
+
+    .shop-info,
+    .legend {
+        margin-top: 20px;
+    }
+
+    .selected-shop-section,
+    .category-shops-section {
+        margin-top: 20px;
+    }
+
+    .selected-shop-section h3,
+    .category-shops-section h3 {
+        margin-bottom: 10px;
+    }
+
+    #selected-shop-details,
+    #category-shop-list {
+        font-size: 14px;
+    }
+
+    .category-shop-item {
+        display: block;
+        width: 100%;
+        margin-bottom: 6px;
+        padding: 8px 10px;
+        border: 1px solid #d8c5b0;
+        border-radius: 4px;
+        background: #fffaf4;
+        color: #3d3029;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .category-shop-item:hover {
+        background: #f8dfc8;
+    }
+
+    .map-section {
+        width: 100%;
+        padding: 12px;
+        overflow: visible;
+    }
+
+    .map-container {
+        width: 100%;
+    }
+}
+
+.site-footer {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+}
+
+.login-button {
+        display: inline-block;
+        padding: 5px 10px;
+        font-size: 12px;
+        background-color: #7b5b3d;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-top: 0px;
+        position: absolute;
+        top: 58px;
+        right: 10px;
+}
+
+.login-button:hover {
+    background-color: #5a3e2b;
+}
+
+@media (max-width: 700px) {
+    .login-button {
+        /* Side-by-side with "You scanned" only works when both fit on
+           one line; shop names vary too much in length for that on
+           narrow screens, so stack it in-flow above that line instead. */
+        position: static;
+        display: inline-block;
+        padding: 4px 8px;
+        font-size: 11px;
+        margin-top: 8px;
+    }
+}

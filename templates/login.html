@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Store Owner Login - DPULZE</title>
 
     <style>
@@ -10,41 +12,75 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .login-box {
             background: #e6d4bc;
-            padding: 30px;
-            width: 350px;
-            border-radius: 10px;
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 440px;
+            border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         }
 
         h1 {
             text-align: center;
+            font-size: 1.6rem;
         }
 
         label {
             display: block;
-            margin-top: 15px;
+            margin-top: 18px;
+            font-size: 16px;
         }
 
         input {
             width: 100%;
-            padding: 10px;
-            margin-top: 5px;
+            padding: 14px;
+            margin-top: 6px;
+            font-size: 16px;
+            border: 1px solid #bda57d;
+            border-radius: 6px;
             box-sizing: border-box;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
 
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            padding-right: 56px;
+        }
+
+        #togglePassword {
+            position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(calc(-50% + 3px));
+            background: none;
+            border: none;
+            width: auto;
+            margin: 0;
+            padding: 8px 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #70461e;
+            cursor: pointer;
+        }
+
         button {
             width: 100%;
-            padding: 10px 18px;
-            margin-top: 20px;
-            margin-right: 10px;
+            padding: 14px;
+            margin-top: 12px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: none;
             cursor: pointer;
             border: none;
             border-radius: 5px;
@@ -65,6 +101,22 @@
             color: white;
         }
 
+        #loginButton {
+            margin-top: 22px;
+            background: #70461e;
+            color: white;
+        }
+
+        #forgotPasswordButton {
+            background: #e72828;
+            color: white;
+        }
+
+        #guestBackButton {
+            background: #464f57;
+            color: white;
+        }
+
         #message {
             text-align: center;
             margin-top: 15px;
@@ -76,7 +128,9 @@
 
 <div class="login-box">
 
-    <h1>Store Owner Login</h1>
+    <h1>
+        Store Owner Login
+    </h1>
 
     <form id="loginForm">
 
@@ -84,13 +138,12 @@
         <input type="text" id="username" required>
 
         <label>Password</label>
-        <input type="password" id="password" required>
+        <div class="password-wrapper">
+            <input type="password" id="password" required>
+            <button type="button" id="togglePassword" aria-label="Show password">Show</button>
+        </div>
 
-        <button 
-            type="submit" 
-            id="loginButton">
-            Login
-        </button>
+        <button type="submit" id="loginButton">Login</button>
 
         <button
             type="button"
@@ -102,7 +155,7 @@
         <button
             type="button"
             id="guestBackButton"
-            onclick="window.location.href='/guest'">
+            onclick="window.location.href='/'">
             Back to Guest Page
         </button>
 
@@ -114,6 +167,18 @@
 
 
 <script>
+
+document.getElementById("togglePassword").addEventListener("click", function() {
+
+    const passwordInput = document.getElementById("password");
+    const isHidden = passwordInput.type === "password";
+
+    passwordInput.type = isHidden ? "text" : "password";
+
+    this.textContent = isHidden ? "Hide" : "Show";
+    this.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+
+});
 
 document.getElementById("loginForm").addEventListener("submit", async function(event) {
 

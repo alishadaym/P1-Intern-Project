@@ -2,6 +2,8 @@
 <html>
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Store Owner Dashboard - DPULZE</title>
 
     <style>
@@ -10,20 +12,25 @@
             font-family: Arial, sans-serif;
             background: #564228;
             margin: 0;
-            padding: 40px;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .dashboard {
-            max-width: 600px;
+            width: 100%;
+            max-width: 700px;
             margin: auto;
             background: #e6d4bc;
             padding: 30px;
-            border-radius: 10px;
+            border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            font-size: 17px;
         }
 
         h1 {
             margin-top: 0;
+            font-size: 1.6rem;
         }
 
         .shop-details {
@@ -31,12 +38,16 @@
         }
 
         .detail {
-            margin: 12px 0;
+            margin: 16px 0;
         }
 
         button {
-            padding: 10px 18px;
-            margin-top: 20px;
+            width: 100%;
+            padding: 14px 18px;
+            margin-top: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
             cursor: pointer;
             margin-right: 10px;
             border: none;
@@ -54,7 +65,7 @@
         }
 
         .edit-button {
-            margin-right: 10px;
+            margin-top: 20px;
         }
 
     </style>
@@ -87,6 +98,11 @@
         <div class="detail">
             <strong>Unit:</strong>
             {{ owner.unit }}
+        </div>
+
+        <div class="detail">
+            <strong>Operating Hours:</strong>
+            {{ owner.operating_hours }}
         </div>
 
         <div class="detail">

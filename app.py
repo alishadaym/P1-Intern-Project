@@ -1,27 +1,74 @@
-from flask import Flask, jsonify, request, render_template, session, redirect
+from flask import Flask, abort, jsonify, request, render_template, session, redirect
 from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_db_connection
+from locations import LOCATIONS, MAP_WIDTH, MAP_HEIGHT, SHOPS, NODE_MAP
+from scan_log import read_scans, record_scan
+
+import json
+import os
+import uuid
 
 app = Flask(__name__)
-app.secret_key = 'p1-intern-project'
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 
-@app.route("/")
-def home():
-    return "DPULZE Mall System is running!"
+def load_map():
+    map_path = os.path.join("data", "map.json")
+    with open(map_path, "r", encoding="utf-8") as file:
+        return json.load(file)
 
+@app.route("/api/map")
+def get_map():
+    map_data = load_map()
+    return jsonify(map_data)
 
 @app.route("/api/shops")
 def get_shops():
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM shops")
+    query = """
+        SELECT
+            s.id,
+            s.shop_code,
+            s.shop_name,
+            s.operating_hours,
+            s.category,
+            s.unit,
+            s.description,
+            s.floor_id,
+            f.floor_name,
+            f.floor_code
+        FROM shops s
+        JOIN floors f
+            ON s.floor_id = f.id
+        ORDER BY s.shop_name
+    """
+
+    cursor.execute(query)
     shops = cursor.fetchall()
 
     cursor.close()
     connection.close()
 
     return jsonify(shops)
+
+@app.route("/api/categories")
+def get_categories():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT DISTINCT TRIM(category) AS category
+        FROM shops
+        WHERE category IS NOT NULL AND TRIM(category) <> ''
+        ORDER BY category
+    """)
+    categories = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return jsonify(categories)
 
 #allowing to send data to /api/shops
 @app.route("/api/shops", methods=["POST"])
@@ -30,6 +77,7 @@ def add_shop():
     data = request.get_json()
 
     shop_name = data.get("shop_name")
+    operating_hours = data.get("operating_hours")
     category = data.get("category")
     description = data.get("description")
     floor_id = data.get("floor_id")
@@ -44,12 +92,13 @@ def add_shop():
 
     query = """
         INSERT INTO shops
-        (shop_name, category, description, floor_id)
-        VALUES (%s, %s, %s, %s)
+        (shop_name, operating_hours, category, unit, description, floor_id)
+        VALUES (%s, %s, %s, %s, %s, %s)
     """
 
     values = (
         shop_name,
+        operating_hours,
         category,
         description,
         floor_id
@@ -83,12 +132,14 @@ def search_shops():
     query = """
         SELECT
             s.id,
+            s.shop_code,
             s.shop_name,
+            s.operating_hours,
             s.category,
             s.description,
             s.floor_id,
             f.floor_name,
-            f.floor_code,
+            f.floor_code
         FROM shops s
         JOIN floors f ON s.floor_id = f.id
         WHERE
@@ -100,7 +151,7 @@ def search_shops():
 
     cursor.execute(
         query,
-        (search_pattern, search_pattern, search_pattern)
+        (search_pattern, search_pattern)
     )
 
     shops = cursor.fetchall()
@@ -129,6 +180,7 @@ def update_shop(shop_id):
     data = request.get_json()
 
     shop_name = data.get("shop_name")
+    operating_hours = data.get("operating_hours")
     category = data.get("category")
     description = data.get("description")
     floor_id = data.get("floor_id")
@@ -145,6 +197,7 @@ def update_shop(shop_id):
         UPDATE shops
         SET
             shop_name = %s,
+            operating_hours = %s,
             category = %s,
             description = %s,
             floor_id = %s
@@ -153,6 +206,7 @@ def update_shop(shop_id):
 
     values = (
         shop_name,
+        operating_hours,
         category,
         description,
         floor_id,
@@ -186,7 +240,9 @@ def get_shop(shop_id):
     query = """
         SELECT
             s.id,
+            s.shop_code,
             s.shop_name,
+            s.operating_hours,
             s.category,
             s.description,
             s.floor_id,
@@ -332,6 +388,7 @@ def get_navigation():
     shop_query = """
         SELECT
             s.id,
+            s.shop_code,
             s.shop_name,
             s.floor_id,
             f.floor_name,
@@ -427,6 +484,7 @@ def store_owner_dashboard():
             so.username,
             so.shop_id,
             s.shop_name,
+            s.operating_hours,
             s.category,
             s.description
         FROM store_owners so
@@ -549,6 +607,46 @@ def forgot_password_api():
         "message": "Please contact the system administrator to reset your password."
     })
 
+def get_session_id() -> str:
+    if "session_id" not in session:
+        session["session_id"] = uuid.uuid4().hex
+    return session["session_id"]
+
+
+@app.route("/")
+def index():
+    current = session.get("current_location")
+    return render_template(
+        "index.html",
+        current=LOCATIONS.get(current),
+        current_name=current,
+        start_node=NODE_MAP.get(current),
+    )
+
+
+@app.route("/location/<name>")
+def location(name):
+    if name not in LOCATIONS:
+        abort(404)
+
+    previous_location = session.get("current_location")
+    session["last_location"] = previous_location
+    session["current_location"] = name
+    record_scan(name, get_session_id(), previous_location)
+    return redirect("/")
+
+
+@app.route("/scans")
+def scans():
+    return redirect("/")
+
+
+@app.route("/shops")
+def shops():
+    return redirect("/")
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
-# host="0.0.0.0" tells Flask to accept connections coming from other devices on local network
+    app.run(debug=True)
+
+# if __name__ == "__main__":
+#     app.run(host="0.0.0.0", port=5000, debug=True)
