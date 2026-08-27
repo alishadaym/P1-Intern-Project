@@ -29,9 +29,18 @@
                 <!-- <option value="first">First Floor</option> -->
             </select>
 
-            <label for="shop">Find Shop</label>
-            <select id="shop-select">
+            <label for="shop-search">Find Shop</label>
+            <div class="shop-autocomplete">
+                <input type="text" id="shop-search" placeholder="Search shops..." autocomplete="off">
+                <ul id="shop-suggestions" class="shop-suggestions"></ul>
+            </div>
+            <select id="shop-select" class="hidden-select">
                 <option value="">Select a shop</option>
+            </select>
+
+            <label for="category">Category</label>
+            <select id="category-select">
+                <option value="">All categories</option>
             </select>
 
             <button id="navigate-btn" class="navigate-btn">Navigate</button>
@@ -39,6 +48,11 @@
             <div class="selected-shop-section">
                 <h3>Selected Shop</h3>
                 <div id="selected-shop-details">No shop selected</div>
+            </div>
+
+            <div class="category-shops-section">
+                <h3>Shops in Category</h3>
+                <div id="category-shop-list">Choose a category</div>
             </div>
 
         </aside>

@@ -1,6 +1,8 @@
 let mapData = null;
 let selectedShopId = null;
 let shopDatabase = {};
+let shopRecords = [];
+let categoryNames = [];
 
 // LOAD MAP DATA FROM FLASK
 async function loadMapData()
@@ -116,7 +118,9 @@ document.addEventListener("DOMContentLoaded", async function()
 
     await loadMapData();
     await loadShopDatabase();
+    await loadCategories();
     populateShopDropdown();
+    populateCategoryDropdown();
 
     // NAVIGATE BUTTON
     const navigateButton = document.getElementById("navigate-btn");
@@ -131,7 +135,8 @@ document.addEventListener("DOMContentLoaded", async function()
         console.error("Navigate button not found.");
     }
 
-    // SHOP DROPDOWN
+    // SHOP DROPDOWN (kept in the DOM, hidden - still the source of truth
+    // that selectShop() and startNavigation() read/write)
     const shopSelect = document.getElementById("shop-select");
 
     shopSelect.addEventListener(
@@ -142,6 +147,43 @@ document.addEventListener("DOMContentLoaded", async function()
             }
         }
     );
+
+    // SHOP SEARCH (type-ahead combobox)
+    const shopSearch = document.getElementById("shop-search");
+    const shopSuggestions = document.getElementById("shop-suggestions");
+
+    if (shopSearch && shopSuggestions)
+    {
+        shopSearch.addEventListener(
+            "input",
+            function () {
+                renderShopSuggestions(shopSearch.value);
+            }
+        );
+
+        shopSearch.addEventListener(
+            "focus",
+            function () {
+                renderShopSuggestions(shopSearch.value);
+            }
+        );
+
+        shopSearch.addEventListener("keydown", handleShopSearchKeydown);
+
+        document.addEventListener(
+            "click",
+            function (event) {
+                if (!event.target.closest(".shop-autocomplete"))
+                {
+                    hideShopSuggestions();
+                }
+            }
+        );
+    }
+
+    document
+        .getElementById("category-select")
+        .addEventListener("change", renderCategoryShops);
 });
 
 // DRAW USER CURRENT LOCATION
@@ -169,7 +211,21 @@ function drawUserMarker()
     console.log("User location:", startNodeId);
 };
 
-// SHOP DROPDOWN
+// SHOP LABEL (display name, preferring live DB data over the map's own data)
+function getShopLabel(shopId)
+{
+    const shop = mapData.shop_locations[shopId];
+    const dbShop = shopDatabase[shopId];
+
+    return (
+        (dbShop && dbShop.display_name) ||
+        (shop && shop.name) ||
+        shopId.replace(/_\d+$/, "").replace(/_/g, " ").replace(/\b\w/g, letter => letter.toUpperCase())
+    );
+}
+
+// SHOP DROPDOWN (hidden - always holds every shop, kept in sync with
+// whichever shop is currently selected)
 function populateShopDropdown()
 {
     const shopSelect =
@@ -181,24 +237,184 @@ function populateShopDropdown()
     Object.keys(mapData.shop_locations).forEach(
         shopId =>
         {
-            const shop =
-                mapData.shop_locations[shopId];
-
-            const dbShop =
-                shopDatabase[shopId];
-
             const option =
                 document.createElement("option");
 
             option.value = shopId;
-            option.textContent =
-                (dbShop && dbShop.display_name) ||
-                shop.name ||
-                shopId.replace(/_\d+$/, "").replace(/_/g, " ").replace(/\b\w/g, letter => letter.toUpperCase());
+            option.textContent = getShopLabel(shopId);
 
             shopSelect.appendChild(option);
         }
     );
+}
+
+// CATEGORY FILTER
+function populateCategoryDropdown() {
+    const categorySelect = document.getElementById("category-select");
+    categorySelect.innerHTML = "<option value=\"\">All categories</option>";
+
+    categoryNames
+        .forEach(category => {
+            const option = document.createElement("option");
+            option.value = category;
+            option.textContent = category;
+            categorySelect.appendChild(option);
+        });
+}
+
+function renderCategoryShops() {
+    const category = document.getElementById("category-select").value;
+    const shopList = document.getElementById("category-shop-list");
+
+    if (!category) {
+        shopList.textContent = "Choose a category";
+        return;
+    }
+
+    const matchingShops = shopRecords
+        .filter(shop => shop.category && shop.category.trim() === category)
+        .sort((firstShop, secondShop) => {
+            const firstName = firstShop.shop_name || "";
+            const secondName = secondShop.shop_name || "";
+            return firstName.localeCompare(secondName);
+        });
+
+    shopList.innerHTML = "";
+
+    if (matchingShops.length === 0) {
+        shopList.textContent = "No shops found in this category";
+        return;
+    }
+
+    matchingShops.forEach(shop => {
+        const shopButton = document.createElement("button");
+
+        shopButton.type = "button";
+        shopButton.className = "category-shop-item";
+        shopButton.textContent = shop.shop_name || "Unnamed Shop";
+
+        if (mapData.shop_locations[shop.shop_code]) {
+            shopButton.addEventListener("click", () => selectShop(shop.shop_code));
+        }
+        else {
+            shopButton.disabled = true;
+            shopButton.title = "This shop has no map location yet";
+        }
+
+        shopList.appendChild(shopButton);
+    });
+}
+
+// SHOP SEARCH SUGGESTIONS
+let activeSuggestionIndex = -1;
+
+function renderShopSuggestions(searchText)
+{
+    const shopSuggestions =
+        document.getElementById("shop-suggestions");
+
+    const query = (searchText || "").trim().toLowerCase();
+    activeSuggestionIndex = -1;
+
+    // Empty query -> show every shop (e.g. right when the box is focused)
+    const matches =
+        Object.keys(mapData.shop_locations)
+            .map(shopId => ({ shopId, label: getShopLabel(shopId) }))
+            .filter(({ label }) => label.toLowerCase().includes(query));
+
+    shopSuggestions.innerHTML = "";
+
+    if (matches.length === 0)
+    {
+        const noResults = document.createElement("li");
+        noResults.className = "no-results";
+        noResults.textContent = "No shops found";
+        shopSuggestions.appendChild(noResults);
+    }
+    else
+    {
+        matches.forEach(({ shopId, label }) =>
+        {
+            const item = document.createElement("li");
+            item.textContent = label;
+            item.dataset.shopId = shopId;
+
+            item.addEventListener(
+                "click",
+                function () {
+                    chooseShop(shopId, label);
+                }
+            );
+
+            shopSuggestions.appendChild(item);
+        });
+    }
+
+    shopSuggestions.classList.add("visible");
+}
+
+function hideShopSuggestions()
+{
+    const shopSuggestions =
+        document.getElementById("shop-suggestions");
+
+    shopSuggestions.classList.remove("visible");
+    activeSuggestionIndex = -1;
+}
+
+function chooseShop(shopId, label)
+{
+    const shopSearch =
+        document.getElementById("shop-search");
+
+    shopSearch.value = label;
+    hideShopSuggestions();
+    selectShop(shopId);
+}
+
+function handleShopSearchKeydown(event)
+{
+    const shopSuggestions =
+        document.getElementById("shop-suggestions");
+
+    const items =
+        Array.from(shopSuggestions.querySelectorAll("li:not(.no-results)"));
+
+    if (!shopSuggestions.classList.contains("visible") || items.length === 0)
+    {
+        return;
+    }
+
+    if (event.key === "ArrowDown")
+    {
+        event.preventDefault();
+        activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
+    }
+    else if (event.key === "ArrowUp")
+    {
+        event.preventDefault();
+        activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
+    }
+    else if (event.key === "Enter")
+    {
+        event.preventDefault();
+
+        const chosen = activeSuggestionIndex >= 0 ? items[activeSuggestionIndex] : items[0];
+        chooseShop(chosen.dataset.shopId, chosen.textContent);
+        return;
+    }
+    else if (event.key === "Escape")
+    {
+        hideShopSuggestions();
+        return;
+    }
+    else
+    {
+        return;
+    }
+
+    items.forEach(item => item.classList.remove("active"));
+    items[activeSuggestionIndex].classList.add("active");
 }
 
 // FIND SHORTEST PATH (DIJKSTRA)
@@ -579,6 +795,7 @@ function selectShop(shopId)
     const shop = {
         name: (dbShop && dbShop.display_name) || mapShop.name,
         category: dbShop && dbShop.category,
+        unit: dbShop && dbShop.unit,
         operatingHours: (dbShop && dbShop.operating_hours) || null,
         floor: (dbShop && dbShop.floor_name) || mapShop.floor,
         description: dbShop && dbShop.description,
@@ -590,6 +807,16 @@ function selectShop(shopId)
         document.getElementById("shop-select");
 
     shopSelect.value = shopId;
+
+    const shopSearch =
+        document.getElementById("shop-search");
+
+    if (shopSearch)
+    {
+        shopSearch.value = shop.name;
+    }
+
+    hideShopSuggestions();
 
     updateSelectedShopPanel(
         shopId,
@@ -617,6 +844,12 @@ function updateSelectedShopPanel(shopId, shop)
             ${
                 shop.category
                 ? `<div>${shop.category}</div>`
+                : ""
+            }
+
+            ${
+                shop.unit
+                ? `<div>Unit: ${shop.unit}</div>`
                 : ""
             }
 
@@ -681,6 +914,7 @@ async function loadShopDatabase()
         const shops = await response.json();
 
         console.log("Raw shop database:", shops);
+        shopRecords = shops;
 
         shopDatabase = {};
 
@@ -719,5 +953,30 @@ async function loadShopDatabase()
             "Shop database unavailable, using map.json data instead:",
             error
         );
+    }
+
+    }
+
+async function loadCategories() {
+    try {
+        const response = await fetch("/api/categories");
+
+        if (!response.ok) {
+            throw new Error("Failed to load categories.");
+        }
+
+        const categories = await response.json();
+        categoryNames = Array.from(
+            new Set(
+                categories
+                    .map(item => item.category && item.category.trim())
+                    .filter(Boolean)
+            )
+        ).sort((firstCategory, secondCategory) =>
+            firstCategory.localeCompare(secondCategory));
+    }
+    catch (error) {
+        console.warn("Categories unavailable:", error);
+        categoryNames = [];
     }
 }
