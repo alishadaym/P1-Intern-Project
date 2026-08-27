@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css' )}}">
 </head>
 
-<body>
+<body data-start-node-id="{{ start_node or 'node_01' }}">
     <header class="site-header">
         <h1>Dpulze Mall Navigation</h1>
                 <a href="/login" class="login-button">Store Owner Login</a>
@@ -70,7 +70,7 @@
     <script>
         // Set by scanning a location QR code (see app.py's index route);
         // falls back to the main entrance when nothing has been scanned yet.
-        // window.START_NODE_ID = {{ (start_node or "node_01") | tojson }};
+        window.START_NODE_ID = document.body.dataset.startNodeId;
     </script>
     <script src="{{ url_for('static', filename='js/map.js' )}}"></script>
 </body>
