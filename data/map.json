@@ -106,10 +106,15 @@
             "y": 484,
             "floor": "Ground Floor",
             "hotspot": {
-                "x": 514,
-                "y": 442,
-                "width": 63,
-                "height": 84
+                "type":"polygon",
+                "points": [
+                    [515, 453],
+                    [545, 453],
+                    [545, 443],
+                    [578, 443],
+                    [578, 525],
+                    [515, 525]
+                ]
             }
         },
         "zus_coffee_shop": {
@@ -158,10 +163,10 @@
             "y": 236,
             "floor": "Ground Floor",
             "hotspot": {
-                "x": 326,
-                "y": 223,
-                "width": 32,
-                "height": 26
+                "type": "polygon",
+                "points":[
+                    []
+                ]                
             }
         },
         "elianto_shop": {
@@ -336,14 +341,15 @@
         "solight_shop": {
             "name": "Solight",
             "node_id": "node_08",
-            "x": 304,
-            "y": 369,
+            "x": 298,
+            "y": 376,
             "floor": "Ground Floor",
             "hotspot": {
-                "x": 287,
-                "y": 361,
-                "width": 34,
-                "height": 15
+                "type": "rect",
+                "x": 281,
+                "y": 355,
+                "width": 33,
+                "height": 87
             }
         },
         "nandos_shop": {
