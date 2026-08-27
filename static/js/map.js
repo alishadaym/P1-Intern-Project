@@ -131,7 +131,8 @@ document.addEventListener("DOMContentLoaded", async function()
         console.error("Navigate button not found.");
     }
 
-    // SHOP DROPDOWN
+    // SHOP DROPDOWN (kept in the DOM, hidden - still the source of truth
+    // that selectShop() and startNavigation() read/write)
     const shopSelect = document.getElementById("shop-select");
 
     shopSelect.addEventListener(
@@ -143,15 +144,38 @@ document.addEventListener("DOMContentLoaded", async function()
         }
     );
 
-    // SHOP SEARCH
+    // SHOP SEARCH (type-ahead combobox)
     const shopSearch = document.getElementById("shop-search");
+    const shopSuggestions = document.getElementById("shop-suggestions");
 
-    if (shopSearch)
+    if (shopSearch && shopSuggestions)
     {
         shopSearch.addEventListener(
             "input",
             function () {
-                populateShopDropdown(shopSearch.value);
+                renderShopSuggestions(shopSearch.value);
+            }
+        );
+
+        shopSearch.addEventListener(
+            "focus",
+            function () {
+                if (shopSearch.value.trim())
+                {
+                    renderShopSuggestions(shopSearch.value);
+                }
+            }
+        );
+
+        shopSearch.addEventListener("keydown", handleShopSearchKeydown);
+
+        document.addEventListener(
+            "click",
+            function (event) {
+                if (!event.target.closest(".shop-autocomplete"))
+                {
+                    hideShopSuggestions();
+                }
             }
         );
     }
@@ -182,14 +206,25 @@ function drawUserMarker()
     console.log("User location:", startNodeId);
 };
 
-// SHOP DROPDOWN
-function populateShopDropdown(searchText)
+// SHOP LABEL (display name, preferring live DB data over the map's own data)
+function getShopLabel(shopId)
+{
+    const shop = mapData.shop_locations[shopId];
+    const dbShop = shopDatabase[shopId];
+
+    return (
+        (dbShop && dbShop.display_name) ||
+        (shop && shop.name) ||
+        shopId.replace(/_\d+$/, "").replace(/_/g, " ").replace(/\b\w/g, letter => letter.toUpperCase())
+    );
+}
+
+// SHOP DROPDOWN (hidden - always holds every shop, kept in sync with
+// whichever shop is currently selected)
+function populateShopDropdown()
 {
     const shopSelect =
         document.getElementById("shop-select");
-
-    const previouslySelected = shopSelect.value;
-    const query = (searchText || "").trim().toLowerCase();
 
     shopSelect.innerHTML =
         `<option value="">Select a shop</option>`;
@@ -197,37 +232,132 @@ function populateShopDropdown(searchText)
     Object.keys(mapData.shop_locations).forEach(
         shopId =>
         {
-            const shop =
-                mapData.shop_locations[shopId];
-
-            const dbShop =
-                shopDatabase[shopId];
-
-            const label =
-                (dbShop && dbShop.display_name) ||
-                shop.name ||
-                shopId.replace(/_\d+$/, "").replace(/_/g, " ").replace(/\b\w/g, letter => letter.toUpperCase());
-
-            if (query && !label.toLowerCase().includes(query))
-            {
-                return;
-            }
-
             const option =
                 document.createElement("option");
 
             option.value = shopId;
-            option.textContent = label;
+            option.textContent = getShopLabel(shopId);
 
             shopSelect.appendChild(option);
         }
     );
+}
 
-    // Keep the current selection if it's still in the filtered list
-    if (previouslySelected && shopSelect.querySelector(`option[value="${previouslySelected}"]`))
+// SHOP SEARCH SUGGESTIONS
+let activeSuggestionIndex = -1;
+
+function renderShopSuggestions(searchText)
+{
+    const shopSuggestions =
+        document.getElementById("shop-suggestions");
+
+    const query = (searchText || "").trim().toLowerCase();
+    activeSuggestionIndex = -1;
+
+    if (!query)
     {
-        shopSelect.value = previouslySelected;
+        hideShopSuggestions();
+        return;
     }
+
+    const matches =
+        Object.keys(mapData.shop_locations)
+            .map(shopId => ({ shopId, label: getShopLabel(shopId) }))
+            .filter(({ label }) => label.toLowerCase().includes(query));
+
+    shopSuggestions.innerHTML = "";
+
+    if (matches.length === 0)
+    {
+        const noResults = document.createElement("li");
+        noResults.className = "no-results";
+        noResults.textContent = "No shops found";
+        shopSuggestions.appendChild(noResults);
+    }
+    else
+    {
+        matches.forEach(({ shopId, label }) =>
+        {
+            const item = document.createElement("li");
+            item.textContent = label;
+            item.dataset.shopId = shopId;
+
+            item.addEventListener(
+                "click",
+                function () {
+                    chooseShop(shopId, label);
+                }
+            );
+
+            shopSuggestions.appendChild(item);
+        });
+    }
+
+    shopSuggestions.classList.add("visible");
+}
+
+function hideShopSuggestions()
+{
+    const shopSuggestions =
+        document.getElementById("shop-suggestions");
+
+    shopSuggestions.classList.remove("visible");
+    activeSuggestionIndex = -1;
+}
+
+function chooseShop(shopId, label)
+{
+    const shopSearch =
+        document.getElementById("shop-search");
+
+    shopSearch.value = label;
+    hideShopSuggestions();
+    selectShop(shopId);
+}
+
+function handleShopSearchKeydown(event)
+{
+    const shopSuggestions =
+        document.getElementById("shop-suggestions");
+
+    const items =
+        Array.from(shopSuggestions.querySelectorAll("li:not(.no-results)"));
+
+    if (!shopSuggestions.classList.contains("visible") || items.length === 0)
+    {
+        return;
+    }
+
+    if (event.key === "ArrowDown")
+    {
+        event.preventDefault();
+        activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
+    }
+    else if (event.key === "ArrowUp")
+    {
+        event.preventDefault();
+        activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
+    }
+    else if (event.key === "Enter")
+    {
+        event.preventDefault();
+
+        const chosen = activeSuggestionIndex >= 0 ? items[activeSuggestionIndex] : items[0];
+        chooseShop(chosen.dataset.shopId, chosen.textContent);
+        return;
+    }
+    else if (event.key === "Escape")
+    {
+        hideShopSuggestions();
+        return;
+    }
+    else
+    {
+        return;
+    }
+
+    items.forEach(item => item.classList.remove("active"));
+    items[activeSuggestionIndex].classList.add("active");
 }
 
 // FIND SHORTEST PATH (DIJKSTRA)
@@ -635,6 +765,16 @@ function selectShop(shopId)
         document.getElementById("shop-select");
 
     shopSelect.value = shopId;
+
+    const shopSearch =
+        document.getElementById("shop-search");
+
+    if (shopSearch)
+    {
+        shopSearch.value = shop.name;
+    }
+
+    hideShopSuggestions();
 
     updateSelectedShopPanel(
         shopId,

@@ -30,8 +30,11 @@
             </select>
 
             <label for="shop-search">Find Shop</label>
-            <input type="text" id="shop-search" placeholder="Search shops...">
-            <select id="shop-select">
+            <div class="shop-autocomplete">
+                <input type="text" id="shop-search" placeholder="Search shops..." autocomplete="off">
+                <ul id="shop-suggestions" class="shop-suggestions"></ul>
+            </div>
+            <select id="shop-select" class="hidden-select">
                 <option value="">Select a shop</option>
             </select>
 

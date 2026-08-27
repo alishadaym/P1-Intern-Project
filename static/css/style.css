@@ -67,6 +67,55 @@ main {
     background: #F0997D;
 }
 
+.hidden-select {
+    display: none;
+}
+
+.shop-autocomplete {
+    position: relative;
+}
+
+.shop-suggestions {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    margin: 0 0 10px;
+    padding: 0;
+    list-style: none;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    max-height: 240px;
+    overflow-y: auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.shop-suggestions.visible {
+    display: block;
+}
+
+.shop-suggestions li {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.shop-suggestions li:hover,
+.shop-suggestions li.active {
+    background: #FCF2E5;
+}
+
+.shop-suggestions li.no-results {
+    color: #888;
+    cursor: default;
+}
+
+.shop-suggestions li.no-results:hover {
+    background: none;
+}
+
 .shop-info, .legend {
     margin-top:30px;
 }
