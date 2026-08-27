@@ -82,6 +82,20 @@
         </section>
     </main>
 
+    <div class="shop-modal" id="shop-modal" hidden>
+        <div class="shop-modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-shop-name">
+            <button class="shop-modal-close" id="close-shop-modal" type="button" aria-label="Close store details">&times;</button>
+            <h2 id="modal-shop-name"></h2>
+            <div class="shop-modal-details" id="modal-shop-details">
+                <p id="modal-shop-category"></p>
+                <p id="modal-shop-unit"></p>
+                <p id="modal-shop-floor"></p>
+                <p id="modal-shop-hours"></p>
+                <p id="modal-shop-description"></p>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Set by scanning a location QR code (see app.py's index route);
         // falls back to the main entrance when nothing has been scanned yet.

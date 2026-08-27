@@ -184,7 +184,55 @@ document.addEventListener("DOMContentLoaded", async function()
     document
         .getElementById("category-select")
         .addEventListener("change", renderCategoryShops);
+
+    const shopModal = document.getElementById("shop-modal");
+    const closeShopModal = document.getElementById("close-shop-modal");
+
+    closeShopModal.addEventListener("click", closeShopDetails);
+    shopModal.addEventListener("click", function(event)
+    {
+        if (event.target === shopModal)
+        {
+            closeShopDetails();
+        }
+    });
+    document.addEventListener("keydown", function(event)
+    {
+        if (event.key === "Escape" && !shopModal.hidden)
+        {
+            closeShopDetails();
+        }
+    });
 });
+
+let lastShopTrigger = null;
+
+function closeShopDetails()
+{
+    const shopModal = document.getElementById("shop-modal");
+    shopModal.hidden = true;
+
+    if (lastShopTrigger)
+    {
+        lastShopTrigger.focus();
+        lastShopTrigger = null;
+    }
+}
+
+function showShopDetails(shop)
+{
+    const shopModal = document.getElementById("shop-modal");
+
+    lastShopTrigger = document.activeElement;
+    document.getElementById("modal-shop-name").textContent = shop.name || "Unnamed Shop";
+    document.getElementById("modal-shop-category").textContent = shop.category || "";
+    document.getElementById("modal-shop-unit").textContent = shop.unit ? `Unit: ${shop.unit}` : "";
+    document.getElementById("modal-shop-floor").textContent = shop.floor || "";
+    document.getElementById("modal-shop-hours").textContent = shop.operatingHours ? `Hours: ${shop.operatingHours}` : "";
+    document.getElementById("modal-shop-description").textContent = shop.description || "";
+    shopModal.hidden = false;
+    document.getElementById("close-shop-modal").focus();
+}
 
 // DRAW USER CURRENT LOCATION
 function drawUserMarker()
@@ -853,6 +901,7 @@ function selectShop(shopId)
     );
 
     highlightSelectedShop(shopId);
+    showShopDetails(shop);
 }
 
 // UPDATE SELECTED SHOP PANEL
