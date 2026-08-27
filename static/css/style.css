@@ -17,6 +17,10 @@ header {
     color: white;
     padding: 20px;
     text-align: center;
+    /* Tall enough that .login-button (absolutely positioned, next to
+       the "You scanned" line) still fits inside the header even when
+       that line isn't rendered yet (nothing scanned this session). */
+    min-height: 93px;
 }
 
 .scanned-location {
@@ -290,7 +294,7 @@ main {
         border-radius: 4px;
         margin-top: 0px;
         position: absolute;
-        top: 10px;
+        top: 58px;
         right: 10px;
 }
 
@@ -300,9 +304,13 @@ main {
 
 @media (max-width: 700px) {
     .login-button {
+        /* Side-by-side with "You scanned" only works when both fit on
+           one line; shop names vary too much in length for that on
+           narrow screens, so stack it in-flow above that line instead. */
+        position: static;
+        display: inline-block;
         padding: 4px 8px;
         font-size: 11px;
-        top: 8px;
-        right: 8px;
+        margin-top: 8px;
     }
 }
