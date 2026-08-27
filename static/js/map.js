@@ -142,6 +142,19 @@ document.addEventListener("DOMContentLoaded", async function()
             }
         }
     );
+
+    // SHOP SEARCH
+    const shopSearch = document.getElementById("shop-search");
+
+    if (shopSearch)
+    {
+        shopSearch.addEventListener(
+            "input",
+            function () {
+                populateShopDropdown(shopSearch.value);
+            }
+        );
+    }
 });
 
 // DRAW USER CURRENT LOCATION
@@ -170,10 +183,13 @@ function drawUserMarker()
 };
 
 // SHOP DROPDOWN
-function populateShopDropdown()
+function populateShopDropdown(searchText)
 {
     const shopSelect =
         document.getElementById("shop-select");
+
+    const previouslySelected = shopSelect.value;
+    const query = (searchText || "").trim().toLowerCase();
 
     shopSelect.innerHTML =
         `<option value="">Select a shop</option>`;
@@ -187,18 +203,31 @@ function populateShopDropdown()
             const dbShop =
                 shopDatabase[shopId];
 
-            const option =
-                document.createElement("option");
-
-            option.value = shopId;
-            option.textContent =
+            const label =
                 (dbShop && dbShop.display_name) ||
                 shop.name ||
                 shopId.replace(/_\d+$/, "").replace(/_/g, " ").replace(/\b\w/g, letter => letter.toUpperCase());
 
+            if (query && !label.toLowerCase().includes(query))
+            {
+                return;
+            }
+
+            const option =
+                document.createElement("option");
+
+            option.value = shopId;
+            option.textContent = label;
+
             shopSelect.appendChild(option);
         }
     );
+
+    // Keep the current selection if it's still in the filtered list
+    if (previouslySelected && shopSelect.querySelector(`option[value="${previouslySelected}"]`))
+    {
+        shopSelect.value = previouslySelected;
+    }
 }
 
 // FIND SHORTEST PATH (DIJKSTRA)
