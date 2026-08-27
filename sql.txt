@@ -160,3 +160,71 @@ UPDATE shops SET unit = 'G-35' WHERE shop_code = 'mr_dakgalbi_shop';
 UPDATE shops SET unit = 'G-34' WHERE shop_code = 'go_noodle_house_shop';
 UPDATE shops SET unit = 'G-33' WHERE shop_code = 'happikiddo_shop';
 UPDATE shops SET unit = 'G-32' WHERE shop_code = 'homes_harmony_shop';
+
+
+//UPDATE SHOPS CATEGORY
+UPDATE shops
+SET category = CASE shop_code
+    -- Fashion & Apparel
+    WHEN 'fos_shop' THEN 'Fashion'
+    WHEN 'tone_mann_shop' THEN 'Fashion'
+    WHEN 'good2u_shop' THEN 'Fashion'
+    WHEN 'mnb_shop' THEN 'Fashion'
+    WHEN 'mc_vogue_shop' THEN 'Fashion'
+    WHEN 'skechers_shop' THEN 'Fashion'
+    WHEN 'parca_fashion_shop' THEN 'Fashion'
+    WHEN 'sarong_by_ar_shop' THEN 'Fashion'
+    WHEN 'solight_shop' THEN 'Fashion'
+    WHEN 'sox_world_shop' THEN 'Fashion'
+    WHEN 'royal_sporting_house_shop' THEN 'Fashion'
+    WHEN 'jewellery_kiosk_shop' THEN 'Fashion'
+
+    -- Food & Beverages
+    WHEN 'zus_coffee_shop' THEN 'Food & Beverages'
+    WHEN 'ajumma_shop' THEN 'Food & Beverages'
+    WHEN 'nandos_shop' THEN 'Food & Beverages'
+    WHEN 'baskin_robbins_shop' THEN 'Food & Beverages'
+    WHEN 'coffee_bean_shop' THEN 'Food & Beverages'
+    WHEN 'mr_dakgalbi_shop' THEN 'Food & Beverages'
+    WHEN 'go_noodle_house_shop' THEN 'Food & Beverages'
+    WHEN 'starbucks_shop' THEN 'Food & Beverages'
+
+    -- Cosmetics & Beauty
+    WHEN 'elianto_shop' THEN 'Cosmetics & Beauty'
+    WHEN 'world_of_perfumes_shop' THEN 'Cosmetics & Beauty'
+    WHEN 'the_body_shop_shop' THEN 'Cosmetics & Beauty'
+    WHEN 'kunzense_bodyline_shop' THEN 'Cosmetics & Beauty'
+
+    -- Electronics & Telco
+    WHEN 'mi_store_shop' THEN 'Electronics'
+    WHEN 'maxis_shop' THEN 'Electronics'
+
+    -- Banking & Finance
+    WHEN 'hong_leong_shop' THEN 'Banking & Finance'
+
+    -- Health & Wellness
+    WHEN 'jacs_optometry_shop' THEN 'Health & Wellness'
+
+    -- Sports & Outdoor
+    WHEN 'al_ikhsan_sports_shop' THEN 'Sports & Outdoor'
+
+    -- Home & Living
+    WHEN 'ssf_shop' THEN 'Home & Living'
+    WHEN 'homes_harmony_shop' THEN 'Home & Living'
+
+    -- Retail / General
+    WHEN 'family_mart_shop' THEN 'Convenience Store'
+    WHEN 'happikiddo_shop' THEN 'Retail'
+
+    ELSE category
+END
+WHERE shop_code IN (
+    'fos_shop','tone_mann_shop','ssf_shop','good2u_shop','family_mart_shop',
+    'zus_coffee_shop','hong_leong_shop','mi_store_shop','ajumma_shop','elianto_shop',
+    'world_of_perfumes_shop','jacs_optometry_shop','mnb_shop','mc_vogue_shop',
+    'kunzense_bodyline_shop','skechers_shop','jewellery_kiosk_shop','parca_fashion_shop',
+    'maxis_shop','royal_sporting_house_shop','starbucks_shop','sarong_by_ar_shop',
+    'solight_shop','nandos_shop','al_ikhsan_sports_shop','baskin_robbins_shop',
+    'coffee_bean_shop','the_body_shop_shop','sox_world_shop','mr_dakgalbi_shop',
+    'go_noodle_house_shop','happikiddo_shop','homes_harmony_shop'
+);

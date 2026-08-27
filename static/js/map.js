@@ -1,6 +1,8 @@
 let mapData = null;
 let selectedShopId = null;
 let shopDatabase = {};
+let shopRecords = [];
+let categoryNames = [];
 
 // LOAD MAP DATA FROM FLASK
 async function loadMapData()
@@ -116,7 +118,9 @@ document.addEventListener("DOMContentLoaded", async function()
 
     await loadMapData();
     await loadShopDatabase();
+    await loadCategories();
     populateShopDropdown();
+    populateCategoryDropdown();
 
     // NAVIGATE BUTTON
     const navigateButton = document.getElementById("navigate-btn");
@@ -176,6 +180,10 @@ document.addEventListener("DOMContentLoaded", async function()
             }
         );
     }
+
+    document
+        .getElementById("category-select")
+        .addEventListener("change", renderCategoryShops);
 });
 
 // DRAW USER CURRENT LOCATION
@@ -238,6 +246,63 @@ function populateShopDropdown()
             shopSelect.appendChild(option);
         }
     );
+}
+
+// CATEGORY FILTER
+function populateCategoryDropdown() {
+    const categorySelect = document.getElementById("category-select");
+    categorySelect.innerHTML = "<option value=\"\">All categories</option>";
+
+    categoryNames
+        .forEach(category => {
+            const option = document.createElement("option");
+            option.value = category;
+            option.textContent = category;
+            categorySelect.appendChild(option);
+        });
+}
+
+function renderCategoryShops() {
+    const category = document.getElementById("category-select").value;
+    const shopList = document.getElementById("category-shop-list");
+
+    if (!category) {
+        shopList.textContent = "Choose a category";
+        return;
+    }
+
+    const matchingShops = shopRecords
+        .filter(shop => shop.category && shop.category.trim() === category)
+        .sort((firstShop, secondShop) => {
+            const firstName = firstShop.shop_name || "";
+            const secondName = secondShop.shop_name || "";
+            return firstName.localeCompare(secondName);
+        });
+
+    shopList.innerHTML = "";
+
+    if (matchingShops.length === 0) {
+        shopList.textContent = "No shops found in this category";
+        return;
+    }
+
+    matchingShops.forEach(shop => {
+        const shopButton = document.createElement("button");
+
+        shopButton.type = "button";
+        shopButton.className = "category-shop-item";
+        shopButton.textContent = shop.shop_name || "Unnamed Shop";
+
+        if (mapData.shop_locations[shop.shop_code]) {
+            shopButton.addEventListener("click", () => selectShop(shop.shop_code));
+        }
+        else {
+            shopButton.disabled = true;
+            shopButton.title = "This shop has no map location yet";
+        }
+
+        shopList.appendChild(shopButton);
+    });
 }
 
 // SHOP SEARCH SUGGESTIONS
@@ -870,6 +935,7 @@ async function loadShopDatabase()
         const shops = await response.json();
 
         console.log("Raw shop database:", shops);
+        shopRecords = shops;
 
         shopDatabase = {};
 
@@ -908,5 +974,30 @@ async function loadShopDatabase()
             "Shop database unavailable, using map.json data instead:",
             error
         );
+    }
+
+    }
+
+async function loadCategories() {
+    try {
+        const response = await fetch("/api/categories");
+
+        if (!response.ok) {
+            throw new Error("Failed to load categories.");
+        }
+
+        const categories = await response.json();
+        categoryNames = Array.from(
+            new Set(
+                categories
+                    .map(item => item.category && item.category.trim())
+                    .filter(Boolean)
+            )
+        ).sort((firstCategory, secondCategory) =>
+            firstCategory.localeCompare(secondCategory));
+    }
+    catch (error) {
+        console.warn("Categories unavailable:", error);
+        categoryNames = [];
     }
 }

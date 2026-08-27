@@ -267,6 +267,38 @@ main {
         margin-top: 20px;
     }
 
+    .selected-shop-section,
+    .category-shops-section {
+        margin-top: 20px;
+    }
+
+    .selected-shop-section h3,
+    .category-shops-section h3 {
+        margin-bottom: 10px;
+    }
+
+    #selected-shop-details,
+    #category-shop-list {
+        font-size: 14px;
+    }
+
+    .category-shop-item {
+        display: block;
+        width: 100%;
+        margin-bottom: 6px;
+        padding: 8px 10px;
+        border: 1px solid #d8c5b0;
+        border-radius: 4px;
+        background: #fffaf4;
+        color: #3d3029;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .category-shop-item:hover {
+        background: #f8dfc8;
+    }
+
     .map-section {
         width: 100%;
         padding: 12px;
