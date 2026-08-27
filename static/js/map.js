@@ -490,29 +490,29 @@ function createPOIMarker(poiId, poi)
 
 function drawPOIMarkers()
 {
-    const poiGroup = document.getElementById("poi-markers");
+    const poiGroup =
+        document.getElementById("poi-markers");
 
     poiGroup.innerHTML = "";
 
-    Object.entries(mapData.shop_locations).forEach(
-        ([shopId, shop]) =>
-        {
-            createPOIMarker(shopId, shop);
-        }
-    );
+    // DO NOT draw shop orange circles anymore
 
+    // Only draw facilities if needed
     if (mapData.facilities)
     {
         Object.entries(mapData.facilities).forEach(
             ([facilityId, facility]) =>
             {
-                createPOIMarker(facilityId, facility);
+                createPOIMarker(
+                    facilityId,
+                    facility
+                );
             }
         );
     }
 }
 
-// DETAILS OF SHOP POP UP
+// SHOP HOTSPOT
 function drawShopHotspots()
 {
     const hotspotGroup =
@@ -534,28 +534,12 @@ function drawShopHotspots()
                     "rect"
                 );
 
-            hotspot.setAttribute(
-                "x",
-                shop.hotspot.x
-            );
-
-            hotspot.setAttribute(
-                "y",
-                shop.hotspot.y
-            );
-
-            hotspot.setAttribute(
-                "width",
-                shop.hotspot.width
-            );
-
-            hotspot.setAttribute(
-                "height",
-                shop.hotspot.height
-            );
+            hotspot.setAttribute("x", shop.hotspot.x);
+            hotspot.setAttribute("y", shop.hotspot.y);
+            hotspot.setAttribute("width", shop.hotspot.width);
+            hotspot.setAttribute("height", shop.hotspot.height);
 
             hotspot.classList.add("shop-hotspot");
-
             hotspot.dataset.shopId = shopId;
 
             hotspot.addEventListener(
@@ -661,29 +645,24 @@ function updateSelectedShopPanel(shopId, shop)
 // HIGHLIGHT SELECTED SHOP
 function highlightSelectedShop(shopId)
 {
-    // Remove previous highlight
+    // Remove previous selected shop
     document
-        .querySelectorAll(".poi-marker")
-        .forEach(marker =>
+        .querySelectorAll(".shop-hotspot")
+        .forEach(hotspot =>
         {
-            marker.classList.remove(
-                "poi-selected"
-            );
+            hotspot.classList.remove("selected");
         });
 
 
-    // Find selected marker
-    const selectedMarker =
+    // Highlight newly selected shop
+    const selectedHotspot =
         document.querySelector(
-            `.poi-marker[data-poi-id="${shopId}"]`
+            `.shop-hotspot[data-shop-id="${shopId}"]`
         );
 
-
-    if (selectedMarker)
+    if (selectedHotspot)
     {
-        selectedMarker.classList.add(
-            "poi-selected"
-        );
+        selectedHotspot.classList.add("selected");
     }
 }
 
