@@ -216,11 +216,16 @@ main {
 }
 
 .shop-hotspot {
-    fill: rgba(255, 152, 0, 0.20);
-    stroke: #ff9800;
+    fill: transparent;
+    stroke: transparent;
     stroke-width: 2;
+
     pointer-events: all;
     cursor: pointer;
+
+    transition:
+        fill 0.2s ease,
+        stroke 0.2s ease;
 }
 
 .shop-hotspot:hover {
