@@ -306,27 +306,27 @@
         "solight_shop": {
             "name": "Solight",
             "node_id": "node_08",
-            "x": 304,
-            "y": 369,
+            "x": 298,
+            "y": 370,
             "floor": "Ground Floor",
             "hotspot": {
-                "x": 287,
-                "y": 361,
-                "width": 34,
-                "height": 15
+                "x": 281,
+                "y": 355,
+                "width": 33,
+                "height": 87
             }
         },
         "nandos_shop": {
             "name": "Nando's",
             "node_id": "node_07",
-            "x": 337,
-            "y": 369,
+            "x": 335,
+            "y": 372,
             "floor": "Ground Floor",
             "hotspot": {
-                "x": 320,
-                "y": 361,
-                "width": 34,
-                "height": 15
+                "x": 318,
+                "y": 355,
+                "width": 33,
+                "height": 150
             }
         },
         "al_ikhsan_sports_shop": {
@@ -336,10 +336,10 @@
             "y": 372,
             "floor": "Ground Floor",
             "hotspot": {
-                "x": 356,
-                "y": 361,
+                "x": 355,
+                "y": 355,
                 "width": 41,
-                "height": 21
+                "height": 115
             }
         },
         "baskin_robbins_shop": {
@@ -349,10 +349,10 @@
             "y": 371,
             "floor": "Ground Floor",
             "hotspot": {
-                "x": 406,
-                "y": 360,
-                "width": 35,
-                "height": 22
+                "x": 400,
+                "y": 355,
+                "width": 45,
+                "height": 115
             }
         },
         "coffee_bean_shop": {

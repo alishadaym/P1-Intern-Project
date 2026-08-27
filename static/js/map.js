@@ -771,8 +771,12 @@ function drawShopHotspots()
             );
 
             hotspot.classList.add("shop-hotspot");
+            hotspot.setAttribute("pointer-events", "all");
 
             hotspot.dataset.shopId = shopId;
+            hotspot.setAttribute("role", "button");
+            hotspot.setAttribute("tabindex", "0");
+            hotspot.setAttribute("aria-label", `Select ${getShopLabel(shopId)}`);
 
             hotspot.addEventListener(
                 "click",
@@ -781,6 +785,15 @@ function drawShopHotspots()
                     selectShop(shopId);
                 }
             );
+
+            hotspot.addEventListener("keydown", function(event)
+            {
+                if (event.key === "Enter" || event.key === " ")
+                {
+                    event.preventDefault();
+                    selectShop(shopId);
+                }
+            });
 
             hotspotGroup.appendChild(hotspot);
         }
