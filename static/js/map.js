@@ -744,19 +744,77 @@ function drawShopHotspots()
                 return;
             }
 
-            const hotspot =
-                document.createElementNS(
-                    "http://www.w3.org/2000/svg",
-                    "rect"
+            let hotspot = null;
+
+            // RECTANGLE SHOP
+            if (shop.hotspot.type === "rect")
+            {
+                hotspot =
+                    document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "rect"
+                    );
+
+                hotspot.setAttribute(
+                    "x",
+                    shop.hotspot.x
                 );
 
-            hotspot.setAttribute("x", shop.hotspot.x);
-            hotspot.setAttribute("y", shop.hotspot.y);
-            hotspot.setAttribute("width", shop.hotspot.width);
-            hotspot.setAttribute("height", shop.hotspot.height);
+                hotspot.setAttribute(
+                    "y",
+                    shop.hotspot.y
+                );
 
-            hotspot.classList.add("shop-hotspot");
-            hotspot.dataset.shopId = shopId;
+                hotspot.setAttribute(
+                    "width",
+                    shop.hotspot.width
+                );
+
+                hotspot.setAttribute(
+                    "height",
+                    shop.hotspot.height
+                );
+            }
+
+            // POLYGON SHOP
+            else if (shop.hotspot.type === "polygon")
+            {
+                hotspot =
+                    document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "polygon"
+                    );
+
+                const points =
+                    shop.hotspot.points
+                        .map(point =>
+                            `${point[0]},${point[1]}`
+                        )
+                        .join(" ");
+
+                hotspot.setAttribute(
+                    "points",
+                    points
+                );
+            }
+
+            // Invalid hotspot type
+            if (!hotspot)
+            {
+                console.warn(
+                    "Invalid hotspot:",
+                    shopId
+                );
+
+                return;
+            }
+
+            hotspot.classList.add(
+                "shop-hotspot"
+            );
+
+            hotspot.dataset.shopId =
+                shopId;
 
             hotspot.addEventListener(
                 "click",
@@ -766,7 +824,9 @@ function drawShopHotspots()
                 }
             );
 
-            hotspotGroup.appendChild(hotspot);
+            hotspotGroup.appendChild(
+                hotspot
+            );
         }
     );
 }
@@ -878,16 +938,15 @@ function updateSelectedShopPanel(shopId, shop)
 // HIGHLIGHT SELECTED SHOP
 function highlightSelectedShop(shopId)
 {
-    // Remove previous selected shop
     document
         .querySelectorAll(".shop-hotspot")
         .forEach(hotspot =>
         {
-            hotspot.classList.remove("selected");
+            hotspot.classList.remove(
+                "selected"
+            );
         });
 
-
-    // Highlight newly selected shop
     const selectedHotspot =
         document.querySelector(
             `.shop-hotspot[data-shop-id="${shopId}"]`
@@ -895,7 +954,9 @@ function highlightSelectedShop(shopId)
 
     if (selectedHotspot)
     {
-        selectedHotspot.classList.add("selected");
+        selectedHotspot.classList.add(
+            "selected"
+        );
     }
 }
 
