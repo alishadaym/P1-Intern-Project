@@ -307,7 +307,7 @@
             "name": "Solight",
             "node_id": "node_08",
             "x": 298,
-            "y": 370,
+            "y": 376,
             "floor": "Ground Floor",
             "hotspot": {
                 "x": 281,
@@ -320,7 +320,7 @@
             "name": "Nando's",
             "node_id": "node_07",
             "x": 335,
-            "y": 372,
+            "y": 376,
             "floor": "Ground Floor",
             "hotspot": {
                 "x": 318,
@@ -333,7 +333,7 @@
             "name": "Al-Ikhsan Sports",
             "node_id": "node_06",
             "x": 376,
-            "y": 372,
+            "y": 376,
             "floor": "Ground Floor",
             "hotspot": {
                 "x": 355,
@@ -346,7 +346,7 @@
             "name": "Baskin Robbins",
             "node_id": "node_05",
             "x": 423,
-            "y": 371,
+            "y": 376,
             "floor": "Ground Floor",
             "hotspot": {
                 "x": 400,
