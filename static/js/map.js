@@ -3,6 +3,7 @@ let selectedShopId = null;
 let shopDatabase = {};
 let shopRecords = [];
 let categoryNames = [];
+let selectedDestination = null;
 
 // LOAD MAP DATA FROM FLASK
 async function loadMapData()
@@ -185,6 +186,10 @@ document.addEventListener("DOMContentLoaded", async function()
         .getElementById("category-select")
         .addEventListener("change", renderCategoryShops);
 
+    document
+        .getElementById("utility-select")
+        .addEventListener("change", renderUtilityLocations);
+
     const shopModal = document.getElementById("shop-modal");
     const closeShopModal = document.getElementById("close-shop-modal");
 
@@ -270,6 +275,56 @@ function getShopLabel(shopId)
         (shop && shop.name) ||
         shopId.replace(/_\d+$/, "").replace(/_/g, " ").replace(/\b\w/g, letter => letter.toUpperCase())
     );
+}
+
+function getUtilityStatusLabel(status)
+{
+    return status === "in_use" ? "In use" : "Available";
+}
+
+function renderUtilityLocations()
+{
+    const utilityType = document.getElementById("utility-select").value;
+    const utilityList = document.getElementById("utility-list");
+
+    utilityList.innerHTML = "";
+
+    if (!utilityType)
+    {
+        utilityList.textContent = "Choose a utility to see locations";
+        return;
+    }
+
+    const matchingUtilities = Object.entries(mapData.facilities || {})
+        .filter(([, utility]) => utility.type === utilityType);
+
+    if (matchingUtilities.length === 0)
+    {
+        utilityList.textContent = "No locations found";
+        return;
+    }
+
+    matchingUtilities.forEach(([utilityId, utility]) =>
+    {
+        const utilityButton = document.createElement("button");
+        const statusLabel = getUtilityStatusLabel(utility.status);
+
+        utilityButton.type = "button";
+        utilityButton.className = "utility-list-item";
+        utilityButton.innerHTML = `${utility.name}<span class="utility-status">${utility.floor} - ${statusLabel}</span>`;
+        utilityButton.disabled = utility.status === "in_use";
+
+        if (!utilityButton.disabled)
+        {
+            utilityButton.addEventListener("click", function()
+            {
+                selectUtility(utilityId);
+                startNavigation();
+            });
+        }
+
+        utilityList.appendChild(utilityButton);
+    });
 }
 
 // SHOP DROPDOWN (hidden - always holds every shop, kept in sync with
@@ -651,33 +706,17 @@ function drawRoute(path)
 // START NAVIGATION
 function startNavigation()
 {
-    const shopSelect =
-        document.getElementById("shop-select");
-
-
-    // Shop can be selected either by:
-    // 1. clicking map
-    // 2. using dropdown
-    const chosenShopId =
-        selectedShopId || shopSelect.value;
-
-
-    if (!chosenShopId)
+    if (!selectedDestination)
     {
-        alert("Please select a shop.");
+        alert("Please select a shop or utility.");
         return;
     }
 
-
-    const selectedShop =
-        mapData.shop_locations[chosenShopId];
-
-
-    if (!selectedShop)
+    if (!mapData.nodes[selectedDestination.nodeId])
     {
         console.error(
-            "Selected shop not found:",
-            chosenShopId
+            "Destination node not found:",
+            selectedDestination.nodeId
         );
 
         return;
@@ -686,11 +725,10 @@ function startNavigation()
 
     const startNodeId = window.START_NODE_ID || "node_01";
 
-    const destinationNodeId =
-        selectedShop.node_id;
+    const destinationNodeId = selectedDestination.nodeId;
 
 
-    console.log("Selected shop:", chosenShopId);
+    console.log("Selected destination:", selectedDestination.label);
     console.log("Start:", startNodeId);
     console.log("Destination:", destinationNodeId);
 
@@ -734,7 +772,14 @@ function createPOIMarker(poiId, poi)
      marker.addEventListener(
         "click",
         function () {
-            selectShop(poiId);
+            if (mapData.shop_locations[poiId])
+            {
+                selectShop(poiId);
+            }
+            else if (mapData.facilities && mapData.facilities[poiId])
+            {
+                selectUtility(poiId);
+            }
     });
 
     poiGroup.appendChild(marker);
@@ -879,6 +924,10 @@ function selectShop(shopId)
     };
 
     selectedShopId = shopId;
+    selectedDestination = {
+        label: shop.name,
+        nodeId: mapShop.node_id
+    };
 
     const shopSelect =
         document.getElementById("shop-select");
@@ -902,6 +951,33 @@ function selectShop(shopId)
 
     highlightSelectedShop(shopId);
     showShopDetails(shop);
+}
+
+function selectUtility(utilityId)
+{
+    const utility = mapData.facilities && mapData.facilities[utilityId];
+
+    if (!utility || utility.status === "in_use")
+    {
+        return;
+    }
+
+    selectedShopId = null;
+    selectedDestination = {
+        label: utility.name,
+        nodeId: utility.node_id
+    };
+
+    document.getElementById("shop-select").value = "";
+    document.getElementById("selected-shop-details").innerHTML = `
+        <div class="shop-details-card">
+            <strong class="shop-details-name">${utility.name}</strong>
+            <div>${utility.floor}</div>
+            <div>Available</div>
+        </div>
+    `;
+
+    highlightSelectedShop(utilityId);
 }
 
 // UPDATE SELECTED SHOP PANEL

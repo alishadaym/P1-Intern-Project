@@ -128,6 +128,40 @@ main {
     margin-top: 30px;
 }
 
+.utility-section {
+    margin-top: 20px;
+}
+
+.utility-list-item {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    margin-bottom: 6px;
+    padding: 8px 10px;
+    border: 1px solid #d8c5b0;
+    border-radius: 4px;
+    background: #fffaf4;
+    color: #3d3029;
+    text-align: left;
+    cursor: pointer;
+}
+
+.utility-list-item:hover {
+    background: #f8dfc8;
+}
+
+.utility-list-item:disabled {
+    background: #eee;
+    color: #888;
+    cursor: not-allowed;
+}
+
+.utility-status {
+    display: block;
+    margin-top: 3px;
+    font-size: 0.9em;
+}
+
 .shop-modal {
     position: fixed;
     inset: 0;

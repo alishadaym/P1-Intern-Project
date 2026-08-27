@@ -447,6 +447,71 @@
             }
         }
     },
+    "facilities": {
+        "ground_toilet_west": {
+            "name": "Toilet - West Wing",
+            "type": "toilet",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 258,
+            "y": 156,
+            "node_id": "node_14"
+        },
+        "ground_toilet_centre": {
+            "name": "Toilet - Centre",
+            "type": "toilet",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 470,
+            "y": 370,
+            "node_id": "node_03"
+        },
+        "ground_toilet_east": {
+            "name": "Toilet - East Wing",
+            "type": "toilet",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 779,
+            "y": 230,
+            "node_id": "node_28"
+        },
+        "ground_toilet_south": {
+            "name": "Toilet - South Wing",
+            "type": "toilet",
+            "floor": "Ground Floor",
+            "status": "in_use",
+            "x": 665,
+            "y": 460,
+            "node_id": "node_34"
+        },
+        "ground_baby_care": {
+            "name": "Baby Care Room",
+            "type": "baby_diaper",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 546,
+            "y": 484,
+            "node_id": "node_39"
+        },
+        "ground_oku_toilet": {
+            "name": "OKU Accessible Toilet",
+            "type": "oku",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 864,
+            "y": 262,
+            "node_id": "node_29"
+        },
+        "ground_lift": {
+            "name": "Lift - Ground Floor",
+            "type": "lift",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 586,
+            "y": 328,
+            "node_id": "node_42"
+        }
+    },
     "nodes": {
         "node_01": {
             "x": 500,
