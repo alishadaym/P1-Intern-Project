@@ -589,12 +589,13 @@ function selectShop(shopId)
 
     const dbShop = shopDatabase[shopId];
 
-    // Prefer live database details (name, category, description) once
+    // Prefer live database details (category, hours, description) once
     // connected; fall back to the map's own data so this still works
     // without a database.
     const shop = {
         name: (dbShop && dbShop.display_name) || mapShop.name,
         category: dbShop && dbShop.category,
+        operatingHours: (dbShop && dbShop.operating_hours) || null,
         floor: (dbShop && dbShop.floor_name) || mapShop.floor,
         description: dbShop && dbShop.description,
     };
@@ -638,6 +639,12 @@ function updateSelectedShopPanel(shopId, shop)
             ${
                 shop.floor
                 ? `<div>${shop.floor}</div>`
+                : ""
+            }
+
+            ${
+                shop.operatingHours
+                ? `<div>Hours: ${shop.operatingHours}</div>`
                 : ""
             }
 

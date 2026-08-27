@@ -31,14 +31,12 @@ def get_shops():
             s.id,
             s.shop_code,
             s.shop_name,
+            s.operating_hours,
             s.category,
-            s.unit,
             s.description,
             s.floor_id,
             f.floor_name,
-            f.floor_code,
-            s.x_position,
-            s.y_position
+            f.floor_code
         FROM shops s
         JOIN floors f
             ON s.floor_id = f.id
@@ -60,12 +58,10 @@ def add_shop():
     data = request.get_json()
 
     shop_name = data.get("shop_name")
+    operating_hours = data.get("operating_hours")
     category = data.get("category")
-    unit = data.get("unit")
     description = data.get("description")
     floor_id = data.get("floor_id")
-    x_position = data.get("x_position")
-    y_position = data.get("y_position")
 
     if not shop_name or not floor_id:
         return jsonify({
@@ -77,18 +73,16 @@ def add_shop():
 
     query = """
         INSERT INTO shops
-        (shop_name, category, unit, description, floor_id, x_position, y_position)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        (shop_name, operating_hours, category, description, floor_id)
+        VALUES (%s, %s, %s, %s, %s)
     """
 
     values = (
         shop_name,
+        operating_hours,
         category,
-        unit,
         description,
-        floor_id,
-        x_position,
-        y_position
+        floor_id
     )
 
     cursor.execute(query, values)
@@ -119,28 +113,27 @@ def search_shops():
     query = """
         SELECT
             s.id,
+            s.shop_code,
             s.shop_name,
+            s.operating_hours,
             s.category,
             s.unit,
             s.description,
             s.floor_id,
             f.floor_name,
-            f.floor_code,
-            s.x_position,
-            s.y_position
+            f.floor_code
         FROM shops s
         JOIN floors f ON s.floor_id = f.id
         WHERE
             s.shop_name LIKE %s
             OR s.category LIKE %s
-            OR s.unit LIKE %s
     """
 
     search_pattern = f"%{search_query}%"
 
     cursor.execute(
         query,
-        (search_pattern, search_pattern, search_pattern)
+        (search_pattern, search_pattern)
     )
 
     shops = cursor.fetchall()
@@ -169,12 +162,10 @@ def update_shop(shop_id):
     data = request.get_json()
 
     shop_name = data.get("shop_name")
+    operating_hours = data.get("operating_hours")
     category = data.get("category")
-    unit = data.get("unit")
     description = data.get("description")
     floor_id = data.get("floor_id")
-    x_position = data.get("x_position")
-    y_position = data.get("y_position")
 
     if not shop_name or not floor_id:
         return jsonify({
@@ -188,23 +179,19 @@ def update_shop(shop_id):
         UPDATE shops
         SET
             shop_name = %s,
+            operating_hours = %s,
             category = %s,
-            unit = %s,
             description = %s,
-            floor_id = %s,
-            x_position = %s,
-            y_position = %s
+            floor_id = %s
         WHERE id = %s
     """
 
     values = (
         shop_name,
+        operating_hours,
         category,
-        unit,
         description,
         floor_id,
-        x_position,
-        y_position,
         shop_id
     )
 
@@ -235,15 +222,14 @@ def get_shop(shop_id):
     query = """
         SELECT
             s.id,
+            s.shop_code,
             s.shop_name,
+            s.operating_hours,
             s.category,
-            s.unit,
             s.description,
             s.floor_id,
             f.floor_name,
-            f.floor_code,
-            s.x_position,
-            s.y_position
+            f.floor_code
         FROM shops s
         JOIN floors f ON s.floor_id = f.id
         WHERE s.id = %s
@@ -384,13 +370,11 @@ def get_navigation():
     shop_query = """
         SELECT
             s.id,
+            s.shop_code,
             s.shop_name,
-            s.unit,
             s.floor_id,
             f.floor_name,
-            f.floor_code,
-            s.x_position,
-            s.y_position
+            f.floor_code
         FROM shops s
         JOIN floors f ON s.floor_id = f.id
         WHERE s.id = %s
@@ -482,8 +466,8 @@ def store_owner_dashboard():
             so.username,
             so.shop_id,
             s.shop_name,
+            s.operating_hours,
             s.category,
-            s.unit,
             s.description
         FROM store_owners so
         JOIN shops s ON so.shop_id = s.id
