@@ -160,10 +160,7 @@ document.addEventListener("DOMContentLoaded", async function()
         shopSearch.addEventListener(
             "focus",
             function () {
-                if (shopSearch.value.trim())
-                {
-                    renderShopSuggestions(shopSearch.value);
-                }
+                renderShopSuggestions(shopSearch.value);
             }
         );
 
@@ -254,12 +251,7 @@ function renderShopSuggestions(searchText)
     const query = (searchText || "").trim().toLowerCase();
     activeSuggestionIndex = -1;
 
-    if (!query)
-    {
-        hideShopSuggestions();
-        return;
-    }
-
+    // Empty query -> show every shop (e.g. right when the box is focused)
     const matches =
         Object.keys(mapData.shop_locations)
             .map(shopId => ({ shopId, label: getShopLabel(shopId) }))
