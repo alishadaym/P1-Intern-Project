@@ -51,6 +51,24 @@ def get_shops():
 
     return jsonify(shops)
 
+@app.route("/api/categories")
+def get_categories():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT DISTINCT TRIM(category) AS category
+        FROM shops
+        WHERE category IS NOT NULL AND TRIM(category) <> ''
+        ORDER BY category
+    """)
+    categories = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return jsonify(categories)
+
 #allowing to send data to /api/shops
 @app.route("/api/shops", methods=["POST"])
 def add_shop():
