@@ -35,6 +35,7 @@ def get_shops():
             s.category,
             s.description,
             s.floor_id,
+            s.unit,
             f.floor_name,
             f.floor_code
         FROM shops s
