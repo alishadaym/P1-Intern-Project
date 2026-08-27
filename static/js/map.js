@@ -754,6 +754,7 @@ function selectShop(shopId)
     const shop = {
         name: (dbShop && dbShop.display_name) || mapShop.name,
         category: dbShop && dbShop.category,
+        unit: dbShop && dbShop.unit,
         operatingHours: (dbShop && dbShop.operating_hours) || null,
         floor: (dbShop && dbShop.floor_name) || mapShop.floor,
         description: dbShop && dbShop.description,
@@ -802,6 +803,12 @@ function updateSelectedShopPanel(shopId, shop)
             ${
                 shop.category
                 ? `<div>${shop.category}</div>`
+                : ""
+            }
+
+            ${
+                shop.unit
+                ? `<div>Unit: ${shop.unit}</div>`
                 : ""
             }
 

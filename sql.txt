@@ -120,3 +120,43 @@ VALUES
     ('go_noodle_house_shop', 'Go Noodle House', '10am – 9:15pm', 'Chinese Noodle Restaurant', NULL, 1),
     ('happikiddo_shop', 'Happikiddo', '10am – 10pm', 'Baby Store', NULL, 1),
     ('homes_harmony_shop', 'Home''s Harmony', '10am – 10pm', 'Furniture Store', NULL, 1);
+
+//re-add unit (physical unit number, e.g. "G-14") - dropped earlier
+//alongside x_position/y_position, but that also removed real per-shop
+//unit labels store owners and visitors expect to see
+ALTER TABLE shops
+ADD COLUMN unit VARCHAR(50) AFTER category;
+
+UPDATE shops SET unit = 'G-14' WHERE shop_code = 'fos_shop';
+UPDATE shops SET unit = 'G-13' WHERE shop_code = 'tone_mann_shop';
+UPDATE shops SET unit = 'G-12' WHERE shop_code = 'ssf_shop';
+UPDATE shops SET unit = 'G-29' WHERE shop_code = 'good2u_shop';
+UPDATE shops SET unit = 'G-39' WHERE shop_code = 'family_mart_shop';
+UPDATE shops SET unit = 'G-12' WHERE shop_code = 'zus_coffee_shop';
+UPDATE shops SET unit = 'G-28' WHERE shop_code = 'hong_leong_shop';
+UPDATE shops SET unit = 'G-18' WHERE shop_code = 'mi_store_shop';
+UPDATE shops SET unit = 'G-16' WHERE shop_code = 'ajumma_shop';
+UPDATE shops SET unit = 'G-17' WHERE shop_code = 'elianto_shop';
+UPDATE shops SET unit = 'G-19' WHERE shop_code = 'world_of_perfumes_shop';
+UPDATE shops SET unit = 'G-20' WHERE shop_code = 'jacs_optometry_shop';
+UPDATE shops SET unit = 'G-24' WHERE shop_code = 'mnb_shop';
+UPDATE shops SET unit = 'G-25' WHERE shop_code = 'mc_vogue_shop';
+UPDATE shops SET unit = 'G-26' WHERE shop_code = 'kunzense_bodyline_shop';
+UPDATE shops SET unit = 'G-27' WHERE shop_code = 'skechers_shop';
+UPDATE shops SET unit = 'G-22' WHERE shop_code = 'jewellery_kiosk_shop';
+UPDATE shops SET unit = 'G-41' WHERE shop_code = 'parca_fashion_shop';
+UPDATE shops SET unit = 'G-42' WHERE shop_code = 'maxis_shop';
+UPDATE shops SET unit = 'G-30' WHERE shop_code = 'royal_sporting_house_shop';
+UPDATE shops SET unit = 'G-43' WHERE shop_code = 'starbucks_shop';
+UPDATE shops SET unit = 'G-09' WHERE shop_code = 'sarong_by_ar_shop';
+UPDATE shops SET unit = 'G-08' WHERE shop_code = 'solight_shop';
+UPDATE shops SET unit = 'G-07' WHERE shop_code = 'nandos_shop';
+UPDATE shops SET unit = 'G-06' WHERE shop_code = 'al_ikhsan_sports_shop';
+UPDATE shops SET unit = 'G-05' WHERE shop_code = 'baskin_robbins_shop';
+UPDATE shops SET unit = 'G-03' WHERE shop_code = 'coffee_bean_shop';
+UPDATE shops SET unit = 'G-37' WHERE shop_code = 'the_body_shop_shop';
+UPDATE shops SET unit = 'G-36' WHERE shop_code = 'sox_world_shop';
+UPDATE shops SET unit = 'G-35' WHERE shop_code = 'mr_dakgalbi_shop';
+UPDATE shops SET unit = 'G-34' WHERE shop_code = 'go_noodle_house_shop';
+UPDATE shops SET unit = 'G-33' WHERE shop_code = 'happikiddo_shop';
+UPDATE shops SET unit = 'G-32' WHERE shop_code = 'homes_harmony_shop';

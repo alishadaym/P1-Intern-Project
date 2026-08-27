@@ -33,6 +33,7 @@ def get_shops():
             s.shop_name,
             s.operating_hours,
             s.category,
+            s.unit,
             s.description,
             s.floor_id,
             f.floor_name,
@@ -60,6 +61,7 @@ def add_shop():
     shop_name = data.get("shop_name")
     operating_hours = data.get("operating_hours")
     category = data.get("category")
+    unit = data.get("unit")
     description = data.get("description")
     floor_id = data.get("floor_id")
 
@@ -73,14 +75,15 @@ def add_shop():
 
     query = """
         INSERT INTO shops
-        (shop_name, operating_hours, category, description, floor_id)
-        VALUES (%s, %s, %s, %s, %s)
+        (shop_name, operating_hours, category, unit, description, floor_id)
+        VALUES (%s, %s, %s, %s, %s, %s)
     """
 
     values = (
         shop_name,
         operating_hours,
         category,
+        unit,
         description,
         floor_id
     )
@@ -117,6 +120,7 @@ def search_shops():
             s.shop_name,
             s.operating_hours,
             s.category,
+            s.unit,
             s.description,
             s.floor_id,
             f.floor_name,
@@ -163,6 +167,7 @@ def update_shop(shop_id):
     shop_name = data.get("shop_name")
     operating_hours = data.get("operating_hours")
     category = data.get("category")
+    unit = data.get("unit")
     description = data.get("description")
     floor_id = data.get("floor_id")
 
@@ -180,6 +185,7 @@ def update_shop(shop_id):
             shop_name = %s,
             operating_hours = %s,
             category = %s,
+            unit = %s,
             description = %s,
             floor_id = %s
         WHERE id = %s
@@ -189,6 +195,7 @@ def update_shop(shop_id):
         shop_name,
         operating_hours,
         category,
+        unit,
         description,
         floor_id,
         shop_id
@@ -225,6 +232,7 @@ def get_shop(shop_id):
             s.shop_name,
             s.operating_hours,
             s.category,
+            s.unit,
             s.description,
             s.floor_id,
             f.floor_name,
@@ -467,6 +475,7 @@ def store_owner_dashboard():
             s.shop_name,
             s.operating_hours,
             s.category,
+            s.unit,
             s.description
         FROM store_owners so
         JOIN shops s ON so.shop_id = s.id
