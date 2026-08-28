@@ -624,13 +624,16 @@ def submit_feedback():
 
     data = request.get_json()
 
-    category = data.get("category")
+    name = data.get("name")
+    email = data.get("email")
+    phone = data.get("phone")
+    incident_date = data.get("incident_date") or None
     message = data.get("message", "").strip()
-    contact = data.get("contact")
+    resolution = data.get("resolution")
 
     if not message:
         return jsonify({
-            "error": "Please enter your feedback before submitting."
+            "error": "Please describe your feedback before submitting."
         }), 400
 
     connection = get_db_connection()
@@ -638,11 +641,14 @@ def submit_feedback():
 
     query = """
         INSERT INTO feedback
-        (category, message, contact)
-        VALUES (%s, %s, %s)
+        (name, email, phone, incident_date, message, resolution)
+        VALUES (%s, %s, %s, %s, %s, %s)
     """
 
-    cursor.execute(query, (category, message, contact or None))
+    cursor.execute(
+        query,
+        (name or None, email or None, phone or None, incident_date, message, resolution or None)
+    )
     connection.commit()
 
     new_feedback_id = cursor.lastrowid
