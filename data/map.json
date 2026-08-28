@@ -546,7 +546,7 @@
             "status": "available",
             "x": 438,
             "y": 160,
-            "node_id": "node_44"
+            "node_id": "node_47"
         },
         "ground_baby_care": {
             "name": "Baby Care Room",
@@ -555,7 +555,7 @@
             "status": "available",
             "x": 508,
             "y": 183,
-            "node_id": "node_46"
+            "node_id": "node_49"
         },
         "ground_oku_toilet": {
             "name": "OKU Accessible Toilet",
@@ -564,7 +564,7 @@
             "status": "available",
             "x": 475,
             "y": 175,
-            "node_id": "node_45"
+            "node_id": "node_48"
         },
         "ground_lift_": {
             "name": "Lift - Ground Floor",
@@ -573,7 +573,7 @@
             "status": "available",
             "x": 575,
             "y": 250,
-            "node_id": "node_42"
+            "node_id": "node_55"
         },
         "ground_lift_west": {
             "name": "Lift - West Wing",
@@ -582,7 +582,7 @@
             "status": "available",
             "x": 184,
             "y": 156,
-            "node_id": "node_43"
+            "node_id": "node_57"
         },
         "ground_lift_south": {
             "name": "Lift - South Wing",
@@ -591,7 +591,7 @@
             "status": "available",
             "x": 255,
             "y": 445,
-            "node_id": "node_47"
+            "node_id": "node_51"
         },
         "ground_lift_east": {
             "name": "Lift - East Wing",
@@ -600,7 +600,7 @@
             "status": "available",
             "x": 835,
             "y": 413,
-            "node_id": "node_48"
+            "node_id": "node_54"
         }
     },
     "nodes": {

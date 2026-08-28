@@ -405,7 +405,7 @@ main {
 
 #navigation-lines,
 #navigation-nodes {
-    display: show;
+    display: none;
 }
 
 .poi-marker {
