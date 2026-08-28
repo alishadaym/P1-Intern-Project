@@ -9,6 +9,7 @@ let utilityRecords = [];
 let selectedUtilityId = null;
 let activeUtilityId = null;
 let utilityRefreshInProgress = false;
+let activeShopId = null;
 let utilityMapZoom = 1;
 let utilityMapPanX = 0;
 let utilityMapPanY = 0;
@@ -916,6 +917,9 @@ function selectShop(shopId)
     // connected; fall back to the map's own data so this still works
     // without a database.
     const shop = {
+        mapId: shopId,
+        x: mapShop.x,
+        y: mapShop.y,
         name: (dbShop && dbShop.display_name) || mapShop.name,
         category: dbShop && dbShop.category,
         unit: dbShop && dbShop.unit,
@@ -960,6 +964,9 @@ function closeShopDetails()
 {
     const shopModal = document.getElementById("shop-modal");
     shopModal.hidden = true;
+    activeShopId = null;
+    highlightSelectedShop(null);
+    resetUtilityMapZoom();
 
     if (lastShopTrigger)
     {
@@ -971,7 +978,9 @@ function closeShopDetails()
 function showShopDetails(shop)
 {
     const shopModal = document.getElementById("shop-modal");
+    const mapPoint = getShopMapPoint(shop.mapId);
 
+    activeShopId = shop.mapId;
     lastShopTrigger = document.activeElement;
     document.getElementById("modal-shop-name").textContent = shop.name || "Unnamed Shop";
     document.getElementById("modal-shop-category").textContent = shop.category || "";
@@ -979,8 +988,35 @@ function showShopDetails(shop)
     document.getElementById("modal-shop-floor").textContent = shop.floor || "";
     document.getElementById("modal-shop-hours").textContent = shop.operatingHours ? `Hours: ${shop.operatingHours}` : "";
     document.getElementById("modal-shop-description").textContent = shop.description || "";
+    utilityMapZoom = 2;
+    utilityMapPanX = 0;
+    utilityMapPanY = 0;
+    centerMapOnUtility(mapPoint);
+    applyUtilityMapTransform();
+    document.querySelector(".map-container").classList.add("map-zoomed");
     shopModal.hidden = false;
+    positionMapPopover("shop-modal", `.shop-hotspot[data-shop-id="${shop.mapId}"]`);
     document.getElementById("close-shop-modal").focus();
+}
+
+function getShopMapPoint(shopId)
+{
+    const mapShop = mapData.shop_locations[shopId];
+
+    if (Number.isFinite(mapShop.x) && Number.isFinite(mapShop.y))
+    {
+        return mapShop;
+    }
+
+    const hotspot = document.querySelector(
+        `.shop-hotspot[data-shop-id="${shopId}"]`
+    );
+    const bounds = hotspot.getBBox();
+
+    return {
+        x: bounds.x + bounds.width / 2,
+        y: bounds.y + bounds.height / 2
+    };
 }
 
 // UTILITY DETAILS MODAL (toilets/lifts/baby care rooms)
@@ -1033,13 +1069,20 @@ function updateUtilityModal(utility)
 
 function positionUtilityModal(utilityId)
 {
+    positionMapPopover(
+        "utility-modal",
+        `#poi-markers circle[data-poi-id="${utilityId}"]`
+    );
+}
+
+function positionMapPopover(modalId, markerSelector)
+{
     requestAnimationFrame(function()
     {
-        const utilityModal = document.getElementById("utility-modal");
-        const utilityContent = utilityModal.querySelector(".utility-modal-content");
+        const modal = document.getElementById(modalId);
+        const modalContent = modal.querySelector(".utility-modal-content");
         const viewportBounds = document.getElementById("map-viewport").getBoundingClientRect();
-        const marker = Array.from(document.querySelectorAll("#poi-markers circle"))
-            .find(item => item.dataset.poiId === String(utilityId));
+        const marker = document.querySelector(markerSelector);
 
         if (!marker)
         {
@@ -1047,16 +1090,16 @@ function positionUtilityModal(utilityId)
         }
 
         const markerBounds = marker.getBoundingClientRect();
-        const contentBounds = utilityContent.getBoundingClientRect();
+        const contentBounds = modalContent.getBoundingClientRect();
         const margin = 12;
         let left = markerBounds.right + margin;
         let top = markerBounds.top + (markerBounds.height - contentBounds.height) / 2;
 
-        utilityContent.classList.remove("left");
+        modalContent.classList.remove("left");
         if (left + contentBounds.width > viewportBounds.right - margin)
         {
             left = markerBounds.left - contentBounds.width - margin;
-            utilityContent.classList.add("left");
+            modalContent.classList.add("left");
         }
 
         left = Math.max(
@@ -1068,8 +1111,8 @@ function positionUtilityModal(utilityId)
             Math.min(top, viewportBounds.bottom - contentBounds.height - margin)
         );
 
-        utilityContent.style.left = `${left}px`;
-        utilityContent.style.top = `${top}px`;
+        modalContent.style.left = `${left}px`;
+        modalContent.style.top = `${top}px`;
     });
 }
 
@@ -1138,6 +1181,13 @@ function changeMapZoom(amount)
     {
         positionUtilityModal(activeUtilityId);
     }
+    if (activeShopId)
+    {
+        positionMapPopover(
+            "shop-modal",
+            `.shop-hotspot[data-shop-id="${activeShopId}"]`
+        );
+    }
 }
 
 function zoomMapWithWheel(event)
@@ -1176,7 +1226,17 @@ function moveUtilityMapPan(event)
     utilityMapPanY = utilityMapDragStartPanY + event.clientY - utilityMapDragStartY;
     clampMapPan();
     applyUtilityMapTransform();
-    positionUtilityModal(activeUtilityId);
+    if (activeUtilityId)
+    {
+        positionUtilityModal(activeUtilityId);
+    }
+    if (activeShopId)
+    {
+        positionMapPopover(
+            "shop-modal",
+            `.shop-hotspot[data-shop-id="${activeShopId}"]`
+        );
+    }
 }
 
 function endUtilityMapPan(event)
