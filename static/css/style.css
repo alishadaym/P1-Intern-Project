@@ -242,8 +242,14 @@ main {
 }
 
 .utility-zoomed {
-    transform: scale(2);
     transition: transform 0.3s ease;
+    cursor: grab;
+    touch-action: pan-y;
+}
+
+.utility-zoomed.dragging {
+    cursor: grabbing;
+    transition: none;
 }
 
 .shop-modal-content h2 {

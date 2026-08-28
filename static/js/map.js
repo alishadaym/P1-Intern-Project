@@ -8,6 +8,10 @@ let utilityRecords = [];
 let selectedUtilityId = null;
 let activeUtilityId = null;
 let utilityRefreshInProgress = false;
+let utilityMapPanX = 0;
+let utilityMapDragStartX = 0;
+let utilityMapDragStartPanX = 0;
+let utilityMapDragging = false;
 
 // LOAD MAP DATA FROM FLASK
 async function loadMapData()
@@ -229,6 +233,12 @@ document.addEventListener("DOMContentLoaded", async function()
     });
 
     window.setInterval(refreshUtilityData, 5000);
+
+    const mapContainer = document.querySelector(".map-container");
+    mapContainer.addEventListener("pointerdown", startUtilityMapPan);
+    mapContainer.addEventListener("pointermove", moveUtilityMapPan);
+    mapContainer.addEventListener("pointerup", endUtilityMapPan);
+    mapContainer.addEventListener("pointercancel", endUtilityMapPan);
 });
 
 let lastShopTrigger = null;
@@ -276,6 +286,8 @@ function showUtilityDetails(utility)
     const originX = utility.x / mapData.image.width * 100;
     const originY = utility.y / mapData.image.height * 100;
     mapContainer.style.transformOrigin = `${originX}% ${originY}%`;
+    utilityMapPanX = 0;
+    applyUtilityMapTransform();
     mapContainer.classList.add("utility-zoomed");
     utilityModal.hidden = false;
     positionUtilityModal(utility.utility_code);
@@ -290,7 +302,7 @@ function updateUtilityModal(utility)
     document.getElementById("modal-utility-floor").textContent = `Floor: ${utility.floor}`;
     document.getElementById("modal-utility-status").textContent = status
         ? status
-        : "Location available";
+        : "Available";
 }
 
 function positionUtilityModal(utilityId)
@@ -334,8 +346,73 @@ function resetUtilityMapZoom()
 
     if (mapContainer)
     {
+        utilityMapPanX = 0;
+        mapContainer.style.transform = "";
         mapContainer.classList.remove("utility-zoomed");
         mapContainer.style.transformOrigin = "";
+    }
+}
+
+function applyUtilityMapTransform()
+{
+    const mapContainer = document.querySelector(".map-container");
+
+    if (mapContainer)
+    {
+        mapContainer.style.transform = `scale(2) translateX(${utilityMapPanX / 2}px)`;
+    }
+}
+
+function startUtilityMapPan(event)
+{
+    const mapContainer = document.querySelector(".map-container");
+
+    if (!mapContainer.classList.contains("utility-zoomed"))
+    {
+        return;
+    }
+
+    utilityMapDragging = true;
+    utilityMapDragStartX = event.clientX;
+    utilityMapDragStartPanX = utilityMapPanX;
+    mapContainer.classList.add("dragging");
+    mapContainer.setPointerCapture(event.pointerId);
+}
+
+function moveUtilityMapPan(event)
+{
+    if (!utilityMapDragging)
+    {
+        return;
+    }
+
+    const mapContainer = document.querySelector(".map-container");
+    const maximumPan = mapContainer.offsetWidth;
+    utilityMapPanX = Math.max(
+        -maximumPan,
+        Math.min(
+            maximumPan,
+            utilityMapDragStartPanX + event.clientX - utilityMapDragStartX
+        )
+    );
+    applyUtilityMapTransform();
+    positionUtilityModal(activeUtilityId);
+}
+
+function endUtilityMapPan(event)
+{
+    if (!utilityMapDragging)
+    {
+        return;
+    }
+
+    const mapContainer = document.querySelector(".map-container");
+    utilityMapDragging = false;
+    mapContainer.classList.remove("dragging");
+
+    if (event.pointerId !== undefined && mapContainer.hasPointerCapture(event.pointerId))
+    {
+        mapContainer.releasePointerCapture(event.pointerId);
     }
 }
 
