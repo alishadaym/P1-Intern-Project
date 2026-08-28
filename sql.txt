@@ -261,6 +261,13 @@ CREATE TABLE vouchers (
     issued_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+//lets the admin choose what kind of voucher to issue per topic (not
+//just one generic code) - the fixed set of types (all_shops, parking)
+//lives in app.py's VOUCHER_TYPES, not a separate table, since it's a
+//short, rarely-changing list
+ALTER TABLE vouchers
+ADD COLUMN voucher_type VARCHAR(100) NOT NULL DEFAULT 'all_shops' AFTER topic;
+
 //reshaped to match the "We are happy to help!" form design - name/
 //email/phone/date fields plus a resolution request, replacing the
 //earlier category+contact version (table was still empty, no data

@@ -12,6 +12,11 @@ import uuid
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 
+VOUCHER_TYPES = {
+    "all_shops": "All Shops Discount",
+    "parking": "Parking Voucher",
+}
+
 def load_map():
     map_path = os.path.join("data", "map.json")
     with open(map_path, "r", encoding="utf-8") as file:
@@ -779,28 +784,25 @@ def admin_feedback_page():
         if item.get("email"):
             group["emails"].add(item["email"])
 
-    cursor.execute("SELECT topic, email FROM vouchers")
-    already_issued = {(row["topic"].lower(), row["email"]) for row in cursor.fetchall()}
-
     cursor.close()
     connection.close()
 
     topics = []
     for group in topic_groups.values():
-        pending_emails = sorted(
-            email for email in group["emails"]
-            if (group["topic"].lower(), email) not in already_issued
-        )
         topics.append({
             "topic": group["topic"],
             "count": group["count"],
-            "distinct_visitors": len(group["emails"]),
-            "pending_emails": pending_emails
+            "distinct_visitors": len(group["emails"])
         })
 
     topics.sort(key=lambda t: t["count"], reverse=True)
 
-    return render_template("admin_feedback.html", feedback=feedback, topics=topics)
+    return render_template(
+        "admin_feedback.html",
+        feedback=feedback,
+        topics=topics,
+        voucher_types=VOUCHER_TYPES
+    )
 
 @app.route("/api/admin/feedback/<int:feedback_id>/topic", methods=["PUT"])
 def set_feedback_topic(feedback_id):
@@ -831,9 +833,13 @@ def issue_vouchers():
 
     data = request.get_json()
     topic = (data.get("topic") or "").strip()
+    voucher_type = (data.get("voucher_type") or "").strip()
 
     if not topic:
         return jsonify({"error": "Topic is required"}), 400
+
+    if voucher_type not in VOUCHER_TYPES:
+        return jsonify({"error": "Please choose a valid voucher type"}), 400
 
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
@@ -845,8 +851,8 @@ def issue_vouchers():
     emails = [row["email"] for row in cursor.fetchall()]
 
     cursor.execute(
-        "SELECT email FROM vouchers WHERE LOWER(topic) = %s",
-        (topic.lower(),)
+        "SELECT email FROM vouchers WHERE LOWER(topic) = %s AND voucher_type = %s",
+        (topic.lower(), voucher_type)
     )
     already_issued = {row["email"] for row in cursor.fetchall()}
 
@@ -857,10 +863,10 @@ def issue_vouchers():
 
         code = "DPULZE-" + secrets.token_hex(4).upper()
         cursor.execute(
-            "INSERT INTO vouchers (topic, email, code) VALUES (%s, %s, %s)",
-            (topic, email, code)
+            "INSERT INTO vouchers (topic, voucher_type, email, code) VALUES (%s, %s, %s, %s)",
+            (topic, voucher_type, email, code)
         )
-        issued.append({"email": email, "code": code})
+        issued.append({"email": email, "code": code, "voucher_type": VOUCHER_TYPES[voucher_type]})
 
     connection.commit()
 
@@ -881,11 +887,16 @@ def get_vouchers():
     cursor = connection.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT id, topic, email, code, issued_at
+        SELECT id, topic, voucher_type, email, code, issued_at
         FROM vouchers
         ORDER BY issued_at DESC
     """)
     vouchers = cursor.fetchall()
+
+    for voucher in vouchers:
+        voucher["voucher_type_label"] = VOUCHER_TYPES.get(
+            voucher["voucher_type"], voucher["voucher_type"]
+        )
 
     cursor.close()
     connection.close()

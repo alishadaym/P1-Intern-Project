@@ -106,6 +106,14 @@
             font-size: 14px;
         }
 
+        .voucher-type-select {
+            padding: 6px 8px;
+            margin-right: 6px;
+            font-size: 13px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
         .issue-voucher-btn {
             padding: 6px 14px;
             cursor: pointer;
@@ -200,7 +208,6 @@
                     <th>Topic</th>
                     <th>Reports</th>
                     <th>Distinct Visitors</th>
-                    <th>Pending Vouchers</th>
                     <th></th>
                 </tr>
             </thead>
@@ -210,13 +217,16 @@
                     <td>{{ t.topic }}</td>
                     <td>{{ t.count }}</td>
                     <td>{{ t.distinct_visitors }}</td>
-                    <td>{{ t.pending_emails|length }}</td>
                     <td>
+                        <select class="voucher-type-select" data-topic="{{ t.topic }}">
+                            {% for value, label in voucher_types.items() %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
                         <button
                             type="button"
                             class="issue-voucher-btn"
                             data-topic="{{ t.topic }}"
-                            {% if t.pending_emails|length == 0 %}disabled{% endif %}
                         >
                             Issue Vouchers
                         </button>
@@ -238,6 +248,7 @@
                 <tr>
                     <th>Issued</th>
                     <th>Topic</th>
+                    <th>Type</th>
                     <th>Email</th>
                     <th>Code</th>
                 </tr>
@@ -291,6 +302,7 @@ document.querySelectorAll(".issue-voucher-btn").forEach(function(button) {
     button.addEventListener("click", async function() {
 
         const topic = button.dataset.topic;
+        const typeSelect = document.querySelector(`.voucher-type-select[data-topic="${topic}"]`);
         const resultBox = document.querySelector(`[data-topic-result="${topic}"]`);
 
         button.disabled = true;
@@ -300,7 +312,7 @@ document.querySelectorAll(".issue-voucher-btn").forEach(function(button) {
             const response = await fetch("/api/admin/vouchers/issue", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ topic: topic })
+                body: JSON.stringify({ topic: topic, voucher_type: typeSelect.value })
             });
 
             const result = await response.json();
@@ -310,11 +322,11 @@ document.querySelectorAll(".issue-voucher-btn").forEach(function(button) {
                 loadVouchers();
             } else {
                 resultBox.textContent = result.error || "Failed to issue vouchers.";
-                button.disabled = false;
             }
 
         } catch (error) {
             resultBox.textContent = "Unable to connect to the server.";
+        } finally {
             button.disabled = false;
         }
 
@@ -336,7 +348,7 @@ async function loadVouchers() {
     body.innerHTML = "";
 
     if (vouchers.length === 0) {
-        body.innerHTML = "<tr><td colspan=\"4\">No vouchers issued yet.</td></tr>";
+        body.innerHTML = "<tr><td colspan=\"5\">No vouchers issued yet.</td></tr>";
         return;
     }
 
@@ -349,6 +361,9 @@ async function loadVouchers() {
         const topicCell = document.createElement("td");
         topicCell.textContent = v.topic;
 
+        const typeCell = document.createElement("td");
+        typeCell.textContent = v.voucher_type_label || v.voucher_type;
+
         const emailCell = document.createElement("td");
         emailCell.textContent = v.email;
 
@@ -358,7 +373,7 @@ async function loadVouchers() {
         codeEl.textContent = v.code;
         codeCell.appendChild(codeEl);
 
-        row.append(issuedCell, topicCell, emailCell, codeCell);
+        row.append(issuedCell, topicCell, typeCell, emailCell, codeCell);
         body.appendChild(row);
     });
 
