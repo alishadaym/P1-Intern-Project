@@ -6,7 +6,7 @@
 
 body {
     min-height: 100vh;
-    background: #A8A492;
+    background: #FCF2E5;
 
     display: flex;
     justify-content: center;
@@ -19,7 +19,7 @@ body {
 .home-container {
     width: 100%;
     min-height: 100vh;
-    background: #FCF2E5;
+    background: #A8A492;
     display: flex;
     flex-direction: column;
 }
@@ -66,8 +66,8 @@ body {
     display: block;
     width: 100%;
     padding: 17px;
-    background: #EC5B38;
-    color: #FCF2E5;
+    background: #FCF2E5;
+    color: #524646;
     text-decoration: none;
     font-size: 18px;
     border-radius: 12px;
@@ -200,4 +200,80 @@ body {
         padding: 17px;
         font-size: 18px;
     }
+}
+
+.home-header {
+    position: relative;
+}
+
+.menu-toggle {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+
+    background: transparent;
+    border: none;
+
+    color: #FCF2E5;
+    font-size: 28px;
+
+    cursor: pointer;
+}
+
+.side-menu {
+    position: fixed;
+    top: 0;
+    left: -280px;
+
+    width: 280px;
+    height: 100vh;
+
+    background: #524646;
+
+    padding: 75px 25px 25px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    z-index: 1000;
+
+    transition: left 0.3s ease;
+
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.2);
+}
+
+.side-menu.open {
+    left: 0;
+}
+
+.side-menu a {
+    color: #FCF2E5;
+    text-decoration: none;
+
+    font-size: 18px;
+    text-align: left;
+
+    padding: 15px 12px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.side-menu a:hover {
+    background: #6b5b5b;
+    border-radius: 7px;
+}
+
+.menu-close {
+    position: absolute;
+    right: 20px;
+    top: 18px;
+
+    background: transparent;
+    border: none;
+
+    color: #FCF2E5;
+    font-size: 32px;
+
+    cursor: pointer;
 }
