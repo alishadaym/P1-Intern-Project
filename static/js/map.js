@@ -367,6 +367,7 @@ function resetUtilityMapZoom()
         utilityMapPanY = 0;
         mapContainer.style.transform = "";
         mapContainer.classList.remove("utility-zoomed");
+        mapContainer.classList.remove("map-zoomed");
     }
 }
 
@@ -376,6 +377,7 @@ function applyUtilityMapTransform()
 
     if (mapContainer)
     {
+        mapContainer.classList.toggle("map-zoomed", utilityMapZoom > 1);
         mapContainer.style.transform =
             `translate(${utilityMapPanX}px, ${utilityMapPanY}px) scale(${utilityMapZoom})`;
     }
@@ -431,7 +433,7 @@ function startUtilityMapPan(event)
 {
     const mapContainer = document.querySelector(".map-container");
 
-    if (!mapContainer.classList.contains("utility-zoomed"))
+    if (utilityMapZoom <= 1)
     {
         return;
     }

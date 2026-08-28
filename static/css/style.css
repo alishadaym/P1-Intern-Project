@@ -240,12 +240,12 @@ main {
     margin-top: 8px;
 }
 
-.utility-zoomed {
+.map-container.map-zoomed {
     cursor: grab;
     touch-action: none;
 }
 
-.utility-zoomed.dragging {
+.map-container.map-zoomed.dragging {
     cursor: grabbing;
 }
 
