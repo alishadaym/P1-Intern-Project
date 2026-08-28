@@ -283,6 +283,7 @@ function closeUtilityDetails()
 {
     document.getElementById("utility-modal").hidden = true;
     activeUtilityId = null;
+    clearSelectedUtilityMarker();
     resetUtilityMapZoom();
 }
 
@@ -291,6 +292,7 @@ function showUtilityDetails(utility)
     const utilityModal = document.getElementById("utility-modal");
     const mapContainer = document.querySelector(".map-container");
     activeUtilityId = utility.utility_code;
+    setSelectedUtilityMarker(activeUtilityId);
     updateUtilityModal(utility);
     utilityMapZoom = 2;
     utilityMapPanX = 0;
@@ -1079,6 +1081,10 @@ function createPOIMarker(poiId, poi)
     if (mapData.facilities && mapData.facilities[poiId])
     {
         marker.classList.add("utility-marker");
+        if (String(poiId) === String(activeUtilityId))
+        {
+            marker.classList.add("utility-selected");
+        }
     }
 
     marker.dataset.poiId = poiId;
@@ -1134,6 +1140,26 @@ function drawPOIMarkers()
             }
         );
     }
+}
+
+function setSelectedUtilityMarker(utilityId)
+{
+    clearSelectedUtilityMarker();
+    const marker = document.querySelector(
+        `#poi-markers circle[data-poi-id="${utilityId}"]`
+    );
+
+    if (marker)
+    {
+        marker.classList.add("utility-selected");
+    }
+}
+
+function clearSelectedUtilityMarker()
+{
+    document
+        .querySelectorAll("#poi-markers circle.utility-selected")
+        .forEach(marker => marker.classList.remove("utility-selected"));
 }
 
 // SHOP HOTSPOT
