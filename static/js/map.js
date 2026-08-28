@@ -1156,6 +1156,7 @@ function createPOIMarker(poiId, poi)
             }
             else if (mapData.facilities && mapData.facilities[poiId])
             {
+                selectUtility(poiId);
                 showUtilityDetails(mapData.facilities[poiId]);
             }
     });

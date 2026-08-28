@@ -300,3 +300,46 @@ ON DUPLICATE KEY UPDATE
     x_position = VALUES(x_position),
     y_position = VALUES(y_position),
     node_id = VALUES(node_id);
+
+//UTILITIES TABLE
+-- Main utilities table (covers restroom, oku restroom, baby diaper room, lift)
+CREATE TABLE utilities (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    utility_type VARCHAR(50) NOT NULL,   -- 'Restroom', 'OKU Restroom', 'Baby Diaper Room', 'Lift'
+    name VARCHAR(100) NOT NULL,          -- e.g. 'Restroom - Centre', 'Restroom - East Wing'
+    floor VARCHAR(20),                   -- e.g. 'G', '1', '2'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO utilities (utility_type, name, map_code, floor, created_at)
+VALUES 
+('Restroom', 'Restroom - Centre', 'ground_toilet_centre', 'G'),
+('Restroom', 'Restroom - West Wing', '', '1'),
+('OKU Restroom', 'OKU Restroom - Centre', 'ground_oku_toilet', 'G'),
+('Baby Diaper Room', 'Baby Diaper Room - Centre', 'ground_baby_care', 'G'),
+('Lift','Lift - Centre', 'ground_lift_', 'G'),
+('Lift', 'Lift - East Wing', 'ground_lift_east', 'G'),
+('Lift', 'Lift - West Wing', 'ground_lift_west', 'G'), 
+('Lift', 'Lift - South Wing', 'ground_life_south', 'G');
+
+
+
+
+//CUBICLES TABLE
+-- Cubicles belonging to a utility (mainly used for restrooms)
+CREATE TABLE cubicles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    utility_id INT NOT NULL,
+    cubicle_number INT NOT NULL,         -- 1, 2, 3...
+    status VARCHAR(20) DEFAULT 'Available', -- 'Available' or 'Occupied'
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (utility_id) REFERENCES utilities(id)
+);
+
+INSERT INTO cubicles (utility_id, cubicle_number, status)
+VALUES
+(1, 1, 'Available'),
+(1, 2, 'Available'),
+(1, 3, 'Available'),
+(1, 4, 'Available'),
+(1, 5, 'Available');
