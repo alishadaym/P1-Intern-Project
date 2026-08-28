@@ -71,12 +71,16 @@ main {
     background: #F0997D;
 }
 
-.sidebar button.feedback-btn {
-    margin-top: 25px;
+.feedback-btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
     background-color: #7b5b3d;
 }
 
-.sidebar button.feedback-btn:hover {
+.feedback-btn:hover {
     background-color: #5a3e2b;
 }
 
@@ -322,7 +326,9 @@ main {
 .site-footer {
     display: flex;
     justify-content: center;
-    padding: 10px;
+    padding: 16px 10px;
+    background: #FCF2E5;
+    border-top: 1px solid #e0d2ba;
 }
 
 .login-button {
