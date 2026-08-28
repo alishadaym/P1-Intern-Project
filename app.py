@@ -36,7 +36,6 @@ def get_shops():
             s.unit,
             s.description,
             s.floor_id,
-            s.unit,
             f.floor_name,
             f.floor_code
         FROM shops s
@@ -621,10 +620,16 @@ def get_session_id() -> str:
         session["session_id"] = uuid.uuid4().hex
     return session["session_id"]
 
-
+# main menu
 @app.route("/")
-def index():
+def home():
+    return render_template("home.html")
+
+# map navigation
+@app.route("/map")
+def map_page():
     current = session.get("current_location")
+
     return render_template(
         "index.html",
         current=LOCATIONS.get(current),
@@ -632,7 +637,17 @@ def index():
         start_node=NODE_MAP.get(current),
     )
 
+# shop directory
+@app.route("/directory")
+def directory_page():
+    return render_template("directory.html")
 
+# feedback
+@app.route("/feedback")
+def feedback_page():
+    return render_template("feedback.html")
+
+# QR location
 @app.route("/location/<name>")
 def location(name):
     if name not in LOCATIONS:
@@ -652,7 +667,12 @@ def scans():
 
 @app.route("/shops")
 def shops():
-    return redirect("/")
+    return redirect("/directory")
+
+# chatbot AI
+@app.route("/chat")
+def chat_page():
+    return render_template("chat.html")
 
 if __name__ == "__main__":
     app.run(debug=True)

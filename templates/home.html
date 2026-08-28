@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <META name="viewport" content="width=device-width, initial-scale=1.0">
+
+            <title>Dpulze Mall</title>
+
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+    </head>
+
+    <body>
+        <div class="home-container">
+            <header class="home-header">
+                <h1>Dpulze Mall<br>Navigation</h1>
+            </header>
+
+            <main class="home-content">
+                <h2>Welcome to Dpulze!</h2>
+                <p class="subtitle">START YOUR JOURNEY HERE WITH OUR GUIDE</p>
+
+                <div class="menu-buttons">
+                    <a href="{{ url_for('directory_page') }}" class="menu-btn">Directory</a>
+                    <a href="{{ url_for('map_page') }}" class="menu-btn">Map Navigation</a>
+                    <a href="{{ url_for('feedback_page') }}" class="menu-btn">Feedback Form</a>
+                    <a href="{{ url_for('login_page') }}" class="menu-btn">Store Owner Login</a>
+                </div>
+            </main>
+
+            <a href="{{url_for('chat_page') }}" class="chat-btn" title="Chat with Dpulze AI">💬</a>
+        </div>
+    </body>
+</html>
