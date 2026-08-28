@@ -317,22 +317,27 @@ main {
 }
 
 .shop-hotspot {
-    fill: rgba(255, 152, 0, 0.04);
+    fill: transparent;
+    stroke: transparent;
+    stroke-width: 2;
+
     pointer-events: all;
     cursor: pointer;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    transition: fill 0.2s ease;
+
+    transition:
+        fill 0.2s ease,
+        stroke 0.2s ease;
 }
 
 .shop-hotspot:hover {
-    fill: rgba(255, 152, 0, 0.20);
+    fill: rgba(255, 152, 0, 0.18);
+    stroke: rgba(255, 152, 0, 0.60);
 }
 
 .shop-hotspot.selected {
-    fill: rgba(255, 152, 0, 0.12);
+    fill: rgba(255, 152, 0, 0.30);
     stroke: #ff9800;
-    stroke-width: 2;
+    stroke-width: 3;
 }
 
 .poi-selected {
