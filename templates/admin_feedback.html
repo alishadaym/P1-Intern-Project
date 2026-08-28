@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback - Admin - DPULZE</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #564228;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .admin-box {
+            max-width: 1000px;
+            margin: auto;
+            background: #ffffff;
+            padding: 25px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        #logoutButton {
+            padding: 8px 18px;
+            cursor: pointer;
+            border: none;
+            border-radius: 20px;
+            background: #6c757d;
+            color: white;
+            font-size: 13px;
+        }
+
+        .table-wrapper {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+            vertical-align: top;
+        }
+
+        th {
+            background: #eaf3fc;
+            white-space: nowrap;
+        }
+
+        td.message-cell,
+        td.resolution-cell {
+            max-width: 260px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        #emptyMessage {
+            margin-top: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="admin-box">
+
+    <div class="admin-header">
+        <h1>Visitor Feedback</h1>
+        <button type="button" id="logoutButton">Logout</button>
+    </div>
+
+    {% if feedback %}
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Submitted</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Date</th>
+                    <th>Feedback</th>
+                    <th>Requested Resolution</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in feedback %}
+                <tr>
+                    <td>{{ item.submitted_at }}</td>
+                    <td>{{ item.name or "" }}</td>
+                    <td>{{ item.email or "" }}</td>
+                    <td>{{ item.phone or "" }}</td>
+                    <td>{{ item.incident_date or "" }}</td>
+                    <td class="message-cell">{{ item.message }}</td>
+                    <td class="resolution-cell">{{ item.resolution or "" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p id="emptyMessage">No feedback has been submitted yet.</p>
+    {% endif %}
+
+</div>
+
+<script>
+
+document.getElementById("logoutButton").addEventListener("click", async function() {
+
+    const response = await fetch("/api/admin/logout", {
+        method: "POST"
+    });
+
+    if (response.ok) {
+        window.location.href = "/admin/login";
+    }
+
+});
+
+</script>
+
+</body>
+</html>

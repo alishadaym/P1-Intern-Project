@@ -661,6 +661,75 @@ def submit_feedback():
         "feedback_id": new_feedback_id
     }), 201
 
+@app.route("/admin/login")
+def admin_login_page():
+    return render_template("admin_login.html")
+
+@app.route("/api/admin/login", methods=["POST"])
+def admin_login():
+    data = request.get_json()
+
+    username = data.get("username")
+    password = data.get("password")
+
+    if not username or not password:
+        return jsonify({
+            "error": "Username and password are required"
+        }), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        "SELECT id, username, password FROM admins WHERE username = %s",
+        (username,)
+    )
+    admin = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+
+    if admin is None or not check_password_hash(admin["password"], password):
+        return jsonify({
+            "error": "Invalid username or password"
+        }), 401
+
+    session["admin_id"] = admin["id"]
+    session["admin_username"] = admin["username"]
+
+    return jsonify({
+        "message": "Login successful"
+    })
+
+@app.route("/admin/feedback")
+def admin_feedback_page():
+    if "admin_id" not in session:
+        return redirect("/admin/login")
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT id, name, email, phone, incident_date, message, resolution, submitted_at
+        FROM feedback
+        ORDER BY submitted_at DESC
+    """)
+    feedback = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return render_template("admin_feedback.html", feedback=feedback)
+
+@app.route("/api/admin/logout", methods=["POST"])
+def admin_logout():
+    session.pop("admin_id", None)
+    session.pop("admin_username", None)
+
+    return jsonify({
+        "message": "Logged out successfully"
+    })
+
 def get_session_id() -> str:
     if "session_id" not in session:
         session["session_id"] = uuid.uuid4().hex

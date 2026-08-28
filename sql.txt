@@ -247,3 +247,14 @@ CREATE TABLE feedback (
 //email/phone/date fields plus a resolution request, replacing the
 //earlier category+contact version (table was still empty, no data
 //migration needed)
+
+//separate from store_owners - an admin isn't tied to one shop, they
+//can view all feedback submitted by visitors
+CREATE TABLE admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
+
+//initial admin account seeded directly against the live DB with a
+//hashed password (not committed here in plaintext) - username: Dpulze_admin

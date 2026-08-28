@@ -123,6 +123,18 @@
             font-size: 13px;
         }
 
+        #adminLoginButton {
+            display: block;
+            margin: 10px auto 0;
+            padding: 8px 18px;
+            cursor: pointer;
+            border: none;
+            border-radius: 20px;
+            background: #7b5b3d;
+            color: white;
+            font-size: 13px;
+        }
+
         #message-status {
             margin-top: 20px;
             font-weight: bold;
@@ -191,6 +203,13 @@
             id="backButton"
             onclick="window.location.href='/'">
             Back to Guest Page
+        </button>
+
+        <button
+            type="button"
+            id="adminLoginButton"
+            onclick="window.location.href='/admin/login'">
+            Admin Login
         </button>
 
     </form>
