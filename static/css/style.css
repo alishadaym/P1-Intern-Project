@@ -366,7 +366,8 @@ main {
     }
 
     main {
-        display: block;
+        display: flex;
+        flex-direction: column;
         min-height: 0;
     }
 
@@ -424,6 +425,7 @@ main {
     }
 
     .map-section {
+        order: -1;
         width: 100%;
         padding: 12px;
         overflow: visible;
