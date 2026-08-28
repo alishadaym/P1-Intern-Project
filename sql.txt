@@ -268,6 +268,15 @@ CREATE TABLE vouchers (
 ALTER TABLE vouchers
 ADD COLUMN voucher_type VARCHAR(100) NOT NULL DEFAULT 'all_shops' AFTER topic;
 
+//"all_shops" (one generic mall-wide code) turned out not to be what
+//was wanted - a voucher should be redeemable at one specific store,
+//chosen per-visitor by the admin (parking stays general, not tied to
+//a shop). voucher_type is now just 'shop' or 'parking'; shop_code
+//says which store when it's 'shop'
+ALTER TABLE vouchers
+ADD COLUMN shop_code VARCHAR(50) NULL AFTER voucher_type,
+ADD CONSTRAINT fk_vouchers_shop FOREIGN KEY (shop_code) REFERENCES shops(shop_code);
+
 //reshaped to match the "We are happy to help!" form design - name/
 //email/phone/date fields plus a resolution request, replacing the
 //earlier category+contact version (table was still empty, no data

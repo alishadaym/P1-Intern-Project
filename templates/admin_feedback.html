@@ -106,12 +106,57 @@
             font-size: 14px;
         }
 
-        .voucher-type-select {
-            padding: 6px 8px;
+        .voucher-picker {
+            position: relative;
+            display: inline-block;
             margin-right: 6px;
+        }
+
+        .voucher-search {
+            padding: 6px 8px;
             font-size: 13px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            width: 180px;
+            box-sizing: border-box;
+        }
+
+        .voucher-suggestions {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            margin: 2px 0 0;
+            padding: 0;
+            list-style: none;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .voucher-suggestions.visible {
+            display: block;
+        }
+
+        .voucher-suggestions li {
+            padding: 8px 10px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .voucher-suggestions li:hover,
+        .voucher-suggestions li.active {
+            background: #FCF2E5;
+        }
+
+        .voucher-suggestions li.no-results {
+            color: #888;
+            cursor: default;
         }
 
         .issue-voucher-btn {
@@ -218,17 +263,22 @@
                     <td>{{ t.count }}</td>
                     <td>{{ t.distinct_visitors }}</td>
                     <td>
-                        <select class="voucher-type-select" data-topic="{{ t.topic }}">
-                            {% for value, label in voucher_types.items() %}
-                            <option value="{{ value }}">{{ label }}</option>
-                            {% endfor %}
-                        </select>
+                        <div class="voucher-picker" data-topic="{{ t.topic }}">
+                            <input
+                                type="text"
+                                class="voucher-search"
+                                placeholder="Search shop or Parking..."
+                                autocomplete="off"
+                            >
+                            <ul class="voucher-suggestions"></ul>
+                        </div>
                         <button
                             type="button"
                             class="issue-voucher-btn"
                             data-topic="{{ t.topic }}"
+                            disabled
                         >
-                            Issue Vouchers
+                            Issue Voucher
                         </button>
                         <div class="voucher-result" data-topic-result="{{ t.topic }}"></div>
                     </td>
@@ -297,13 +347,151 @@ document.querySelectorAll("td.topic-cell input").forEach(function(input) {
 
 });
 
+// VOUCHER TARGET PICKER (type-ahead: every shop, plus the general
+// "Parking Voucher" option) - same combobox pattern as the guest map's
+// shop search, reused here so the admin can pick exactly which store
+// (or parking) a voucher applies to
+const generalVoucherTypes = {{ general_voucher_types | tojson }};
+let voucherChoices = [];
+
+async function loadVoucherChoices() {
+    const response = await fetch("/api/shops");
+    const shops = response.ok ? await response.json() : [];
+
+    voucherChoices = [];
+
+    Object.entries(generalVoucherTypes).forEach(([value, label]) => {
+        voucherChoices.push({ type: value, shopCode: null, label: label });
+    });
+
+    shops
+        .filter(shop => shop.shop_code)
+        .forEach(shop => {
+            voucherChoices.push({ type: "shop", shopCode: shop.shop_code, label: shop.shop_name });
+        });
+}
+
+function renderVoucherSuggestions(picker, searchText) {
+    const suggestionsList = picker.querySelector(".voucher-suggestions");
+    const query = (searchText || "").trim().toLowerCase();
+
+    suggestionsList.innerHTML = "";
+    picker.activeSuggestionIndex = -1;
+
+    const matches = voucherChoices.filter(choice => choice.label.toLowerCase().includes(query));
+
+    if (matches.length === 0) {
+        const noResults = document.createElement("li");
+        noResults.className = "no-results";
+        noResults.textContent = "No matches found";
+        suggestionsList.appendChild(noResults);
+    } else {
+        matches.forEach(choice => {
+            const item = document.createElement("li");
+            item.textContent = choice.label;
+
+            item.addEventListener("click", function() {
+                chooseVoucherTarget(picker, choice);
+            });
+
+            suggestionsList.appendChild(item);
+        });
+    }
+
+    suggestionsList.classList.add("visible");
+}
+
+function hideVoucherSuggestions(picker) {
+    picker.querySelector(".voucher-suggestions").classList.remove("visible");
+    picker.activeSuggestionIndex = -1;
+}
+
+function chooseVoucherTarget(picker, choice) {
+    const searchInput = picker.querySelector(".voucher-search");
+    const issueButton = document.querySelector(`.issue-voucher-btn[data-topic="${picker.dataset.topic}"]`);
+
+    searchInput.value = choice.label;
+    picker.dataset.selectedType = choice.type;
+    picker.dataset.selectedShopCode = choice.shopCode || "";
+
+    hideVoucherSuggestions(picker);
+    issueButton.disabled = false;
+}
+
+document.querySelectorAll(".voucher-picker").forEach(function(picker) {
+
+    const searchInput = picker.querySelector(".voucher-search");
+    const issueButton = document.querySelector(`.issue-voucher-btn[data-topic="${picker.dataset.topic}"]`);
+    picker.activeSuggestionIndex = -1;
+
+    searchInput.addEventListener("input", function() {
+        // Typing invalidates whatever was previously selected
+        picker.dataset.selectedType = "";
+        picker.dataset.selectedShopCode = "";
+        issueButton.disabled = true;
+        renderVoucherSuggestions(picker, searchInput.value);
+    });
+
+    searchInput.addEventListener("focus", function() {
+        renderVoucherSuggestions(picker, searchInput.value);
+    });
+
+    searchInput.addEventListener("keydown", function(event) {
+        const suggestionsList = picker.querySelector(".voucher-suggestions");
+        const items = Array.from(suggestionsList.querySelectorAll("li:not(.no-results)"));
+
+        if (!suggestionsList.classList.contains("visible") || items.length === 0) {
+            return;
+        }
+
+        if (event.key === "ArrowDown") {
+            event.preventDefault();
+            picker.activeSuggestionIndex = (picker.activeSuggestionIndex + 1) % items.length;
+        } else if (event.key === "ArrowUp") {
+            event.preventDefault();
+            picker.activeSuggestionIndex = (picker.activeSuggestionIndex - 1 + items.length) % items.length;
+        } else if (event.key === "Enter") {
+            event.preventDefault();
+            const chosenIndex = picker.activeSuggestionIndex >= 0 ? picker.activeSuggestionIndex : 0;
+            const chosenLabel = items[chosenIndex].textContent;
+            const chosenChoice = voucherChoices.find(choice => choice.label === chosenLabel);
+            if (chosenChoice) {
+                chooseVoucherTarget(picker, chosenChoice);
+            }
+            return;
+        } else if (event.key === "Escape") {
+            hideVoucherSuggestions(picker);
+            return;
+        } else {
+            return;
+        }
+
+        items.forEach(item => item.classList.remove("active"));
+        items[picker.activeSuggestionIndex].classList.add("active");
+    });
+
+    document.addEventListener("click", function(event) {
+        if (!picker.contains(event.target)) {
+            hideVoucherSuggestions(picker);
+        }
+    });
+
+});
+
 document.querySelectorAll(".issue-voucher-btn").forEach(function(button) {
 
     button.addEventListener("click", async function() {
 
         const topic = button.dataset.topic;
-        const typeSelect = document.querySelector(`.voucher-type-select[data-topic="${topic}"]`);
+        const picker = document.querySelector(`.voucher-picker[data-topic="${topic}"]`);
         const resultBox = document.querySelector(`[data-topic-result="${topic}"]`);
+        const voucherType = picker.dataset.selectedType;
+        const shopCode = picker.dataset.selectedShopCode;
+
+        if (!voucherType) {
+            resultBox.textContent = "Please choose a shop or Parking first.";
+            return;
+        }
 
         button.disabled = true;
 
@@ -312,7 +500,7 @@ document.querySelectorAll(".issue-voucher-btn").forEach(function(button) {
             const response = await fetch("/api/admin/vouchers/issue", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ topic: topic, voucher_type: typeSelect.value })
+                body: JSON.stringify({ topic: topic, voucher_type: voucherType, shop_code: shopCode })
             });
 
             const result = await response.json();
@@ -333,6 +521,8 @@ document.querySelectorAll(".issue-voucher-btn").forEach(function(button) {
     });
 
 });
+
+loadVoucherChoices();
 
 async function loadVouchers() {
 

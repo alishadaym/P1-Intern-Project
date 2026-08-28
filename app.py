@@ -12,8 +12,7 @@ import uuid
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 
-VOUCHER_TYPES = {
-    "all_shops": "All Shops Discount",
+GENERAL_VOUCHER_TYPES = {
     "parking": "Parking Voucher",
 }
 
@@ -801,7 +800,7 @@ def admin_feedback_page():
         "admin_feedback.html",
         feedback=feedback,
         topics=topics,
-        voucher_types=VOUCHER_TYPES
+        general_voucher_types=GENERAL_VOUCHER_TYPES
     )
 
 @app.route("/api/admin/feedback/<int:feedback_id>/topic", methods=["PUT"])
@@ -834,15 +833,32 @@ def issue_vouchers():
     data = request.get_json()
     topic = (data.get("topic") or "").strip()
     voucher_type = (data.get("voucher_type") or "").strip()
+    shop_code = (data.get("shop_code") or "").strip() or None
 
     if not topic:
         return jsonify({"error": "Topic is required"}), 400
 
-    if voucher_type not in VOUCHER_TYPES:
+    if voucher_type == "shop":
+        if not shop_code:
+            return jsonify({"error": "Please choose a shop"}), 400
+    elif voucher_type in GENERAL_VOUCHER_TYPES:
+        shop_code = None
+    else:
         return jsonify({"error": "Please choose a valid voucher type"}), 400
 
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
+
+    if voucher_type == "shop":
+        cursor.execute("SELECT shop_name FROM shops WHERE shop_code = %s", (shop_code,))
+        shop = cursor.fetchone()
+        if not shop:
+            cursor.close()
+            connection.close()
+            return jsonify({"error": "Shop not found"}), 400
+        voucher_label = f"{shop['shop_name']} Voucher"
+    else:
+        voucher_label = GENERAL_VOUCHER_TYPES[voucher_type]
 
     cursor.execute(
         "SELECT DISTINCT email FROM feedback WHERE LOWER(TRIM(topic)) = %s AND email IS NOT NULL AND email <> ''",
@@ -851,8 +867,8 @@ def issue_vouchers():
     emails = [row["email"] for row in cursor.fetchall()]
 
     cursor.execute(
-        "SELECT email FROM vouchers WHERE LOWER(topic) = %s AND voucher_type = %s",
-        (topic.lower(), voucher_type)
+        "SELECT email FROM vouchers WHERE LOWER(topic) = %s AND voucher_type = %s AND shop_code <=> %s",
+        (topic.lower(), voucher_type, shop_code)
     )
     already_issued = {row["email"] for row in cursor.fetchall()}
 
@@ -863,10 +879,10 @@ def issue_vouchers():
 
         code = "DPULZE-" + secrets.token_hex(4).upper()
         cursor.execute(
-            "INSERT INTO vouchers (topic, voucher_type, email, code) VALUES (%s, %s, %s, %s)",
-            (topic, voucher_type, email, code)
+            "INSERT INTO vouchers (topic, voucher_type, shop_code, email, code) VALUES (%s, %s, %s, %s, %s)",
+            (topic, voucher_type, shop_code, email, code)
         )
-        issued.append({"email": email, "code": code, "voucher_type": VOUCHER_TYPES[voucher_type]})
+        issued.append({"email": email, "code": code, "voucher_type": voucher_label})
 
     connection.commit()
 
@@ -887,16 +903,21 @@ def get_vouchers():
     cursor = connection.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT id, topic, voucher_type, email, code, issued_at
-        FROM vouchers
-        ORDER BY issued_at DESC
+        SELECT v.id, v.topic, v.voucher_type, v.shop_code, v.email, v.code, v.issued_at,
+               s.shop_name
+        FROM vouchers v
+        LEFT JOIN shops s ON s.shop_code = v.shop_code
+        ORDER BY v.issued_at DESC
     """)
     vouchers = cursor.fetchall()
 
     for voucher in vouchers:
-        voucher["voucher_type_label"] = VOUCHER_TYPES.get(
-            voucher["voucher_type"], voucher["voucher_type"]
-        )
+        if voucher["voucher_type"] == "shop":
+            voucher["voucher_type_label"] = f"{voucher['shop_name'] or 'Unknown Shop'} Voucher"
+        else:
+            voucher["voucher_type_label"] = GENERAL_VOUCHER_TYPES.get(
+                voucher["voucher_type"], voucher["voucher_type"]
+            )
 
     cursor.close()
     connection.close()
