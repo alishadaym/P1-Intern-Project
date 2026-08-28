@@ -258,3 +258,45 @@ CREATE TABLE admins (
 
 //initial admin account seeded directly against the live DB with a
 //hashed password (not committed here in plaintext) - username: Dpulze_admin
+
+//non-shop points of interest (toilets, lifts, baby care rooms). Each
+//utility's actual map position/node comes from data/map.json's
+//"facilities" (keyed by map_code) - this table only tracks the parts
+//that change independently of the map (name, type, and occupancy via
+//cubicles), so map moves/re-routing never require a DB migration.
+CREATE TABLE utilities (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    map_code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    utility_type VARCHAR(50) NOT NULL,
+    floor VARCHAR(50) NOT NULL
+);
+
+//individual stalls within a utility (e.g. one restroom has several) -
+//lets occupancy be tracked per-stall rather than as one aggregate flag
+CREATE TABLE cubicles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    utility_id INT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'available',
+    FOREIGN KEY (utility_id) REFERENCES utilities(id)
+);
+
+INSERT INTO utilities (map_code, name, utility_type, floor) VALUES
+    ('ground_toilet_centre', 'Toilet - Centre', 'toilet', 'Ground Floor'),
+    ('ground_oku_toilet', 'OKU Accessible Toilet', 'oku', 'Ground Floor'),
+    ('ground_baby_care', 'Baby Care Room', 'baby_diaper', 'Ground Floor'),
+    ('ground_lift_', 'Lift - Ground Floor', 'lift', 'Ground Floor'),
+    ('ground_lift_west', 'Lift - West Wing', 'lift', 'Ground Floor');
+
+//4 stalls at the main restroom (1 occupied), 1 stall at the OKU toilet
+//(available) - lift/baby care aren't stall-based, so no cubicle rows
+INSERT INTO cubicles (utility_id, status)
+SELECT id, 'occupied' FROM utilities WHERE map_code = 'ground_toilet_centre'
+UNION ALL
+SELECT id, 'available' FROM utilities WHERE map_code = 'ground_toilet_centre'
+UNION ALL
+SELECT id, 'available' FROM utilities WHERE map_code = 'ground_toilet_centre'
+UNION ALL
+SELECT id, 'available' FROM utilities WHERE map_code = 'ground_toilet_centre'
+UNION ALL
+SELECT id, 'available' FROM utilities WHERE map_code = 'ground_oku_toilet';

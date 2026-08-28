@@ -5,6 +5,18 @@ let shopRecords = [];
 let categoryNames = [];
 let selectedDestination = null;
 let lastShopTrigger = null;
+let utilityRecords = [];
+let selectedUtilityId = null;
+let activeUtilityId = null;
+let utilityRefreshInProgress = false;
+let utilityMapZoom = 1;
+let utilityMapPanX = 0;
+let utilityMapPanY = 0;
+let utilityMapDragStartX = 0;
+let utilityMapDragStartY = 0;
+let utilityMapDragStartPanX = 0;
+let utilityMapDragStartPanY = 0;
+let utilityMapDragging = false;
 
 // LOAD MAP DATA FROM FLASK
 async function loadMapData()
@@ -29,12 +41,28 @@ async function loadMapData()
 
         drawNavigationNetwork();
         drawUserMarker();
+        await loadUtilitiesSafely();
         drawPOIMarkers();
         drawShopHotspots();
     }
     catch (error)
     {
         console.error("Error loading map:", error);
+    }
+}
+
+// LOAD UTILITIES (never throws - a failure here shouldn't break the
+// rest of the page; the map just won't show restroom/lift markers)
+async function loadUtilitiesSafely()
+{
+    try
+    {
+        await loadUtilities();
+    }
+    catch (error)
+    {
+        console.error("Error loading utilities:", error);
+        mapData.facilities = {};
     }
 }
 
@@ -187,16 +215,30 @@ document.addEventListener("DOMContentLoaded", async function()
         .getElementById("category-select")
         .addEventListener("change", renderCategoryShops);
 
+    document
+        .getElementById("utility-select")
+        .addEventListener("change", renderUtilityLocations);
+
     // SHOP DETAILS MODAL
     const shopModal = document.getElementById("shop-modal");
     const closeShopModal = document.getElementById("close-shop-modal");
+    const utilityModal = document.getElementById("utility-modal");
+    const closeUtilityModal = document.getElementById("close-utility-modal");
 
     closeShopModal.addEventListener("click", closeShopDetails);
+    closeUtilityModal.addEventListener("click", closeUtilityDetails);
     shopModal.addEventListener("click", function(event)
     {
         if (event.target === shopModal)
         {
             closeShopDetails();
+        }
+    });
+    utilityModal.addEventListener("click", function(event)
+    {
+        if (event.target === utilityModal)
+        {
+            closeUtilityDetails();
         }
     });
     document.addEventListener("keydown", function(event)
@@ -205,7 +247,26 @@ document.addEventListener("DOMContentLoaded", async function()
         {
             closeShopDetails();
         }
+        if (event.key === "Escape" && !utilityModal.hidden)
+        {
+            closeUtilityDetails();
+        }
     });
+
+    // Occupancy can change server-side without a page reload
+    window.setInterval(refreshUtilityData, 5000);
+
+    // MAP ZOOM/PAN
+    const mapContainer = document.querySelector(".map-container");
+    const mapViewport = document.getElementById("map-viewport");
+    mapContainer.addEventListener("pointerdown", startUtilityMapPan);
+    mapContainer.addEventListener("pointermove", moveUtilityMapPan);
+    mapContainer.addEventListener("pointerup", endUtilityMapPan);
+    mapContainer.addEventListener("pointercancel", endUtilityMapPan);
+    mapViewport.addEventListener("wheel", zoomMapWithWheel, { passive: false });
+    document.getElementById("zoom-in-btn").addEventListener("click", () => changeMapZoom(0.25));
+    document.getElementById("zoom-out-btn").addEventListener("click", () => changeMapZoom(-0.25));
+    document.getElementById("zoom-reset-btn").addEventListener("click", closeUtilityDetails);
 });
 
 // DRAW USER CURRENT LOCATION
@@ -684,6 +745,14 @@ function createPOIMarker(poiId, poi)
     marker.setAttribute("r", "10");
 
     marker.classList.add("poi-marker");
+    if (mapData.facilities && mapData.facilities[poiId])
+    {
+        marker.classList.add("utility-marker");
+        if (String(poiId) === String(activeUtilityId))
+        {
+            marker.classList.add("utility-selected");
+        }
+    }
 
     marker.dataset.poiId = poiId;
     marker.dataset.poiType = poi.type;
@@ -691,7 +760,14 @@ function createPOIMarker(poiId, poi)
      marker.addEventListener(
         "click",
         function () {
-            selectShop(poiId);
+            if (mapData.shop_locations[poiId])
+            {
+                selectShop(poiId);
+            }
+            else if (mapData.facilities && mapData.facilities[poiId])
+            {
+                showUtilityDetails(mapData.facilities[poiId]);
+            }
     });
 
     poiGroup.appendChild(marker);
@@ -832,6 +908,8 @@ function selectShop(shopId)
         return;
     }
 
+    closeUtilityDetails();
+
     const dbShop = shopDatabase[shopId];
 
     // Prefer live database details (category, hours, description) once
@@ -847,6 +925,7 @@ function selectShop(shopId)
     };
 
     selectedShopId = shopId;
+    selectedUtilityId = null;
     selectedDestination = {
         label: shop.name,
         nodeId: mapShop.node_id
@@ -902,6 +981,324 @@ function showShopDetails(shop)
     document.getElementById("modal-shop-description").textContent = shop.description || "";
     shopModal.hidden = false;
     document.getElementById("close-shop-modal").focus();
+}
+
+// UTILITY DETAILS MODAL (toilets/lifts/baby care rooms)
+function closeUtilityDetails()
+{
+    document.getElementById("utility-modal").hidden = true;
+    activeUtilityId = null;
+    clearSelectedUtilityMarker();
+    resetUtilityMapZoom();
+}
+
+function showUtilityDetails(utility)
+{
+    const utilityModal = document.getElementById("utility-modal");
+    const mapContainer = document.querySelector(".map-container");
+    activeUtilityId = utility.utility_code;
+    setSelectedUtilityMarker(activeUtilityId);
+
+    // Clicking the marker directly should make this the nav target too,
+    // same as picking it from the sidebar utility list
+    selectedShopId = null;
+    selectedUtilityId = utility.utility_code;
+    selectedDestination = {
+        label: utility.name,
+        nodeId: utility.node_id
+    };
+
+    updateUtilityModal(utility);
+    utilityMapZoom = 2;
+    utilityMapPanX = 0;
+    utilityMapPanY = 0;
+    centerMapOnUtility(utility);
+    applyUtilityMapTransform();
+    mapContainer.classList.add("utility-zoomed");
+    utilityModal.hidden = false;
+    positionUtilityModal(utility.utility_code);
+    document.getElementById("close-utility-modal").focus();
+}
+
+function updateUtilityModal(utility)
+{
+    const status = getUtilityStatusLabel(utility);
+
+    document.getElementById("modal-utility-name").textContent = utility.name;
+    document.getElementById("modal-utility-floor").textContent = `Floor: ${utility.floor}`;
+    document.getElementById("modal-utility-status").textContent = status
+        ? status
+        : "Available";
+}
+
+function positionUtilityModal(utilityId)
+{
+    requestAnimationFrame(function()
+    {
+        const utilityModal = document.getElementById("utility-modal");
+        const utilityContent = utilityModal.querySelector(".utility-modal-content");
+        const viewportBounds = document.getElementById("map-viewport").getBoundingClientRect();
+        const marker = Array.from(document.querySelectorAll("#poi-markers circle"))
+            .find(item => item.dataset.poiId === String(utilityId));
+
+        if (!marker)
+        {
+            return;
+        }
+
+        const markerBounds = marker.getBoundingClientRect();
+        const contentBounds = utilityContent.getBoundingClientRect();
+        const margin = 12;
+        let left = markerBounds.right + margin;
+        let top = markerBounds.top + (markerBounds.height - contentBounds.height) / 2;
+
+        utilityContent.classList.remove("left");
+        if (left + contentBounds.width > viewportBounds.right - margin)
+        {
+            left = markerBounds.left - contentBounds.width - margin;
+            utilityContent.classList.add("left");
+        }
+
+        left = Math.max(
+            viewportBounds.left + margin,
+            Math.min(left, viewportBounds.right - contentBounds.width - margin)
+        );
+        top = Math.max(
+            viewportBounds.top + margin,
+            Math.min(top, viewportBounds.bottom - contentBounds.height - margin)
+        );
+
+        utilityContent.style.left = `${left}px`;
+        utilityContent.style.top = `${top}px`;
+    });
+}
+
+function resetUtilityMapZoom()
+{
+    const mapContainer = document.querySelector(".map-container");
+
+    if (mapContainer)
+    {
+        utilityMapZoom = 1;
+        utilityMapPanX = 0;
+        utilityMapPanY = 0;
+        mapContainer.style.transform = "";
+        mapContainer.classList.remove("utility-zoomed");
+        mapContainer.classList.remove("map-zoomed");
+    }
+}
+
+function applyUtilityMapTransform()
+{
+    const mapContainer = document.querySelector(".map-container");
+
+    if (mapContainer)
+    {
+        mapContainer.classList.toggle("map-zoomed", utilityMapZoom > 1);
+        mapContainer.style.transform =
+            `translate(${utilityMapPanX}px, ${utilityMapPanY}px) scale(${utilityMapZoom})`;
+    }
+}
+
+function clampMapPan()
+{
+    const mapViewport = document.getElementById("map-viewport");
+    const maximumPanX = mapViewport.clientWidth * (utilityMapZoom - 1) / 2;
+    const maximumPanY = mapViewport.clientHeight * (utilityMapZoom - 1) / 2;
+
+    utilityMapPanX = Math.max(-maximumPanX, Math.min(maximumPanX, utilityMapPanX));
+    utilityMapPanY = Math.max(-maximumPanY, Math.min(maximumPanY, utilityMapPanY));
+}
+
+function centerMapOnUtility(utility)
+{
+    const mapViewport = document.getElementById("map-viewport");
+    const baseX = utility.x / mapData.image.width * mapViewport.clientWidth;
+    const baseY = utility.y / mapData.image.height * mapViewport.clientHeight;
+
+    utilityMapPanX = mapViewport.clientWidth / 2 -
+        (mapViewport.clientWidth / 2 + (baseX - mapViewport.clientWidth / 2) * utilityMapZoom);
+    utilityMapPanY = mapViewport.clientHeight / 2 -
+        (mapViewport.clientHeight / 2 + (baseY - mapViewport.clientHeight / 2) * utilityMapZoom);
+    clampMapPan();
+}
+
+function changeMapZoom(amount)
+{
+    const nextZoom = Math.max(1, Math.min(4, utilityMapZoom + amount));
+    if (nextZoom === utilityMapZoom)
+    {
+        return;
+    }
+
+    utilityMapZoom = nextZoom;
+    clampMapPan();
+    applyUtilityMapTransform();
+    if (activeUtilityId)
+    {
+        positionUtilityModal(activeUtilityId);
+    }
+}
+
+function zoomMapWithWheel(event)
+{
+    event.preventDefault();
+    changeMapZoom(event.deltaY < 0 ? 0.25 : -0.25);
+}
+
+function startUtilityMapPan(event)
+{
+    const mapContainer = document.querySelector(".map-container");
+
+    if (utilityMapZoom <= 1)
+    {
+        return;
+    }
+
+    utilityMapDragging = true;
+    utilityMapDragStartX = event.clientX;
+    utilityMapDragStartY = event.clientY;
+    utilityMapDragStartPanX = utilityMapPanX;
+    utilityMapDragStartPanY = utilityMapPanY;
+    mapContainer.classList.add("dragging");
+    mapContainer.setPointerCapture(event.pointerId);
+}
+
+function moveUtilityMapPan(event)
+{
+    if (!utilityMapDragging)
+    {
+        return;
+    }
+
+    const mapContainer = document.querySelector(".map-container");
+    utilityMapPanX = utilityMapDragStartPanX + event.clientX - utilityMapDragStartX;
+    utilityMapPanY = utilityMapDragStartPanY + event.clientY - utilityMapDragStartY;
+    clampMapPan();
+    applyUtilityMapTransform();
+    positionUtilityModal(activeUtilityId);
+}
+
+function endUtilityMapPan(event)
+{
+    if (!utilityMapDragging)
+    {
+        return;
+    }
+
+    const mapContainer = document.querySelector(".map-container");
+    utilityMapDragging = false;
+    mapContainer.classList.remove("dragging");
+
+    if (event.pointerId !== undefined && mapContainer.hasPointerCapture(event.pointerId))
+    {
+        mapContainer.releasePointerCapture(event.pointerId);
+    }
+}
+
+function getUtilityStatusLabel(utility)
+{
+    if (utility.type === "restroom")
+    {
+        return `Available: ${utility.available_cubicles} | Occupied: ${utility.occupied_cubicles}`;
+    }
+
+    if (utility.type === "oku")
+    {
+        return utility.is_occupied ? "Occupied" : "Available";
+    }
+
+    return "";
+}
+
+function renderUtilityLocations()
+{
+    const utilityType = document.getElementById("utility-select").value;
+    const utilityList = document.getElementById("utility-list");
+
+    utilityList.innerHTML = "";
+
+    if (!utilityType)
+    {
+        utilityList.textContent = "Choose a utility to see locations";
+        return;
+    }
+
+    const matchingUtilities = Object.entries(mapData.facilities || {})
+        .filter(([, utility]) => utility.type === utilityType);
+
+    if (matchingUtilities.length === 0)
+    {
+        utilityList.textContent = "No locations found";
+        return;
+    }
+
+    matchingUtilities.forEach(([utilityId, utility]) =>
+    {
+        const utilityButton = document.createElement("button");
+        const statusLabel = getUtilityStatusLabel(utility);
+
+        utilityButton.type = "button";
+        utilityButton.className = "utility-list-item";
+        utilityButton.dataset.utilityId = utilityId;
+        if (utilityId === selectedUtilityId)
+        {
+            utilityButton.classList.add("selected");
+        }
+        const locationLabel = statusLabel
+            ? `${utility.floor} - ${statusLabel}`
+            : utility.floor;
+        utilityButton.innerHTML = `${utility.name}<span class="utility-status">${locationLabel}</span>`;
+        utilityButton.addEventListener("click", function()
+        {
+            selectUtility(utilityId);
+        });
+
+        utilityList.appendChild(utilityButton);
+    });
+}
+
+function selectUtility(utilityId)
+{
+    const utility = mapData.facilities && mapData.facilities[utilityId];
+
+    if (!utility)
+    {
+        return;
+    }
+
+    selectedShopId = null;
+    selectedUtilityId = utilityId;
+    selectedDestination = {
+        label: utility.name,
+        nodeId: utility.node_id
+    };
+
+    document.getElementById("shop-select").value = "";
+    document.getElementById("selected-shop-details").textContent = "No shop selected";
+
+    renderUtilityLocations();
+    highlightSelectedShop(utilityId);
+}
+
+function setSelectedUtilityMarker(utilityId)
+{
+    clearSelectedUtilityMarker();
+    const marker = document.querySelector(
+        `#poi-markers circle[data-poi-id="${utilityId}"]`
+    );
+
+    if (marker)
+    {
+        marker.classList.add("utility-selected");
+    }
+}
+
+function clearSelectedUtilityMarker()
+{
+    document
+        .querySelectorAll("#poi-markers circle.utility-selected")
+        .forEach(marker => marker.classList.remove("utility-selected"));
 }
 
 // UPDATE SELECTED SHOP PANEL
@@ -979,6 +1376,67 @@ function highlightSelectedShop(shopId)
         selectedMarker.classList.add(
             "poi-selected"
         );
+    }
+}
+
+// LOAD UTILITIES (toilets/lifts/baby care rooms) FROM THE DB
+async function loadUtilities()
+{
+    const response = await fetch("/api/utilities");
+
+    if (!response.ok)
+    {
+        throw new Error("Failed to load utilities.");
+    }
+
+    utilityRecords = await response.json();
+    mapData.facilities = Object.fromEntries(
+        utilityRecords.map(utility => [utility.utility_code, utility])
+    );
+}
+
+// Occupancy can change without a page reload, so poll for updates
+async function refreshUtilityData()
+{
+    if (utilityRefreshInProgress)
+    {
+        return;
+    }
+
+    utilityRefreshInProgress = true;
+
+    try
+    {
+        await loadUtilities();
+        drawPOIMarkers();
+
+        const utilitySelect = document.getElementById("utility-select");
+        if (utilitySelect.value)
+        {
+            renderUtilityLocations();
+        }
+
+        if (activeUtilityId)
+        {
+            const utility = mapData.facilities[activeUtilityId];
+            if (utility)
+            {
+                updateUtilityModal(utility);
+                positionUtilityModal(activeUtilityId);
+            }
+            else
+            {
+                closeUtilityDetails();
+            }
+        }
+    }
+    catch (error)
+    {
+        console.error("Error refreshing utilities:", error);
+    }
+    finally
+    {
+        utilityRefreshInProgress = false;
     }
 }
 

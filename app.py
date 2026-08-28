@@ -70,6 +70,54 @@ def get_categories():
 
     return jsonify(categories)
 
+@app.route("/api/utilities")
+def get_utilities():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT
+            u.id AS utility_id,
+            u.map_code,
+            u.name,
+            CASE
+                WHEN u.utility_type = 'toilet' THEN 'restroom'
+                ELSE u.utility_type
+            END AS type,
+            u.floor,
+            COUNT(c.id) AS total_cubicles,
+            COALESCE(SUM(LOWER(c.status) = 'occupied'), 0) AS occupied_cubicles
+        FROM utilities u
+        LEFT JOIN cubicles c ON c.utility_id = u.id
+        GROUP BY u.id, u.name, u.utility_type, u.floor
+        ORDER BY u.utility_type, u.name
+    """)
+    utilities = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    map_facilities = load_map().get("facilities", {})
+
+    for utility in utilities:
+        utility["utility_code"] = str(utility.pop("utility_id"))
+        utility["total_cubicles"] = int(utility["total_cubicles"] or 0)
+        utility["occupied_cubicles"] = int(utility["occupied_cubicles"] or 0)
+        utility["available_cubicles"] = (
+            utility["total_cubicles"] - utility["occupied_cubicles"]
+        )
+        utility["is_occupied"] = utility["type"] == "oku" and utility["occupied_cubicles"] > 0
+
+        facility = map_facilities.get(utility["map_code"])
+        if facility:
+            utility.update({
+                "x": facility["x"],
+                "y": facility["y"],
+                "node_id": facility["node_id"]
+            })
+
+    return jsonify(utilities)
+
 #allowing to send data to /api/shops
 @app.route("/api/shops", methods=["POST"])
 def add_shop():

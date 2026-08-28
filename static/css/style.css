@@ -151,11 +151,64 @@ main {
     padding: 20px;
 }
 
-.map-container {
+.map-viewport {
     position: relative;
     width: 100%;
     max-width: 1038px;
     aspect-ratio: 1038 / 553;
+    overflow: hidden;
+    background: #e6ded2;
+}
+
+.map-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: translate(0, 0) scale(1);
+    transform-origin: center center;
+    transition: transform 0.25s ease;
+    will-change: transform;
+}
+
+.map-container.map-zoomed {
+    cursor: grab;
+    touch-action: none;
+}
+
+.map-container.map-zoomed.dragging {
+    cursor: grabbing;
+}
+
+.map-controls {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 20;
+    display: grid;
+    gap: 6px;
+    width: 42px;
+}
+
+.map-controls button {
+    min-height: 36px;
+    margin: 0;
+    padding: 4px;
+    border: 1px solid #6d5748;
+    border-radius: 4px;
+    background: white;
+    color: #3d3029;
+    font: inherit;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.map-controls button:hover {
+    background: #f8dfc8;
+}
+
+.map-controls #zoom-reset-btn {
+    font-size: 12px;
 }
 
 #floor-map {
@@ -222,6 +275,17 @@ main {
     cursor: pointer;
 }
 
+.poi-marker.utility-marker {
+    fill: #ff9800;
+    stroke: white;
+}
+
+.poi-marker.utility-marker.utility-selected {
+    fill: #d96b32;
+    stroke: white;
+    stroke-width: 3;
+}
+
 .poi-label {
     fill: #222;
     font-size: 12px;
@@ -275,6 +339,94 @@ main {
     background: white;
     border-radius: 8px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+.utility-section {
+    margin-top: 20px;
+}
+
+.utility-list-item {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    margin-bottom: 6px;
+    padding: 8px 10px;
+    border: 1px solid #d8c5b0;
+    border-radius: 4px;
+    background: #fffaf4;
+    color: #3d3029;
+    text-align: left;
+    cursor: pointer;
+}
+
+.utility-list-item:hover {
+    background: #f8dfc8;
+}
+
+.utility-list-item.selected {
+    background: #8a6952;
+    border-color: #694b38;
+    color: white;
+}
+
+.utility-list-item.selected:hover {
+    background: #76553f;
+}
+
+.utility-list-item:disabled {
+    background: #eee;
+    color: #888;
+    cursor: not-allowed;
+}
+
+.utility-status {
+    display: block;
+    margin-top: 3px;
+    font-size: 0.9em;
+}
+
+.utility-modal {
+    display: block;
+    padding: 0;
+    background: transparent;
+    pointer-events: none;
+}
+
+.utility-modal-content {
+    position: fixed;
+    width: min(250px, calc(100vw - 24px));
+    max-height: 180px;
+    padding: 18px 16px 14px;
+    pointer-events: auto;
+    transform: none;
+}
+
+.utility-modal-content::before {
+    position: absolute;
+    top: 50%;
+    left: -10px;
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-right: 10px solid white;
+    content: "";
+    transform: translateY(-50%);
+}
+
+.utility-modal-content.left::before {
+    right: -10px;
+    left: auto;
+    border-right: 0;
+    border-left: 10px solid white;
+}
+
+.utility-modal-content h2 {
+    font-size: 1.15rem;
+}
+
+.utility-modal-content .shop-modal-details {
+    margin-top: 8px;
 }
 
 .shop-modal-content h2 {

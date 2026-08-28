@@ -1061,6 +1061,22 @@
         "node_43": {
             "x": 620,
             "y": 360
+        },
+        "node_44": {
+            "x": 438,
+            "y": 160
+        },
+        "node_45": {
+            "x": 475,
+            "y": 175
+        },
+        "node_46": {
+            "x": 508,
+            "y": 183
+        },
+        "node_47": {
+            "x": 184,
+            "y": 156
         }
     },
     "connections": [
@@ -1271,6 +1287,69 @@
         [
             "node_33",
             "node_27"
+        ],
+        [
+            "node_44",
+            "node_45"
+        ],
+        [
+            "node_45",
+            "node_46"
+        ],
+        [
+            "node_46",
+            "node_19"
+        ],
+        [
+            "node_47",
+            "node_13"
         ]
-    ]
+    ],
+    "facilities": {
+        "ground_toilet_centre": {
+            "name": "Toilet - Centre",
+            "type": "toilet",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 438,
+            "y": 160,
+            "node_id": "node_44"
+        },
+        "ground_oku_toilet": {
+            "name": "OKU Accessible Toilet",
+            "type": "oku",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 475,
+            "y": 175,
+            "node_id": "node_45"
+        },
+        "ground_baby_care": {
+            "name": "Baby Care Room",
+            "type": "baby_diaper",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 508,
+            "y": 183,
+            "node_id": "node_46"
+        },
+        "ground_lift_": {
+            "name": "Lift - Ground Floor",
+            "type": "lift",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 575,
+            "y": 250,
+            "node_id": "node_23"
+        },
+        "ground_lift_west": {
+            "name": "Lift - West Wing",
+            "type": "lift",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 184,
+            "y": 156,
+            "node_id": "node_47"
+        }
+    }
 }
