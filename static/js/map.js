@@ -195,8 +195,11 @@ document.addEventListener("DOMContentLoaded", async function()
 
     const shopModal = document.getElementById("shop-modal");
     const closeShopModal = document.getElementById("close-shop-modal");
+    const utilityModal = document.getElementById("utility-modal");
+    const closeUtilityModal = document.getElementById("close-utility-modal");
 
     closeShopModal.addEventListener("click", closeShopDetails);
+    closeUtilityModal.addEventListener("click", closeUtilityDetails);
     shopModal.addEventListener("click", function(event)
     {
         if (event.target === shopModal)
@@ -204,11 +207,22 @@ document.addEventListener("DOMContentLoaded", async function()
             closeShopDetails();
         }
     });
+    utilityModal.addEventListener("click", function(event)
+    {
+        if (event.target === utilityModal)
+        {
+            closeUtilityDetails();
+        }
+    });
     document.addEventListener("keydown", function(event)
     {
         if (event.key === "Escape" && !shopModal.hidden)
         {
             closeShopDetails();
+        }
+        if (event.key === "Escape" && !utilityModal.hidden)
+        {
+            closeUtilityDetails();
         }
     });
 });
@@ -240,6 +254,25 @@ function showShopDetails(shop)
     document.getElementById("modal-shop-description").textContent = shop.description || "";
     shopModal.hidden = false;
     document.getElementById("close-shop-modal").focus();
+}
+
+function closeUtilityDetails()
+{
+    document.getElementById("utility-modal").hidden = true;
+}
+
+function showUtilityDetails(utility)
+{
+    const utilityModal = document.getElementById("utility-modal");
+    const status = getUtilityStatusLabel(utility);
+
+    document.getElementById("modal-utility-name").textContent = utility.name;
+    document.getElementById("modal-utility-floor").textContent = `Floor: ${utility.floor}`;
+    document.getElementById("modal-utility-status").textContent = status
+        ? status
+        : "Location available";
+    utilityModal.hidden = false;
+    document.getElementById("close-utility-modal").focus();
 }
 
 // DRAW USER CURRENT LOCATION
@@ -808,7 +841,7 @@ function createPOIMarker(poiId, poi)
             }
             else if (mapData.facilities && mapData.facilities[poiId])
             {
-                selectUtility(poiId);
+                showUtilityDetails(mapData.facilities[poiId]);
             }
     });
 
