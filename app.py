@@ -615,6 +615,46 @@ def forgot_password_api():
         "message": "Please contact the system administrator to reset your password."
     })
 
+@app.route("/feedback")
+def feedback_page():
+    return render_template("feedback.html")
+
+@app.route("/api/feedback", methods=["POST"])
+def submit_feedback():
+
+    data = request.get_json()
+
+    category = data.get("category")
+    message = data.get("message", "").strip()
+    contact = data.get("contact")
+
+    if not message:
+        return jsonify({
+            "error": "Please enter your feedback before submitting."
+        }), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    query = """
+        INSERT INTO feedback
+        (category, message, contact)
+        VALUES (%s, %s, %s)
+    """
+
+    cursor.execute(query, (category, message, contact or None))
+    connection.commit()
+
+    new_feedback_id = cursor.lastrowid
+
+    cursor.close()
+    connection.close()
+
+    return jsonify({
+        "message": "Thank you! Your feedback has been submitted.",
+        "feedback_id": new_feedback_id
+    }), 201
+
 def get_session_id() -> str:
     if "session_id" not in session:
         session["session_id"] = uuid.uuid4().hex

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback - DPULZE</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #564228;
+            padding: 40px;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .feedback-box {
+            max-width: 450px;
+            margin: auto;
+            background: #e6d4bc;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        p {
+            line-height: 1.5;
+        }
+
+        label {
+            display: block;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            padding: 10px 18px;
+            margin-top: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #submitButton {
+            background: #70461e;
+            color: white;
+        }
+
+        #backButton {
+            background: #6c757d;
+            color: white;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="feedback-box">
+
+    <h1>Share Your Feedback</h1>
+
+    <p>
+        Have a complaint or a suggestion about the mall's facilities?
+        Let us know below.
+    </p>
+
+    <form id="feedbackForm">
+
+        <label for="category">Type</label>
+        <select id="category">
+            <option value="Complaint">Complaint</option>
+            <option value="Suggestion">Suggestion</option>
+            <option value="Compliment">Compliment</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <label for="message">Your Feedback</label>
+        <textarea id="message" required></textarea>
+
+        <label for="contact">Name / Email / Phone (optional)</label>
+        <input type="text" id="contact" placeholder="In case we'd like to follow up">
+
+        <button
+            type="submit"
+            id="submitButton">
+            Submit Feedback
+        </button>
+
+        <button
+            type="button"
+            id="backButton"
+            onclick="window.location.href='/'">
+            Back to Guest Page
+        </button>
+
+    </form>
+
+    <p id="message-status"></p>
+
+</div>
+
+
+<script>
+
+document.getElementById("feedbackForm")
+    .addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        const category =
+            document.getElementById("category").value;
+
+        const message =
+            document.getElementById("message").value.trim();
+
+        const contact =
+            document.getElementById("contact").value.trim();
+
+        const status =
+            document.getElementById("message-status");
+
+        if (!message) {
+            status.textContent = "Please enter your feedback before submitting.";
+            return;
+        }
+
+        try {
+
+            const response = await fetch(
+                "/api/feedback",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        category: category,
+                        message: message,
+                        contact: contact
+                    })
+                }
+            );
+
+            const result = await response.json();
+
+            if (response.ok) {
+
+                status.textContent = "Thank you! Your feedback has been submitted.";
+                document.getElementById("feedbackForm").reset();
+
+            } else {
+
+                status.textContent = result.error || "Failed to submit feedback. Please try again.";
+
+            }
+
+        } catch (error) {
+
+            console.error(error);
+
+            status.textContent = "Unable to connect to the server. Please try again.";
+
+        }
+
+    });
+
+</script>
+
+</body>
+
+</html>

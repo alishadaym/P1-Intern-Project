@@ -71,6 +71,15 @@ main {
     background: #F0997D;
 }
 
+.sidebar button.feedback-btn {
+    margin-top: 25px;
+    background-color: #7b5b3d;
+}
+
+.sidebar button.feedback-btn:hover {
+    background-color: #5a3e2b;
+}
+
 .hidden-select {
     display: none;
 }

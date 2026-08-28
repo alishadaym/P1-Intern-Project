@@ -228,3 +228,14 @@ WHERE shop_code IN (
     'coffee_bean_shop','the_body_shop_shop','sox_world_shop','mr_dakgalbi_shop',
     'go_noodle_house_shop','happikiddo_shop','homes_harmony_shop'
 );
+
+//feedback from mall visitors (complaints/suggestions/compliments about
+//facilities) submitted via the guest-facing "Give Feedback" button -
+//not tied to a specific shop, so no foreign key to shops
+CREATE TABLE feedback (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    category VARCHAR(50),
+    message TEXT NOT NULL,
+    contact VARCHAR(150),
+    submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
