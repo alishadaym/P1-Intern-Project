@@ -1,15 +1,31 @@
 from flask import Flask, abort, jsonify, request, render_template, session, redirect
 from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_db_connection
+from simulate_occupancy import run_simulator
 from locations import LOCATIONS, MAP_WIDTH, MAP_HEIGHT, SHOPS, NODE_MAP
 from scan_log import read_scans, record_scan
 
 import json
 import os
 import uuid
+import threading
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
+
+def start_occupancy_simulator():
+    if app.debug and os.environ.get("WERKZEUG_RUN_MAIN") != "true":
+        return
+
+    simulator_thread = threading.Thread(
+        target=run_simulator,
+        name="occupancy-simulator",
+        daemon=True
+    )
+    simulator_thread.start()
+
+
+start_occupancy_simulator()
 
 def load_map():
     map_path = os.path.join("data", "map.json")
@@ -86,7 +102,7 @@ def get_utilities():
             END AS type,
             u.floor,
             COUNT(c.id) AS total_cubicles,
-            COALESCE(SUM(c.status = 'occupied'), 0) AS occupied_cubicles
+            COALESCE(SUM(LOWER(c.status) = 'occupied'), 0) AS occupied_cubicles
         FROM utilities u
         LEFT JOIN cubicles c ON c.utility_id = u.id
         GROUP BY u.id, u.name, u.utility_type, u.floor

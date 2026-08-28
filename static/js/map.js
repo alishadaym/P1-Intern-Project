@@ -6,6 +6,8 @@ let categoryNames = [];
 let selectedDestination = null;
 let utilityRecords = [];
 let selectedUtilityId = null;
+let activeUtilityId = null;
+let utilityRefreshInProgress = false;
 
 // LOAD MAP DATA FROM FLASK
 async function loadMapData()
@@ -225,6 +227,8 @@ document.addEventListener("DOMContentLoaded", async function()
             closeUtilityDetails();
         }
     });
+
+    window.setInterval(refreshUtilityData, 5000);
 });
 
 let lastShopTrigger = null;
@@ -259,6 +263,7 @@ function showShopDetails(shop)
 function closeUtilityDetails()
 {
     document.getElementById("utility-modal").hidden = true;
+    activeUtilityId = null;
     resetUtilityMapZoom();
 }
 
@@ -266,13 +271,8 @@ function showUtilityDetails(utility)
 {
     const utilityModal = document.getElementById("utility-modal");
     const mapContainer = document.querySelector(".map-container");
-    const status = getUtilityStatusLabel(utility);
-
-    document.getElementById("modal-utility-name").textContent = utility.name;
-    document.getElementById("modal-utility-floor").textContent = `Floor: ${utility.floor}`;
-    document.getElementById("modal-utility-status").textContent = status
-        ? status
-        : "Location available";
+    activeUtilityId = utility.utility_code;
+    updateUtilityModal(utility);
     const originX = utility.x / mapData.image.width * 100;
     const originY = utility.y / mapData.image.height * 100;
     mapContainer.style.transformOrigin = `${originX}% ${originY}%`;
@@ -280,6 +280,17 @@ function showUtilityDetails(utility)
     utilityModal.hidden = false;
     positionUtilityModal(utility.utility_code);
     document.getElementById("close-utility-modal").focus();
+}
+
+function updateUtilityModal(utility)
+{
+    const status = getUtilityStatusLabel(utility);
+
+    document.getElementById("modal-utility-name").textContent = utility.name;
+    document.getElementById("modal-utility-floor").textContent = `Floor: ${utility.floor}`;
+    document.getElementById("modal-utility-status").textContent = status
+        ? status
+        : "Location available";
 }
 
 function positionUtilityModal(utilityId)
@@ -379,6 +390,50 @@ async function loadUtilities()
     mapData.facilities = Object.fromEntries(
         utilityRecords.map(utility => [utility.utility_code, utility])
     );
+}
+
+async function refreshUtilityData()
+{
+    if (utilityRefreshInProgress)
+    {
+        return;
+    }
+
+    utilityRefreshInProgress = true;
+
+    try
+    {
+        await loadUtilities();
+        drawPOIMarkers();
+
+        const utilitySelect = document.getElementById("utility-select");
+        if (utilitySelect.value)
+        {
+            renderUtilityLocations();
+        }
+
+        if (activeUtilityId)
+        {
+            const utility = mapData.facilities[activeUtilityId];
+            if (utility)
+            {
+                updateUtilityModal(utility);
+                positionUtilityModal(activeUtilityId);
+            }
+            else
+            {
+                closeUtilityDetails();
+            }
+        }
+    }
+    catch (error)
+    {
+        console.error("Error refreshing utilities:", error);
+    }
+    finally
+    {
+        utilityRefreshInProgress = false;
+    }
 }
 
 function getUtilityStatusLabel(utility)
