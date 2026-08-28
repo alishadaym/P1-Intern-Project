@@ -417,8 +417,8 @@ main {
 }
 
 .poi-marker.utility-marker {
-    fill: transparent;
-    stroke: transparent;
+    fill: #ff9800;
+    stroke: white;
 }
 
 .poi-marker.utility-marker.utility-selected {

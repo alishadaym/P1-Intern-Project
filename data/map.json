@@ -572,6 +572,15 @@
             "x": 575,
             "y": 250,
             "node_id": "node_42"
+        },
+        "ground_lift_west": {
+            "name": "Lift - West Wing",
+            "type": "lift",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 184,
+            "y": 156,
+            "node_id": "node_43"
         }
     },
     "nodes": {

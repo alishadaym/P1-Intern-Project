@@ -96,6 +96,7 @@ def get_utilities():
         SELECT
             u.id AS utility_id,
             u.name,
+            u.map_code,
             CASE
                 WHEN u.utility_type = 'toilet' THEN 'restroom'
                 ELSE u.utility_type
@@ -135,22 +136,9 @@ def get_utilities():
         )
         utility["is_occupied"] = utility["type"] == "oku" and utility["occupied_cubicles"] > 0
 
-        matching_facility = next(
-            (
-                (facility_id, facility)
-                for facility_id, facility in map_facilities.items()
-                if facility_id not in used_map_facilities
-                and (
-                    facility["name"].strip().lower() == utility["name"].strip().lower()
-                    or facility["type"] == utility["type"]
-                    or (
-                        utility["type"] == "restroom"
-                        and facility["type"] == "toilet"
-                    )
-                )
-            ),
-            None
-        )
+        matching_facility = None
+        if utility["map_code"] in map_facilities:
+            matching_facility = (utility["map_code"], map_facilities[utility["map_code"]])
 
         if matching_facility:
             facility_id, facility = matching_facility
