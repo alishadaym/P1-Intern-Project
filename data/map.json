@@ -1350,6 +1350,24 @@
             "x": 184,
             "y": 156,
             "node_id": "node_47"
+        },
+        "ground_lift_south": {
+            "name": "Lift - South Wing",
+            "type": "lift",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 255,
+            "y": 445,
+            "node_id": "node_11"
+        },
+        "ground_lift_east": {
+            "name": "Lift - East Wing",
+            "type": "lift",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 835,
+            "y": 413,
+            "node_id": "node_31"
         }
     }
 }

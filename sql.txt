@@ -286,7 +286,9 @@ INSERT INTO utilities (map_code, name, utility_type, floor) VALUES
     ('ground_oku_toilet', 'OKU Accessible Toilet', 'oku', 'Ground Floor'),
     ('ground_baby_care', 'Baby Care Room', 'baby_diaper', 'Ground Floor'),
     ('ground_lift_', 'Lift - Ground Floor', 'lift', 'Ground Floor'),
-    ('ground_lift_west', 'Lift - West Wing', 'lift', 'Ground Floor');
+    ('ground_lift_west', 'Lift - West Wing', 'lift', 'Ground Floor'),
+    ('ground_lift_south', 'Lift - South Wing', 'lift', 'Ground Floor'),
+    ('ground_lift_east', 'Lift - East Wing', 'lift', 'Ground Floor');
 
 //4 stalls at the main restroom (1 occupied), 1 stall at the OKU toilet
 //(available) - lift/baby care aren't stall-based, so no cubicle rows
