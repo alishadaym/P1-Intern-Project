@@ -128,7 +128,8 @@ def get_utilities():
         elif utility_type.startswith("lift"):
             utility_type = "lift"
         utility["type"] = utility_type
-        utility["utility_code"] = str(utility.pop("utility_id"))
+        utility["utility_id"] = int(utility["utility_id"])
+        utility["utility_code"] = utility["map_code"] or str(utility["utility_id"])
         utility["total_cubicles"] = int(utility["total_cubicles"] or 0)
         utility["occupied_cubicles"] = int(utility["occupied_cubicles"] or 0)
         utility["available_cubicles"] = (

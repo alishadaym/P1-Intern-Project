@@ -581,6 +581,24 @@
             "x": 184,
             "y": 156,
             "node_id": "node_43"
+        },
+        "ground_lift_south": {
+            "name": "Lift - South Wing",
+            "type": "lift",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 255,
+            "y": 445,
+            "node_id": "node_47"
+        },
+        "ground_lift_east": {
+            "name": "Lift - East Wing",
+            "type": "lift",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 835,
+            "y": 413,
+            "node_id": "node_48"
         }
     },
     "nodes": {
@@ -627,7 +645,7 @@
         "node_41": {"x": 335,"y": 325},
         "node_42": {"x": 585,"y": 360},
         "node_43": {"x": 620,"y": 360},
-        "node_44": {"x": 438,"y": 160}
+        "node_47": {"x": 190,"y": 190}
     },
     "connections": [
         ["node_01","node_02"],

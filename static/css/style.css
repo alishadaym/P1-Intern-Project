@@ -416,9 +416,14 @@ main {
     cursor: pointer;
 }
 
-.poi-marker.utility-marker {
+/* .poi-marker.utility-marker {
     fill: #ff9800;
     stroke: white;
+} */
+
+.poi-marker.utility-marker {
+    fill: transparent;
+    stroke: transparent;
 }
 
 .poi-marker.utility-marker.utility-selected {
