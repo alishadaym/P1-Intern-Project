@@ -3,14 +3,23 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_db_connection
 from locations import LOCATIONS, MAP_WIDTH, MAP_HEIGHT, SHOPS, NODE_MAP
 from scan_log import read_scans, record_scan
+from simulate_occupancy import run_simulator
 
 import json
 import os
 import secrets
+import threading
 import uuid
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
+
+# Keeps restroom occupancy changing for visitors without needing real foot
+# traffic. Runs in-process rather than as a separate Render service, so it
+# only makes sense with a single app worker - gunicorn's default (see
+# Procfile) - since multiple workers would each run their own simulation
+# and fight over the same cubicles.
+threading.Thread(target=run_simulator, daemon=True).start()
 
 GENERAL_VOUCHER_TYPES = {
     "parking": "Parking Voucher",
@@ -972,7 +981,9 @@ def shops():
     return redirect("/")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # use_reloader=False: the reloader re-executes this module in a second
+    # process, which would start a duplicate occupancy-simulator thread
+    app.run(debug=True, use_reloader=False)
 
 # if __name__ == "__main__":
 #     app.run(host="0.0.0.0", port=5000, debug=True)
