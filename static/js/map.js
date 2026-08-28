@@ -881,6 +881,10 @@ function createPOIMarker(poiId, poi)
     marker.setAttribute("r", "10");
 
     marker.classList.add("poi-marker");
+    if (mapData.facilities && mapData.facilities[poiId])
+    {
+        marker.classList.add("utility-marker");
+    }
 
     marker.dataset.poiId = poiId;
     marker.dataset.poiType = poi.type;

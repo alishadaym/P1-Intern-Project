@@ -569,8 +569,8 @@
             "type": "lift",
             "floor": "Ground Floor",
             "status": "available",
-            "x": 586,
-            "y": 328,
+            "x": 575,
+            "y": 250,
             "node_id": "node_42"
         }
     },

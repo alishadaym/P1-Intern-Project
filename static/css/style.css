@@ -369,6 +369,11 @@ main {
     cursor: pointer;
 }
 
+.poi-marker.utility-marker {
+    fill: transparent;
+    stroke: transparent;
+}
+
 .poi-label {
     fill: #222;
     font-size: 12px;
