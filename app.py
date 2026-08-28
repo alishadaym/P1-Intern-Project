@@ -71,6 +71,82 @@ def get_categories():
 
     return jsonify(categories)
 
+@app.route("/api/utilities")
+def get_utilities():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT
+            u.id AS utility_id,
+            u.name,
+            CASE
+                WHEN u.utility_type = 'toilet' THEN 'restroom'
+                ELSE u.utility_type
+            END AS type,
+            u.floor,
+            COUNT(c.id) AS total_cubicles,
+            COALESCE(SUM(c.status = 'occupied'), 0) AS occupied_cubicles
+        FROM utilities u
+        LEFT JOIN cubicles c ON c.utility_id = u.id
+        GROUP BY u.id, u.name, u.utility_type, u.floor
+        ORDER BY u.utility_type, u.name
+    """)
+    utilities = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    map_facilities = load_map().get("facilities", {})
+    used_map_facilities = set()
+
+    for utility in utilities:
+        utility_type = utility["type"].strip().lower().replace(" ", "_")
+        if utility_type in ("toilet", "restroom"):
+            utility_type = "restroom"
+        elif "baby" in utility_type and "diaper" in utility_type:
+            utility_type = "baby_diaper"
+        elif utility_type.startswith("oku"):
+            utility_type = "oku"
+        elif utility_type.startswith("lift"):
+            utility_type = "lift"
+        utility["type"] = utility_type
+        utility["utility_code"] = str(utility.pop("utility_id"))
+        utility["total_cubicles"] = int(utility["total_cubicles"] or 0)
+        utility["occupied_cubicles"] = int(utility["occupied_cubicles"] or 0)
+        utility["available_cubicles"] = (
+            utility["total_cubicles"] - utility["occupied_cubicles"]
+        )
+        utility["is_occupied"] = utility["type"] == "oku" and utility["occupied_cubicles"] > 0
+
+        matching_facility = next(
+            (
+                (facility_id, facility)
+                for facility_id, facility in map_facilities.items()
+                if facility_id not in used_map_facilities
+                and (
+                    facility["name"].strip().lower() == utility["name"].strip().lower()
+                    or facility["type"] == utility["type"]
+                    or (
+                        utility["type"] == "restroom"
+                        and facility["type"] == "toilet"
+                    )
+                )
+            ),
+            None
+        )
+
+        if matching_facility:
+            facility_id, facility = matching_facility
+            used_map_facilities.add(facility_id)
+            utility.update({
+                "x": facility["x"],
+                "y": facility["y"],
+                "node_id": facility["node_id"]
+            })
+
+    return jsonify(utilities)
+
 #allowing to send data to /api/shops
 @app.route("/api/shops", methods=["POST"])
 def add_shop():

@@ -150,6 +150,16 @@ main {
     background: #f8dfc8;
 }
 
+.utility-list-item.selected {
+    background: #8a6952;
+    border-color: #694b38;
+    color: white;
+}
+
+.utility-list-item.selected:hover {
+    background: #76553f;
+}
+
 .utility-list-item:disabled {
     background: #eee;
     color: #888;

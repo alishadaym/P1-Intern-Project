@@ -4,6 +4,8 @@ let shopDatabase = {};
 let shopRecords = [];
 let categoryNames = [];
 let selectedDestination = null;
+let utilityRecords = [];
+let selectedUtilityId = null;
 
 // LOAD MAP DATA FROM FLASK
 async function loadMapData()
@@ -28,7 +30,6 @@ async function loadMapData()
 
         drawNavigationNetwork();
         drawUserMarker();
-        drawPOIMarkers();
         drawShopHotspots();
     }
     catch (error)
@@ -118,6 +119,8 @@ document.addEventListener("DOMContentLoaded", async function()
     console.log("Dpulze navigation applicaiton started.");
 
     await loadMapData();
+    await loadUtilities();
+    drawPOIMarkers();
     await loadShopDatabase();
     await loadCategories();
     populateShopDropdown();
@@ -277,9 +280,34 @@ function getShopLabel(shopId)
     );
 }
 
-function getUtilityStatusLabel(status)
+async function loadUtilities()
 {
-    return status === "in_use" ? "In use" : "Available";
+    const response = await fetch("/api/utilities");
+
+    if (!response.ok)
+    {
+        throw new Error("Failed to load utilities.");
+    }
+
+    utilityRecords = await response.json();
+    mapData.facilities = Object.fromEntries(
+        utilityRecords.map(utility => [utility.utility_code, utility])
+    );
+}
+
+function getUtilityStatusLabel(utility)
+{
+    if (utility.type === "restroom")
+    {
+        return `Available: ${utility.available_cubicles} | Occupied: ${utility.occupied_cubicles}`;
+    }
+
+    if (utility.type === "oku")
+    {
+        return utility.is_occupied ? "Occupied" : "Available";
+    }
+
+    return "";
 }
 
 function renderUtilityLocations()
@@ -307,21 +335,23 @@ function renderUtilityLocations()
     matchingUtilities.forEach(([utilityId, utility]) =>
     {
         const utilityButton = document.createElement("button");
-        const statusLabel = getUtilityStatusLabel(utility.status);
+        const statusLabel = getUtilityStatusLabel(utility);
 
         utilityButton.type = "button";
         utilityButton.className = "utility-list-item";
-        utilityButton.innerHTML = `${utility.name}<span class="utility-status">${utility.floor} - ${statusLabel}</span>`;
-        utilityButton.disabled = utility.status === "in_use";
-
-        if (!utilityButton.disabled)
+        utilityButton.dataset.utilityId = utilityId;
+        if (utilityId === selectedUtilityId)
         {
-            utilityButton.addEventListener("click", function()
-            {
-                selectUtility(utilityId);
-                startNavigation();
-            });
+            utilityButton.classList.add("selected");
         }
+        const locationLabel = statusLabel
+            ? `${utility.floor} - ${statusLabel}`
+            : utility.floor;
+        utilityButton.innerHTML = `${utility.name}<span class="utility-status">${locationLabel}</span>`;
+        utilityButton.addEventListener("click", function()
+        {
+            selectUtility(utilityId);
+        });
 
         utilityList.appendChild(utilityButton);
     });
@@ -955,6 +985,7 @@ function selectShop(shopId)
     };
 
     selectedShopId = shopId;
+    selectedUtilityId = null;
     selectedDestination = {
         label: shop.name,
         nodeId: mapShop.node_id
@@ -980,6 +1011,7 @@ function selectShop(shopId)
         shop
     );
 
+    renderUtilityLocations();
     highlightSelectedShop(shopId);
     showShopDetails(shop);
 }
@@ -988,26 +1020,22 @@ function selectUtility(utilityId)
 {
     const utility = mapData.facilities && mapData.facilities[utilityId];
 
-    if (!utility || utility.status === "in_use")
+    if (!utility)
     {
         return;
     }
 
     selectedShopId = null;
+    selectedUtilityId = utilityId;
     selectedDestination = {
         label: utility.name,
         nodeId: utility.node_id
     };
 
     document.getElementById("shop-select").value = "";
-    document.getElementById("selected-shop-details").innerHTML = `
-        <div class="shop-details-card">
-            <strong class="shop-details-name">${utility.name}</strong>
-            <div>${utility.floor}</div>
-            <div>Available</div>
-        </div>
-    `;
+    document.getElementById("selected-shop-details").textContent = "No shop selected";
 
+    renderUtilityLocations();
     highlightSelectedShop(utilityId);
 }
 

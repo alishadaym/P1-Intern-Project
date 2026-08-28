@@ -265,3 +265,38 @@ WHERE shop_code IN (
     'coffee_bean_shop','the_body_shop_shop','sox_world_shop','mr_dakgalbi_shop',
     'go_noodle_house_shop','happikiddo_shop','homes_harmony_shop'
 );
+
+-- Facilities are separate from shops because their availability changes independently.
+CREATE TABLE IF NOT EXISTS utilities (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    utility_code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    utility_type ENUM('restroom', 'baby_diaper', 'oku', 'lift') NOT NULL,
+    floor_id INT NOT NULL,
+    x_position INT NOT NULL,
+    y_position INT NOT NULL,
+    node_id VARCHAR(50) NOT NULL,
+    total_cubicles INT NULL,
+    occupied_cubicles INT NULL DEFAULT 0,
+    is_occupied BOOLEAN NULL,
+    FOREIGN KEY (floor_id) REFERENCES floors(id),
+    CHECK (total_cubicles IS NULL OR total_cubicles >= 0),
+    CHECK (occupied_cubicles IS NULL OR occupied_cubicles >= 0),
+    CHECK (total_cubicles IS NULL OR occupied_cubicles <= total_cubicles)
+);
+
+INSERT INTO utilities
+    (utility_code, name, utility_type, floor_id, x_position, y_position, node_id,
+     total_cubicles, occupied_cubicles, is_occupied)
+VALUES
+    ('ground_toilet_centre', 'Restroom - Centre', 'restroom', 1, 438, 160, 'node_44', 4, 1, NULL),
+    ('ground_baby_care', 'Baby Care Room', 'baby_diaper', 1, 508, 183, 'node_46', NULL, NULL, NULL),
+    ('ground_oku_toilet', 'OKU Accessible Toilet', 'oku', 1, 475, 175, 'node_45', NULL, NULL, FALSE),
+    ('ground_lift', 'Lift - Ground Floor', 'lift', 1, 586, 328, 'node_42', NULL, NULL, NULL)
+ON DUPLICATE KEY UPDATE
+    name = VALUES(name),
+    utility_type = VALUES(utility_type),
+    floor_id = VALUES(floor_id),
+    x_position = VALUES(x_position),
+    y_position = VALUES(y_position),
+    node_id = VALUES(node_id);
