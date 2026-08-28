@@ -3,6 +3,8 @@ let selectedShopId = null;
 let shopDatabase = {};
 let shopRecords = [];
 let categoryNames = [];
+let selectedDestination = null;
+let lastShopTrigger = null;
 
 // LOAD MAP DATA FROM FLASK
 async function loadMapData()
@@ -184,6 +186,26 @@ document.addEventListener("DOMContentLoaded", async function()
     document
         .getElementById("category-select")
         .addEventListener("change", renderCategoryShops);
+
+    // SHOP DETAILS MODAL
+    const shopModal = document.getElementById("shop-modal");
+    const closeShopModal = document.getElementById("close-shop-modal");
+
+    closeShopModal.addEventListener("click", closeShopDetails);
+    shopModal.addEventListener("click", function(event)
+    {
+        if (event.target === shopModal)
+        {
+            closeShopDetails();
+        }
+    });
+    document.addEventListener("keydown", function(event)
+    {
+        if (event.key === "Escape" && !shopModal.hidden)
+        {
+            closeShopDetails();
+        }
+    });
 });
 
 // DRAW USER CURRENT LOCATION
@@ -603,33 +625,17 @@ function drawRoute(path)
 // START NAVIGATION
 function startNavigation()
 {
-    const shopSelect =
-        document.getElementById("shop-select");
-
-
-    // Shop can be selected either by:
-    // 1. clicking map
-    // 2. using dropdown
-    const chosenShopId =
-        selectedShopId || shopSelect.value;
-
-
-    if (!chosenShopId)
+    if (!selectedDestination)
     {
         alert("Please select a shop.");
         return;
     }
 
-
-    const selectedShop =
-        mapData.shop_locations[chosenShopId];
-
-
-    if (!selectedShop)
+    if (!mapData.nodes[selectedDestination.nodeId])
     {
         console.error(
-            "Selected shop not found:",
-            chosenShopId
+            "Destination node not found:",
+            selectedDestination.nodeId
         );
 
         return;
@@ -638,11 +644,10 @@ function startNavigation()
 
     const startNodeId = window.START_NODE_ID || "node_01";
 
-    const destinationNodeId =
-        selectedShop.node_id;
+    const destinationNodeId = selectedDestination.nodeId;
 
 
-    console.log("Selected shop:", chosenShopId);
+    console.log("Selected destination:", selectedDestination.label);
     console.log("Start:", startNodeId);
     console.log("Destination:", destinationNodeId);
 
@@ -710,13 +715,8 @@ function drawPOIMarkers()
 
     poiGroup.innerHTML = "";
 
-    Object.entries(mapData.shop_locations).forEach(
-        ([shopId, shop]) =>
-        {
-            createPOIMarker(shopId, shop);
-        }
-    );
-
+    // Shops are selected via their hotspot shapes (drawShopHotspots), not
+    // an orange circle marker - only non-shop facilities use POI markers.
     if (mapData.facilities)
     {
         Object.entries(mapData.facilities).forEach(
@@ -744,31 +744,60 @@ function drawShopHotspots()
                 return;
             }
 
-            const hotspot =
-                document.createElementNS(
-                    "http://www.w3.org/2000/svg",
-                    "rect"
+            let hotspot = null;
+
+            // POLYGON SHOP
+            if (shop.hotspot.type === "polygon")
+            {
+                hotspot =
+                    document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "polygon"
+                    );
+
+                const points =
+                    shop.hotspot.points
+                        .map(point =>
+                            `${point[0]},${point[1]}`
+                        )
+                        .join(" ");
+
+                hotspot.setAttribute(
+                    "points",
+                    points
+                );
+            }
+
+            // RECTANGLE SHOP (default - covers both the explicit
+            // "rect" type and older entries with no "type" field at all)
+            else
+            {
+                hotspot =
+                    document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "rect"
+                    );
+
+                hotspot.setAttribute(
+                    "x",
+                    shop.hotspot.x
                 );
 
-            hotspot.setAttribute(
-                "x",
-                shop.hotspot.x
-            );
+                hotspot.setAttribute(
+                    "y",
+                    shop.hotspot.y
+                );
 
-            hotspot.setAttribute(
-                "y",
-                shop.hotspot.y
-            );
+                hotspot.setAttribute(
+                    "width",
+                    shop.hotspot.width
+                );
 
-            hotspot.setAttribute(
-                "width",
-                shop.hotspot.width
-            );
-
-            hotspot.setAttribute(
-                "height",
-                shop.hotspot.height
-            );
+                hotspot.setAttribute(
+                    "height",
+                    shop.hotspot.height
+                );
+            }
 
             hotspot.classList.add("shop-hotspot");
 
@@ -818,6 +847,10 @@ function selectShop(shopId)
     };
 
     selectedShopId = shopId;
+    selectedDestination = {
+        label: shop.name,
+        nodeId: mapShop.node_id
+    };
 
     const shopSelect =
         document.getElementById("shop-select");
@@ -840,6 +873,35 @@ function selectShop(shopId)
     );
 
     highlightSelectedShop(shopId);
+    showShopDetails(shop);
+}
+
+// SHOP DETAILS MODAL
+function closeShopDetails()
+{
+    const shopModal = document.getElementById("shop-modal");
+    shopModal.hidden = true;
+
+    if (lastShopTrigger)
+    {
+        lastShopTrigger.focus();
+        lastShopTrigger = null;
+    }
+}
+
+function showShopDetails(shop)
+{
+    const shopModal = document.getElementById("shop-modal");
+
+    lastShopTrigger = document.activeElement;
+    document.getElementById("modal-shop-name").textContent = shop.name || "Unnamed Shop";
+    document.getElementById("modal-shop-category").textContent = shop.category || "";
+    document.getElementById("modal-shop-unit").textContent = shop.unit ? `Unit: ${shop.unit}` : "";
+    document.getElementById("modal-shop-floor").textContent = shop.floor || "";
+    document.getElementById("modal-shop-hours").textContent = shop.operatingHours ? `Hours: ${shop.operatingHours}` : "";
+    document.getElementById("modal-shop-description").textContent = shop.description || "";
+    shopModal.hidden = false;
+    document.getElementById("close-shop-modal").focus();
 }
 
 // UPDATE SELECTED SHOP PANEL
