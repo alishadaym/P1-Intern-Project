@@ -205,9 +205,9 @@ main {
 
 .utility-modal-content {
     position: fixed;
-    width: min(250px, calc(100vw - 24px));
-    max-height: 180px;
-    padding: 18px 16px 14px;
+    width: min(210px, calc(100vw - 20px));
+    max-height: 145px;
+    padding: 12px 12px 10px;
     pointer-events: auto;
     transform: none;
 }
@@ -233,11 +233,18 @@ main {
 }
 
 .utility-modal-content h2 {
-    font-size: 1.15rem;
+    padding-right: 24px;
+    font-size: 1rem;
 }
 
 .utility-modal-content .shop-modal-details {
-    margin-top: 8px;
+    margin-top: 5px;
+    font-size: 0.85rem;
+    line-height: 1.25;
+}
+
+.utility-modal-content .shop-modal-details p {
+    margin-top: 4px;
 }
 
 .map-container.map-zoomed {
@@ -271,6 +278,14 @@ main {
 
 .shop-modal-close:hover {
     background: #f4e6d8;
+}
+
+.utility-modal-content .shop-modal-close {
+    top: 3px;
+    right: 3px;
+    width: 30px;
+    height: 30px;
+    font-size: 20px;
 }
 
 .shop-modal-details {
@@ -545,6 +560,20 @@ main {
 
     .map-container {
         width: 100%;
+    }
+
+    .utility-modal-content {
+        width: min(175px, calc(100vw - 16px));
+        max-height: 120px;
+        padding: 10px 10px 8px;
+    }
+
+    .utility-modal-content h2 {
+        font-size: 0.9rem;
+    }
+
+    .utility-modal-content .shop-modal-details {
+        font-size: 0.75rem;
     }
 }
 
