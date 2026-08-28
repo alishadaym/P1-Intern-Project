@@ -482,7 +482,10 @@ function startUtilityMapPan(event)
 {
     const mapContainer = document.querySelector(".map-container");
 
-    if (utilityMapZoom <= 1)
+    if (
+        utilityMapZoom <= 1
+        || event.target.closest(".shop-hotspot, .poi-marker")
+    )
     {
         return;
     }
@@ -1339,6 +1342,14 @@ function selectShop(shopId)
         return;
     }
 
+    const shopModal = document.getElementById("shop-modal");
+    if (!shopModal.hidden)
+    {
+        shopModal.hidden = true;
+        activeShopId = null;
+        highlightSelectedShop(null);
+    }
+
     closeUtilityDetails();
 
     const dbShop = shopDatabase[shopId];
@@ -1397,6 +1408,14 @@ function selectUtility(utilityId)
     if (!utility)
     {
         return;
+    }
+
+    const shopModal = document.getElementById("shop-modal");
+    if (!shopModal.hidden)
+    {
+        shopModal.hidden = true;
+        activeShopId = null;
+        highlightSelectedShop(null);
     }
 
     selectedShopId = null;
