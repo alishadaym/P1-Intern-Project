@@ -70,6 +70,14 @@ main {
     background: #F0997D;
 }
 
+.navigate-btn.stop-navigation {
+    background: #c62828;
+}
+
+.navigate-btn.stop-navigation:hover {
+    background: #a91f1f;
+}
+
 .hidden-select {
     display: none;
 }

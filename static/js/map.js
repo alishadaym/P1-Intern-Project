@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", async function()
 
     if (navigateButton)
     {
-        navigateButton.addEventListener("click", startNavigation);
+        navigateButton.addEventListener("click", toggleNavigation);
         console.log("Navigate button ready.");
     }
     else
@@ -259,6 +259,7 @@ function closeShopDetails()
     shopModal.hidden = true;
     activeShopId = null;
     highlightSelectedShop(null);
+    clearSelectedShopPanel();
     resetUtilityMapZoom();
 
     if (lastShopTrigger)
@@ -266,6 +267,40 @@ function closeShopDetails()
         lastShopTrigger.focus();
         lastShopTrigger = null;
     }
+}
+
+function clearSelectedShopPanel()
+{
+    document.getElementById("selected-shop-details").textContent = "No shop selected";
+}
+
+function setNavigationButtonState(isNavigating)
+{
+    const navigateButton = document.getElementById("navigate-btn");
+
+    navigateButton.textContent = isNavigating
+        ? "Stop Navigation"
+        : "Navigate";
+    navigateButton.classList.toggle("stop-navigation", isNavigating);
+}
+
+function toggleNavigation()
+{
+    const routeLine = document.getElementById("route-line");
+
+    if (routeLine.getAttribute("points"))
+    {
+        stopNavigation();
+        return;
+    }
+
+    startNavigation();
+}
+
+function stopNavigation()
+{
+    document.getElementById("route-line").setAttribute("points", "");
+    setNavigationButtonState(false);
 }
 
 function showShopDetails(shop)
@@ -1072,6 +1107,7 @@ function drawRoute(path)
     .join(" ");
 
     routeLine.setAttribute("points", points);
+    setNavigationButtonState(true);
 
     console.log("Route drawn:", path);
 }
@@ -1342,6 +1378,9 @@ function selectShop(shopId)
         return;
     }
 
+    const shouldUpdateActiveRoute = Boolean(
+        document.getElementById("route-line").getAttribute("points")
+    );
     const shopModal = document.getElementById("shop-modal");
     if (!shopModal.hidden)
     {
@@ -1399,6 +1438,11 @@ function selectShop(shopId)
     renderUtilityLocations();
     highlightSelectedShop(shopId);
     showShopDetails(shop);
+
+    if (shouldUpdateActiveRoute)
+    {
+        startNavigation();
+    }
 }
 
 function selectUtility(utilityId)
@@ -1410,6 +1454,9 @@ function selectUtility(utilityId)
         return;
     }
 
+    const shouldUpdateActiveRoute = Boolean(
+        document.getElementById("route-line").getAttribute("points")
+    );
     const shopModal = document.getElementById("shop-modal");
     if (!shopModal.hidden)
     {
@@ -1430,6 +1477,11 @@ function selectUtility(utilityId)
 
     renderUtilityLocations();
     highlightSelectedShop(utilityId);
+
+    if (shouldUpdateActiveRoute)
+    {
+        startNavigation();
+    }
 }
 
 // UPDATE SELECTED SHOP PANEL
