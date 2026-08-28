@@ -694,14 +694,15 @@
         "solight_shop": {
             "name": "Solight",
             "node_id": "node_08",
-            "x": 304,
-            "y": 369,
+            "x": 298,
+            "y": 376,
             "floor": "Ground Floor",
             "hotspot": {
-                "x": 287,
-                "y": 361,
-                "width": 34,
-                "height": 15
+                "type": "rect",
+                "x": 281,
+                "y": 355,
+                "width": 33,
+                "height": 87
             }
         },
         "nandos_shop": {
@@ -755,10 +756,11 @@
             "y": 372,
             "floor": "Ground Floor",
             "hotspot": {
-                "x": 356,
-                "y": 361,
+                "type":"rect",
+                "x": 355,
+                "y": 355,
                 "width": 41,
-                "height": 21
+                "height": 115
             }
         },
         "baskin_robbins_shop": {
@@ -768,10 +770,11 @@
             "y": 371,
             "floor": "Ground Floor",
             "hotspot": {
-                "x": 406,
-                "y": 360,
-                "width": 35,
-                "height": 22
+                "type":"rect",
+                "x": 400,
+                "y": 355,
+                "width": 45,
+                "height": 115
             }
         },
         "coffee_bean_shop": {
