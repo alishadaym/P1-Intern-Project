@@ -259,11 +259,13 @@ function showShopDetails(shop)
 function closeUtilityDetails()
 {
     document.getElementById("utility-modal").hidden = true;
+    resetUtilityMapZoom();
 }
 
 function showUtilityDetails(utility)
 {
     const utilityModal = document.getElementById("utility-modal");
+    const mapContainer = document.querySelector(".map-container");
     const status = getUtilityStatusLabel(utility);
 
     document.getElementById("modal-utility-name").textContent = utility.name;
@@ -271,8 +273,59 @@ function showUtilityDetails(utility)
     document.getElementById("modal-utility-status").textContent = status
         ? status
         : "Location available";
+    const originX = utility.x / mapData.image.width * 100;
+    const originY = utility.y / mapData.image.height * 100;
+    mapContainer.style.transformOrigin = `${originX}% ${originY}%`;
+    mapContainer.classList.add("utility-zoomed");
     utilityModal.hidden = false;
+    positionUtilityModal(utility.utility_code);
     document.getElementById("close-utility-modal").focus();
+}
+
+function positionUtilityModal(utilityId)
+{
+    requestAnimationFrame(function()
+    {
+        const utilityModal = document.getElementById("utility-modal");
+        const utilityContent = utilityModal.querySelector(".utility-modal-content");
+        const marker = Array.from(document.querySelectorAll("#poi-markers circle"))
+            .find(item => item.dataset.poiId === String(utilityId));
+
+        if (!marker)
+        {
+            return;
+        }
+
+        const markerBounds = marker.getBoundingClientRect();
+        const contentBounds = utilityContent.getBoundingClientRect();
+        const margin = 12;
+        let left = markerBounds.right + margin;
+        let top = markerBounds.top + (markerBounds.height - contentBounds.height) / 2;
+
+        utilityContent.classList.remove("left");
+        if (left + contentBounds.width > window.innerWidth - margin)
+        {
+            left = markerBounds.left - contentBounds.width - margin;
+            utilityContent.classList.add("left");
+        }
+
+        left = Math.max(margin, Math.min(left, window.innerWidth - contentBounds.width - margin));
+        top = Math.max(margin, Math.min(top, window.innerHeight - contentBounds.height - margin));
+
+        utilityContent.style.left = `${left}px`;
+        utilityContent.style.top = `${top}px`;
+    });
+}
+
+function resetUtilityMapZoom()
+{
+    const mapContainer = document.querySelector(".map-container");
+
+    if (mapContainer)
+    {
+        mapContainer.classList.remove("utility-zoomed");
+        mapContainer.style.transformOrigin = "";
+    }
 }
 
 // DRAW USER CURRENT LOCATION
@@ -1002,6 +1055,8 @@ function selectShop(shopId)
 
         return;
     }
+
+    closeUtilityDetails();
 
     const dbShop = shopDatabase[shopId];
 
