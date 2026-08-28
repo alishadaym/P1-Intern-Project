@@ -24,7 +24,6 @@ header {
 }
 
 .scanned-location {
-    margin-top: 6px;
     font-size: 14px;
     color: #d9c9c9;
 }
@@ -242,14 +241,12 @@ main {
 }
 
 .utility-zoomed {
-    transition: transform 0.3s ease;
     cursor: grab;
-    touch-action: pan-y;
+    touch-action: none;
 }
 
 .utility-zoomed.dragging {
     cursor: grabbing;
-    transition: none;
 }
 
 .shop-modal-content h2 {
@@ -304,11 +301,55 @@ main {
     padding: 20px;
 }
 
-.map-container {
+.map-viewport {
     position: relative;
     width: 100%;
     max-width: 1038px;
     aspect-ratio: 1038 / 553;
+    overflow: hidden;
+    background: #e6ded2;
+}
+
+.map-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: translate(0, 0) scale(1);
+    transform-origin: center center;
+    transition: transform 0.25s ease;
+    will-change: transform;
+}
+
+.map-controls {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 20;
+    display: grid;
+    gap: 6px;
+    width: 42px;
+}
+
+.map-controls button {
+    min-height: 36px;
+    margin: 0;
+    padding: 4px;
+    border: 1px solid #6d5748;
+    border-radius: 4px;
+    background: white;
+    color: #3d3029;
+    font: inherit;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.map-controls button:hover {
+    background: #f8dfc8;
+}
+
+.map-controls #zoom-reset-btn {
+    font-size: 12px;
 }
 
 #floor-map {

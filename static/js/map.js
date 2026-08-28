@@ -8,9 +8,13 @@ let utilityRecords = [];
 let selectedUtilityId = null;
 let activeUtilityId = null;
 let utilityRefreshInProgress = false;
+let utilityMapZoom = 1;
 let utilityMapPanX = 0;
+let utilityMapPanY = 0;
 let utilityMapDragStartX = 0;
+let utilityMapDragStartY = 0;
 let utilityMapDragStartPanX = 0;
+let utilityMapDragStartPanY = 0;
 let utilityMapDragging = false;
 
 // LOAD MAP DATA FROM FLASK
@@ -235,10 +239,15 @@ document.addEventListener("DOMContentLoaded", async function()
     window.setInterval(refreshUtilityData, 5000);
 
     const mapContainer = document.querySelector(".map-container");
+    const mapViewport = document.getElementById("map-viewport");
     mapContainer.addEventListener("pointerdown", startUtilityMapPan);
     mapContainer.addEventListener("pointermove", moveUtilityMapPan);
     mapContainer.addEventListener("pointerup", endUtilityMapPan);
     mapContainer.addEventListener("pointercancel", endUtilityMapPan);
+    mapViewport.addEventListener("wheel", zoomMapWithWheel, { passive: false });
+    document.getElementById("zoom-in-btn").addEventListener("click", () => changeMapZoom(0.25));
+    document.getElementById("zoom-out-btn").addEventListener("click", () => changeMapZoom(-0.25));
+    document.getElementById("zoom-reset-btn").addEventListener("click", closeUtilityDetails);
 });
 
 let lastShopTrigger = null;
@@ -283,10 +292,10 @@ function showUtilityDetails(utility)
     const mapContainer = document.querySelector(".map-container");
     activeUtilityId = utility.utility_code;
     updateUtilityModal(utility);
-    const originX = utility.x / mapData.image.width * 100;
-    const originY = utility.y / mapData.image.height * 100;
-    mapContainer.style.transformOrigin = `${originX}% ${originY}%`;
+    utilityMapZoom = 2;
     utilityMapPanX = 0;
+    utilityMapPanY = 0;
+    centerMapOnUtility(utility);
     applyUtilityMapTransform();
     mapContainer.classList.add("utility-zoomed");
     utilityModal.hidden = false;
@@ -311,6 +320,7 @@ function positionUtilityModal(utilityId)
     {
         const utilityModal = document.getElementById("utility-modal");
         const utilityContent = utilityModal.querySelector(".utility-modal-content");
+        const viewportBounds = document.getElementById("map-viewport").getBoundingClientRect();
         const marker = Array.from(document.querySelectorAll("#poi-markers circle"))
             .find(item => item.dataset.poiId === String(utilityId));
 
@@ -326,14 +336,20 @@ function positionUtilityModal(utilityId)
         let top = markerBounds.top + (markerBounds.height - contentBounds.height) / 2;
 
         utilityContent.classList.remove("left");
-        if (left + contentBounds.width > window.innerWidth - margin)
+        if (left + contentBounds.width > viewportBounds.right - margin)
         {
             left = markerBounds.left - contentBounds.width - margin;
             utilityContent.classList.add("left");
         }
 
-        left = Math.max(margin, Math.min(left, window.innerWidth - contentBounds.width - margin));
-        top = Math.max(margin, Math.min(top, window.innerHeight - contentBounds.height - margin));
+        left = Math.max(
+            viewportBounds.left + margin,
+            Math.min(left, viewportBounds.right - contentBounds.width - margin)
+        );
+        top = Math.max(
+            viewportBounds.top + margin,
+            Math.min(top, viewportBounds.bottom - contentBounds.height - margin)
+        );
 
         utilityContent.style.left = `${left}px`;
         utilityContent.style.top = `${top}px`;
@@ -346,10 +362,11 @@ function resetUtilityMapZoom()
 
     if (mapContainer)
     {
+        utilityMapZoom = 1;
         utilityMapPanX = 0;
+        utilityMapPanY = 0;
         mapContainer.style.transform = "";
         mapContainer.classList.remove("utility-zoomed");
-        mapContainer.style.transformOrigin = "";
     }
 }
 
@@ -359,8 +376,55 @@ function applyUtilityMapTransform()
 
     if (mapContainer)
     {
-        mapContainer.style.transform = `scale(2) translateX(${utilityMapPanX / 2}px)`;
+        mapContainer.style.transform =
+            `translate(${utilityMapPanX}px, ${utilityMapPanY}px) scale(${utilityMapZoom})`;
     }
+}
+
+function clampMapPan()
+{
+    const mapViewport = document.getElementById("map-viewport");
+    const maximumPanX = mapViewport.clientWidth * (utilityMapZoom - 1) / 2;
+    const maximumPanY = mapViewport.clientHeight * (utilityMapZoom - 1) / 2;
+
+    utilityMapPanX = Math.max(-maximumPanX, Math.min(maximumPanX, utilityMapPanX));
+    utilityMapPanY = Math.max(-maximumPanY, Math.min(maximumPanY, utilityMapPanY));
+}
+
+function centerMapOnUtility(utility)
+{
+    const mapViewport = document.getElementById("map-viewport");
+    const baseX = utility.x / mapData.image.width * mapViewport.clientWidth;
+    const baseY = utility.y / mapData.image.height * mapViewport.clientHeight;
+
+    utilityMapPanX = mapViewport.clientWidth / 2 -
+        (mapViewport.clientWidth / 2 + (baseX - mapViewport.clientWidth / 2) * utilityMapZoom);
+    utilityMapPanY = mapViewport.clientHeight / 2 -
+        (mapViewport.clientHeight / 2 + (baseY - mapViewport.clientHeight / 2) * utilityMapZoom);
+    clampMapPan();
+}
+
+function changeMapZoom(amount)
+{
+    const nextZoom = Math.max(1, Math.min(4, utilityMapZoom + amount));
+    if (nextZoom === utilityMapZoom)
+    {
+        return;
+    }
+
+    utilityMapZoom = nextZoom;
+    clampMapPan();
+    applyUtilityMapTransform();
+    if (activeUtilityId)
+    {
+        positionUtilityModal(activeUtilityId);
+    }
+}
+
+function zoomMapWithWheel(event)
+{
+    event.preventDefault();
+    changeMapZoom(event.deltaY < 0 ? 0.25 : -0.25);
 }
 
 function startUtilityMapPan(event)
@@ -374,7 +438,9 @@ function startUtilityMapPan(event)
 
     utilityMapDragging = true;
     utilityMapDragStartX = event.clientX;
+    utilityMapDragStartY = event.clientY;
     utilityMapDragStartPanX = utilityMapPanX;
+    utilityMapDragStartPanY = utilityMapPanY;
     mapContainer.classList.add("dragging");
     mapContainer.setPointerCapture(event.pointerId);
 }
@@ -387,14 +453,9 @@ function moveUtilityMapPan(event)
     }
 
     const mapContainer = document.querySelector(".map-container");
-    const maximumPan = mapContainer.offsetWidth;
-    utilityMapPanX = Math.max(
-        -maximumPan,
-        Math.min(
-            maximumPan,
-            utilityMapDragStartPanX + event.clientX - utilityMapDragStartX
-        )
-    );
+    utilityMapPanX = utilityMapDragStartPanX + event.clientX - utilityMapDragStartX;
+    utilityMapPanY = utilityMapDragStartPanY + event.clientY - utilityMapDragStartY;
+    clampMapPan();
     applyUtilityMapTransform();
     positionUtilityModal(activeUtilityId);
 }
