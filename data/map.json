@@ -314,6 +314,8 @@
         "maxis_shop": {
             "name": "Maxis",
             "node_id": "node_23",
+            "x": 586,
+            "y": 328,
             "floor": "Ground Floor",
             "hotspot": {
                 "type":"polygon",
