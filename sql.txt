@@ -243,6 +243,24 @@ CREATE TABLE feedback (
     submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+//admin-assigned label grouping reports of the same underlying problem
+//(e.g. "Ground floor toilets") so recurring issues can be spotted and
+//rewarded with a voucher, without trying to auto-detect duplicates
+//from free-text complaints
+ALTER TABLE feedback
+ADD COLUMN topic VARCHAR(150) NULL AFTER message;
+
+//one row per voucher issued to a visitor for reporting a recurring
+//issue - code redemption itself happens in person/manually, this just
+//tracks who was issued what
+CREATE TABLE vouchers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    topic VARCHAR(150) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    code VARCHAR(20) NOT NULL UNIQUE,
+    issued_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 //reshaped to match the "We are happy to help!" form design - name/
 //email/phone/date fields plus a resolution request, replacing the
 //earlier category+contact version (table was still empty, no data

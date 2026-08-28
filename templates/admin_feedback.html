@@ -77,9 +77,60 @@
             word-break: break-word;
         }
 
+        td.topic-cell input {
+            width: 100%;
+            min-width: 140px;
+            padding: 6px 8px;
+            font-size: 13px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        td.topic-cell input.saved {
+            border-color: #4caf50;
+        }
+
         #emptyMessage {
             margin-top: 20px;
             color: #666;
+        }
+
+        .section-title {
+            margin-top: 35px;
+            font-size: 1.2rem;
+        }
+
+        .topics-table th,
+        .topics-table td {
+            font-size: 14px;
+        }
+
+        .issue-voucher-btn {
+            padding: 6px 14px;
+            cursor: pointer;
+            border: none;
+            border-radius: 16px;
+            background: #70461e;
+            color: white;
+            font-size: 13px;
+        }
+
+        .issue-voucher-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .voucher-result {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #444;
+        }
+
+        code.voucher-code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -105,6 +156,7 @@
                     <th>Date</th>
                     <th>Feedback</th>
                     <th>Requested Resolution</th>
+                    <th>Topic</th>
                 </tr>
             </thead>
             <tbody>
@@ -117,6 +169,14 @@
                     <td>{{ item.incident_date or "" }}</td>
                     <td class="message-cell">{{ item.message }}</td>
                     <td class="resolution-cell">{{ item.resolution or "" }}</td>
+                    <td class="topic-cell">
+                        <input
+                            type="text"
+                            value="{{ item.topic or '' }}"
+                            placeholder="e.g. Ground floor toilets"
+                            data-feedback-id="{{ item.id }}"
+                        >
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -125,6 +185,67 @@
     {% else %}
     <p id="emptyMessage">No feedback has been submitted yet.</p>
     {% endif %}
+
+    <h2 class="section-title">Recurring Issues</h2>
+    <p style="color:#666; font-size:13px;">
+        Tag complaints with the same Topic above (e.g. "Ground floor toilets") to group
+        them here. When multiple visitors report the same issue, issue them a voucher.
+    </p>
+
+    {% if topics %}
+    <div class="table-wrapper">
+        <table class="topics-table">
+            <thead>
+                <tr>
+                    <th>Topic</th>
+                    <th>Reports</th>
+                    <th>Distinct Visitors</th>
+                    <th>Pending Vouchers</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in topics %}
+                <tr>
+                    <td>{{ t.topic }}</td>
+                    <td>{{ t.count }}</td>
+                    <td>{{ t.distinct_visitors }}</td>
+                    <td>{{ t.pending_emails|length }}</td>
+                    <td>
+                        <button
+                            type="button"
+                            class="issue-voucher-btn"
+                            data-topic="{{ t.topic }}"
+                            {% if t.pending_emails|length == 0 %}disabled{% endif %}
+                        >
+                            Issue Vouchers
+                        </button>
+                        <div class="voucher-result" data-topic-result="{{ t.topic }}"></div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p id="emptyMessage">No topics tagged yet.</p>
+    {% endif %}
+
+    <h2 class="section-title">Issued Vouchers</h2>
+    <div class="table-wrapper">
+        <table id="vouchersTable">
+            <thead>
+                <tr>
+                    <th>Issued</th>
+                    <th>Topic</th>
+                    <th>Email</th>
+                    <th>Code</th>
+                </tr>
+            </thead>
+            <tbody id="vouchersTableBody">
+            </tbody>
+        </table>
+    </div>
 
 </div>
 
@@ -141,6 +262,109 @@ document.getElementById("logoutButton").addEventListener("click", async function
     }
 
 });
+
+document.querySelectorAll("td.topic-cell input").forEach(function(input) {
+
+    input.addEventListener("change", async function() {
+
+        const feedbackId = input.dataset.feedbackId;
+
+        const response = await fetch(`/api/admin/feedback/${feedbackId}/topic`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ topic: input.value })
+        });
+
+        if (response.ok) {
+            input.classList.add("saved");
+            setTimeout(function() {
+                input.classList.remove("saved");
+            }, 1500);
+        }
+
+    });
+
+});
+
+document.querySelectorAll(".issue-voucher-btn").forEach(function(button) {
+
+    button.addEventListener("click", async function() {
+
+        const topic = button.dataset.topic;
+        const resultBox = document.querySelector(`[data-topic-result="${topic}"]`);
+
+        button.disabled = true;
+
+        try {
+
+            const response = await fetch("/api/admin/vouchers/issue", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ topic: topic })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                resultBox.textContent = result.message;
+                loadVouchers();
+            } else {
+                resultBox.textContent = result.error || "Failed to issue vouchers.";
+                button.disabled = false;
+            }
+
+        } catch (error) {
+            resultBox.textContent = "Unable to connect to the server.";
+            button.disabled = false;
+        }
+
+    });
+
+});
+
+async function loadVouchers() {
+
+    const response = await fetch("/api/admin/vouchers");
+
+    if (!response.ok) {
+        return;
+    }
+
+    const vouchers = await response.json();
+    const body = document.getElementById("vouchersTableBody");
+
+    body.innerHTML = "";
+
+    if (vouchers.length === 0) {
+        body.innerHTML = "<tr><td colspan=\"4\">No vouchers issued yet.</td></tr>";
+        return;
+    }
+
+    vouchers.forEach(function(v) {
+        const row = document.createElement("tr");
+
+        const issuedCell = document.createElement("td");
+        issuedCell.textContent = v.issued_at;
+
+        const topicCell = document.createElement("td");
+        topicCell.textContent = v.topic;
+
+        const emailCell = document.createElement("td");
+        emailCell.textContent = v.email;
+
+        const codeCell = document.createElement("td");
+        const codeEl = document.createElement("code");
+        codeEl.className = "voucher-code";
+        codeEl.textContent = v.code;
+        codeCell.appendChild(codeEl);
+
+        row.append(issuedCell, topicCell, emailCell, codeCell);
+        body.appendChild(row);
+    });
+
+}
+
+loadVouchers();
 
 </script>
 

@@ -6,6 +6,7 @@ from scan_log import read_scans, record_scan
 
 import json
 import os
+import secrets
 import uuid
 
 app = Flask(__name__)
@@ -758,16 +759,138 @@ def admin_feedback_page():
     cursor = connection.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT id, name, email, phone, incident_date, message, resolution, submitted_at
+        SELECT id, name, email, phone, incident_date, message, topic, resolution, submitted_at
         FROM feedback
         ORDER BY submitted_at DESC
     """)
     feedback = cursor.fetchall()
 
+    # Group by topic (case-insensitive, blanks excluded) so the admin can
+    # see how many distinct visitors reported the same underlying issue
+    topic_groups = {}
+    for item in feedback:
+        topic = (item.get("topic") or "").strip()
+        if not topic:
+            continue
+
+        key = topic.lower()
+        group = topic_groups.setdefault(key, {"topic": topic, "emails": set(), "count": 0})
+        group["count"] += 1
+        if item.get("email"):
+            group["emails"].add(item["email"])
+
+    cursor.execute("SELECT topic, email FROM vouchers")
+    already_issued = {(row["topic"].lower(), row["email"]) for row in cursor.fetchall()}
+
     cursor.close()
     connection.close()
 
-    return render_template("admin_feedback.html", feedback=feedback)
+    topics = []
+    for group in topic_groups.values():
+        pending_emails = sorted(
+            email for email in group["emails"]
+            if (group["topic"].lower(), email) not in already_issued
+        )
+        topics.append({
+            "topic": group["topic"],
+            "count": group["count"],
+            "distinct_visitors": len(group["emails"]),
+            "pending_emails": pending_emails
+        })
+
+    topics.sort(key=lambda t: t["count"], reverse=True)
+
+    return render_template("admin_feedback.html", feedback=feedback, topics=topics)
+
+@app.route("/api/admin/feedback/<int:feedback_id>/topic", methods=["PUT"])
+def set_feedback_topic(feedback_id):
+    if "admin_id" not in session:
+        return jsonify({"error": "Login required"}), 401
+
+    data = request.get_json()
+    topic = (data.get("topic") or "").strip() or None
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        "UPDATE feedback SET topic = %s WHERE id = %s",
+        (topic, feedback_id)
+    )
+    connection.commit()
+
+    cursor.close()
+    connection.close()
+
+    return jsonify({"message": "Topic updated"})
+
+@app.route("/api/admin/vouchers/issue", methods=["POST"])
+def issue_vouchers():
+    if "admin_id" not in session:
+        return jsonify({"error": "Login required"}), 401
+
+    data = request.get_json()
+    topic = (data.get("topic") or "").strip()
+
+    if not topic:
+        return jsonify({"error": "Topic is required"}), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        "SELECT DISTINCT email FROM feedback WHERE LOWER(TRIM(topic)) = %s AND email IS NOT NULL AND email <> ''",
+        (topic.lower(),)
+    )
+    emails = [row["email"] for row in cursor.fetchall()]
+
+    cursor.execute(
+        "SELECT email FROM vouchers WHERE LOWER(topic) = %s",
+        (topic.lower(),)
+    )
+    already_issued = {row["email"] for row in cursor.fetchall()}
+
+    issued = []
+    for email in emails:
+        if email in already_issued:
+            continue
+
+        code = "DPULZE-" + secrets.token_hex(4).upper()
+        cursor.execute(
+            "INSERT INTO vouchers (topic, email, code) VALUES (%s, %s, %s)",
+            (topic, email, code)
+        )
+        issued.append({"email": email, "code": code})
+
+    connection.commit()
+
+    cursor.close()
+    connection.close()
+
+    return jsonify({
+        "message": f"Issued {len(issued)} voucher(s)",
+        "vouchers": issued
+    })
+
+@app.route("/api/admin/vouchers")
+def get_vouchers():
+    if "admin_id" not in session:
+        return jsonify({"error": "Login required"}), 401
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT id, topic, email, code, issued_at
+        FROM vouchers
+        ORDER BY issued_at DESC
+    """)
+    vouchers = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return jsonify(vouchers)
 
 @app.route("/api/admin/logout", methods=["POST"])
 def admin_logout():
