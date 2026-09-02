@@ -711,27 +711,84 @@ def get_shop_categories():
     return categories
 
 
+def get_dpulze_shop_overview(limit=25):
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT s.shop_name, s.category, f.floor_name
+        FROM shops s
+        LEFT JOIN floors f ON f.id = s.floor_id
+        ORDER BY f.id, s.shop_name
+        LIMIT %s
+    """, (limit,))
+    shops = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return shops
+
+
+def get_dpulze_facility_overview():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT utility_type, name, floor
+        FROM utilities
+        ORDER BY utility_type, name
+    """)
+    facilities = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return facilities
+
+
+def get_dpulze_map_locations():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT location_name, location_code, floor_id
+        FROM locations
+        ORDER BY location_name
+    """)
+    locations = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return locations
+
+
 def build_mall_context():
     categories = get_shop_categories()
-    facility_names = [
-        "restroom",
-        "OKU restroom",
-        "baby diaper room",
-        "lift",
-    ]
+    shops = get_dpulze_shop_overview(limit=25)
+    facilities = get_dpulze_facility_overview()
+    locations = get_dpulze_map_locations()
 
     category_text = ", ".join(categories) if categories else "general shopping"
-    facility_text = ", ".join(facility_names)
+    facility_text = ", ".join(
+        f"{item['utility_type']} ({item['name']}, floor {item['floor'] or 'unknown'})" for item in facilities[:12]
+    ) if facilities else "restroom, OKU restroom, baby diaper room, lift"
+
+    shop_text = "; ".join(
+        f"{shop['shop_name']} ({shop['category'] or 'General'} on {shop['floor_name'] or 'ground floor'})"
+        for shop in shops[:12]
+    ) if shops else "No store list available"
+
+    location_text = "; ".join(
+        f"{item['location_name']} ({item['location_code']})" for item in locations[:12]
+    ) if locations else "main entrance and common zones"
 
     return (
-        "You are the mall concierge for this specific shopping center. "
-        "Use only the mall context below when answering. Do not invent stores, zones, or facilities that are not part of this mall. "
-        "If a location is not in the mall map or facility list, say that it is not available here. "
-        "This mall includes the following facility types: "
+        "You are the AI concierge for Dpulze Mall. "
+        "Answer questions only using the Dpulze Mall data in this app. "
+        "Do not invent stores, facilities, sections, or food courts that are not present in the mall data. "
+        "If a location or store is not listed in the Dpulze database or map, say it is not available in Dpulze Mall. "
+        "The available Dpulze map locations include: "
+        f"{location_text}. "
+        "This mall includes the following utility/facility entries: "
         f"{facility_text}. "
-        "The mall currently has store categories such as: "
+        "The mall store categories currently in the database are: "
         f"{category_text}. "
-        "Keep replies brief, friendly, and useful for shoppers."
+        "Sample Dpulze shops currently in the database: "
+        f"{shop_text}. "
+        "Keep replies concise, friendly, and specific to Dpulze Mall."
     )
 
 

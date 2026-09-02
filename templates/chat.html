@@ -34,12 +34,31 @@
 
         .chat-header {
             flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
             padding: 18px 24px;
             background: #5a3f33;
             color: white;
             font-size: 1.2rem;
             font-weight: bold;
             border-bottom: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .new-chat-btn {
+            border: 1px solid rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.08);
+            color: white;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .new-chat-btn:hover {
+            background: rgba(255,255,255,0.16);
         }
 
         .chat-body {
@@ -105,7 +124,10 @@
 </head>
 <body>
     <div class="chat-shell">
-        <div class="chat-header">Mall Assistant</div>
+        <div class="chat-header">
+            <span>Mall Assistant</span>
+            <button type="button" class="new-chat-btn" id="new-chat-btn">New Chat</button>
+        </div>
 
         <div class="chat-body" id="chat-body">
             <div class="message assistant">
@@ -123,6 +145,7 @@
         const chatBody = document.getElementById("chat-body");
         const chatForm = document.getElementById("chat-form");
         const chatInput = document.getElementById("chat-input");
+        const newChatButton = document.getElementById("new-chat-btn");
 
         function addMessage(role, text) {
             const message = document.createElement("div");
@@ -136,8 +159,20 @@
             fetch("/api/chat/reset", { method: "POST" });
         }
 
+        function resetChat() {
+            chatBody.innerHTML = `
+                <div class="message assistant">
+                    Hi! I can help with mall navigation, store recommendations, category suggestions, and shopping preferences.
+                </div>
+            `;
+            chatInput.value = "";
+            clearSessionMemory();
+            chatInput.focus();
+        }
+
         window.addEventListener("pagehide", clearSessionMemory);
         window.addEventListener("beforeunload", clearSessionMemory);
+        newChatButton.addEventListener("click", resetChat);
 
         chatForm.addEventListener("submit", async function (event) {
             event.preventDefault();
