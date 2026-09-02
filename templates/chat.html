@@ -5,23 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mall Assistant</title>
     <style>
-        body {
+        html, body {
             margin: 0;
+            height: 100%;
+            min-height: 100vh;
             font-family: Arial, sans-serif;
             background: #f6f3ef;
             color: #2a1f1a;
         }
 
+        body {
+            display: flex;
+            align-items: stretch;
+        }
+
         .chat-shell {
-            max-width: 900px;
-            margin: 40px auto;
+            width: min(100%, 980px);
+            min-height: calc(100vh - 24px);
+            margin: 12px auto;
             background: #fff;
             border-radius: 16px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .chat-header {
+            flex: 0 0 auto;
             padding: 20px 24px;
             background: #5a3f33;
             color: white;
@@ -30,7 +41,8 @@
         }
 
         .chat-body {
-            height: 460px;
+            flex: 1 1 auto;
+            min-height: 0;
             overflow-y: auto;
             padding: 20px;
             background: #faf7f2;
@@ -57,6 +69,7 @@
         }
 
         .chat-form {
+            flex: 0 0 auto;
             display: flex;
             gap: 12px;
             padding: 16px 20px 20px;
