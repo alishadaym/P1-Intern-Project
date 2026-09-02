@@ -51,9 +51,6 @@ def get_shops():
         s.category,
         s.unit,
         s.description,
-        s.full_description,
-        s.products_services,
-        s.website_url,
         s.floor_id,
         f.floor_name,
         f.floor_code
