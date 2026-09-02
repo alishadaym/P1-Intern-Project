@@ -691,12 +691,27 @@ function renderUtilityLocations()
 
     if (!utilityType)
     {
-        utilityList.textContent = "Choose a utility to see locations";
         return;
     }
 
     const matchingUtilities = Object.entries(mapData.facilities || {})
-        .filter(([, utility]) => utility.type === utilityType);
+        .filter(([, utility]) => utilityType === "all" || utility.type === utilityType)
+        .sort(([, a], [, b]) => {
+            const typeOrder = {
+                restroom: 1,
+                baby_diaper: 2,
+                oku: 3,
+                lift: 4,
+            };
+
+            const typeDifference = (typeOrder[a.type] || 99) - (typeOrder[b.type] || 99);
+            if (typeDifference !== 0)
+            {
+                return typeDifference;
+            }
+
+            return (a.name || "").localeCompare(b.name || "");
+        });
 
     if (matchingUtilities.length === 0)
     {

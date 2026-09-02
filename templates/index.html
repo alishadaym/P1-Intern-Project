@@ -12,7 +12,7 @@
 <body>
     <header class="site-header">
         <h1>Dpulze Mall Navigation</h1>
-                <a href="/login" class="login-button">Store Owner Login</a>
+                <!-- <a href="/login" class="login-button">Store Owner Login</a> -->
         <!-- {% if current %} -->
             <p class="scanned-location">You scanned: {{ current.label }}</p>
         <!-- {% endif %} -->
@@ -53,13 +53,14 @@
             <div class="utility-section">
                 <label for="utility-select">Utilities</label>
                 <select id="utility-select">
-                    <option value="">Choose a utility</option>
+                    <option value="">Choose a utility to see locations</option>
+                    <option value="all">All</option>
                     <option value="restroom">Restroom</option>
                     <option value="baby_diaper">Baby diaper</option>
                     <option value="oku">OKU accessible toilet</option>
                     <option value="lift">Lift</option>
                 </select>
-                <div id="utility-list">Choose a utility to see locations</div>
+                <div id="utility-list"></div>
             </div>
 
         </aside>

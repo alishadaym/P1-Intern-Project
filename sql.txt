@@ -81,6 +81,9 @@ DELETE FROM store_owners;
 
 DELETE FROM shops;
 
+//seed all 33 real mall shops with category + operating hours
+//(description still blank - fill in via the store owner's "Edit Store
+//Details" page once each shop has an account)
 INSERT INTO shops
     (shop_name, operating_hours, category, description, floor_id)
     ('F.O.S', '10am – 10pm', 'Clothing Store', NULL, 1),
