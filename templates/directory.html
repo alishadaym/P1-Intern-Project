@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mall Directory</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/directory.css') }}">
+</head>
+
+<body>
+    <div class="directory-container">
+        <header class="directory-header">
+            <!-- MENU BUTTON -->
+            {% include 'includes/menu.html' %}
+
+            <h1>Dpulze Mall<br>Navigation</h1>
+        </header>
+
+        <main class="directory-content">
+            <h2>Mall Directory</h2>
+
+            <p class="subtitle">FIND ALL THE AVAILABLE STORES HERE</p>
+
+            <div id="shop-list" class="shop-list">
+                <!-- Generated from database -->
+            </div>
+        </main>
+    </div>
+
+    <!-- SHOP MODAL -->
+    <div id="shop-modal" class="modal">
+        <div class="modal-content">
+            <button id="modal-close" class="modal-close">×</button>
+    
+            <h2 id="modal-shop-name"></h2>
+    
+            <div class="modal-basic-info">
+                <div id="modal-category"></div>
+                <div id="modal-unit"></div>
+                <div id="modal-floor"></div>
+                <div id="modal-hours"></div>
+            </div>
+    
+            <div class="modal-section">
+                <h3>About</h3>
+                <p id="modal-description"></p>
+            </div>
+    
+            <div class="modal-section">
+                <h3>Products & Services</h3>
+                <p id="modal-products"></p>
+            </div>
+    
+            <div class="modal-section" id="website-section">
+                <h3>Official Website</h3>
+    
+                <a id="modal-website" href="#" target="_blank" rel="noopener noreferrer">Visit Official Website</a>
+            </div>
+    
+            <button id="go-here-btn" class="go-here-btn">Go Here</button>    
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/directory.js') }}"></script>
+
+</body>
+</html>

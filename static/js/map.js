@@ -121,6 +121,7 @@ document.addEventListener("DOMContentLoaded", async function()
     await loadCategories();
     populateShopDropdown();
     populateCategoryDropdown();
+    checkShopFromURL();
 
     // NAVIGATE BUTTON
     const navigateButton = document.getElementById("navigate-btn");
@@ -1039,5 +1040,41 @@ async function loadCategories() {
     catch (error) {
         console.warn("Categories unavailable:", error);
         categoryNames = [];
+    }
+}
+
+function checkShopFromURL() {
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    const shopId =
+        params.get("shop");
+
+    const shouldNavigate =
+        params.get("navigate");
+
+
+    if (!shopId) {
+        return;
+    }
+
+    // Make sure shop exists
+    if (!mapData.shop_locations[shopId]) {
+        console.error(
+            "Shop from URL not found:",
+            shopId
+        );
+
+        return;
+    }
+
+    // Select the shop
+    selectShop(shopId);
+
+    // Automatically draw route
+    if (shouldNavigate === "1") {
+        startNavigation();
     }
 }

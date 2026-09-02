@@ -228,3 +228,81 @@ WHERE shop_code IN (
     'coffee_bean_shop','the_body_shop_shop','sox_world_shop','mr_dakgalbi_shop',
     'go_noodle_house_shop','happikiddo_shop','homes_harmony_shop'
 );
+
+// new queries for full shop details modal in directory
+ALTER TABLE shops
+ADD COLUMN full_description TEXT NULL AFTER description,
+ADD COLUMN products_services TEXT NULL AFTER full_description,
+ADD COLUMN website_url VARCHAR(255) NULL AFTER products_services;
+
+UPDATE shops
+SET
+    full_description = 'F.O.S is an established clothing retail chain that specializes in affordable quality apparel. The inaugural opening of its outlet in Sunway Pyramid in 1997, during the infamous economic crisis in Malaysia, marked the birth of F.O.S.',
+    products_services = 'Tees, blouses, sweaters, pants, skirts, polo tees, jackets & sweaters',
+    website_url = 'https://fos.com.my/'
+WHERE id = '8';
+
+UPDATE shops
+SET
+    full_description = 'Established in 1999 by master tailor Dickson Phang, SmartMaster has stood at the forefront of premium menswear in Malaysia. Rooted in decades of tailoring mastery, our brand marries timeless craftsmanship with refined modern elegance.',
+    products_services = 'Suits & tuxedo, shirts, polo shirts, trousers, footwear, accessories',
+    website_url = 'https://smartmaster.com.my/'
+WHERE id = '9';
+
+UPDATE shops
+SET
+    full_description = 'SSFHOME is an inspiration and it has been one since its first inception in 1989. Its wide variety of products hold an important place in the hearts of its loyal customers, as well as its uniqueness and signature home-living items.',
+    products_services = 'Furniture, bedding, artificial flower & plant, home decoration, household, kitchenware, bathroom, rug & mat, curtain, luggages & bags, lighting, clock, electrical, toys, UHome',
+    website_url = 'https://ssfhome.com/?srsltid=AfmBOoro360JC6tnNZDEYLGlq2esGnPBEBvioqNtOoUVvY2ErDGCbEvi'
+WHERE id = '10';
+
+UPDATE shops
+SET
+    full_description = 'Sarong by A&R is a local Malaysian fashion brand and boutique specializing in traditional and causal wear.',
+    products_services = 'Sarongs, baju kurung, traditional wear'
+WHERE id = '11';
+
+UPDATE shops
+SET
+    full_description = 'Divine shoes, must-have handbags and gorgeous accessories. Grab an outfit and bring it over. Name the look you want – sophisticated/cool/ smart/ confident – and Solight will help to pick out all the right things to go with it. All at affordable prices.',
+    products_services = 'Flats, heels, wedges pumps, mules, sandal, sneakers, BeMyelf, handbag',
+    website_url = 'https://www.solight.com.my/'
+WHERE id = '12';
+
+UPDATE shops
+SET
+    full_description = 'At Nando''s, we believe our flame goes beyond the grill. We are more than great chicken. We want to be a force for positivity in the communities we serve and to keep the flame of kindness, courage and connection burning wherever we can. Our purpose is simple: Change Lives, Together.
+Everything we do begins with people, and everything we protect comes back to our roots.',
+    products_services = 'Snacks, Peri-Peri wings, Peri-Peri Chicken, Peri-Peri bowls, burgers & wraps, sides, seasonal sides, bottomless drinks, designer drinks, desserts, Nandinos (meal for kids)',
+    website_url = 'https://nandos.com.my/'
+WHERE id = '13';
+
+UPDATE shops
+SET
+    full_description = 'Al-Ikhsan Sports was established in 1993 with a single 150sqft store in Holiday Plaza, Johor Bahru by a husband and wife team, Tuan Haji Ali Hassan and Pn Marina Abu Bakar.',
+    products_services = 'Bag, bottom, football accessories, footwear, gift, gloves, guards, headwear, other equipment, socks, top',
+    website_url = 'https://al-ikhsan.com/'
+WHERE id = '14';
+
+UPDATE shops
+SET
+    full_description = 'In 1945, Burt Baskin and Irv Robbins had a bold idea: offer 31 flavors instead of just vanilla, chocolate, and strawberry. Ice cream, they believed, should be an everyday treat and people loved it. Fast forward 75 years, and we''ve created over 1,400 flavors. From little wins to big moments, there''s always a reason to celebrate with a scoop.',
+    products_services = 'Handpacked, cups & cones, cake, desserts, beverages, party kit',
+    website_url = 'https://www.baskinrobbins.com.my/'
+WHERE id = '15';
+
+UPDATE shops
+SET
+    full_description = 'Since 1963, The Coffee Bean & Tea Leaf® has provided our customers with the world’s finest quality coffee and tea experience. In order to deliver that experience, we rely on our amazing Team Members.
+
+Providing great products only brings our customers to our door. Having them come back on a regular basis requires that we provide them with a Total Quality Experience and that we hire Simply the Best® candidates.',
+    products_services = 'Seasonal, ice blended drinks, ice blended tea, caffeine-free ice blended drinks, latte, espresso, brewed coffee, cold brew coffee, tea, tea latte, cold brew tea, cocoa, powders',
+    website_url = 'https://www.coffeebean.com/'
+WHERE id = '16';
+
+UPDATE shops
+SET
+    full_description = 'Our story started in Brighton, England in 1976. It began with our founder, Dame Anita Roddick, and her belief in something revolutionary: that business could be a force for good. Following her vision, we’ve been rule breaking, never faking and change making for over 40 years.',
+    products_services = 'Face product, hair product, body product, fragrance, makeup, gifts',
+    website_url = 'https://www.thebodyshop.com.my/'
+WHERE id = '17';
