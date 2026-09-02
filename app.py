@@ -711,6 +711,65 @@ def get_shop_categories():
     return categories
 
 
+def build_mall_context():
+    categories = get_shop_categories()
+    facility_names = [
+        "restroom",
+        "OKU restroom",
+        "baby diaper room",
+        "lift",
+    ]
+
+    category_text = ", ".join(categories) if categories else "general shopping"
+    facility_text = ", ".join(facility_names)
+
+    return (
+        "You are the mall concierge for this specific shopping center. "
+        "Use only the mall context below when answering. Do not invent stores, zones, or facilities that are not part of this mall. "
+        "If a location is not in the mall map or facility list, say that it is not available here. "
+        "This mall includes the following facility types: "
+        f"{facility_text}. "
+        "The mall currently has store categories such as: "
+        f"{category_text}. "
+        "Keep replies brief, friendly, and useful for shoppers."
+    )
+
+
+def ask_ollama_chat(prompt):
+    model_name = os.environ.get("OLLAMA_MODEL", "llama3.2")
+    mall_context = build_mall_context()
+
+    payload = {
+        "model": model_name,
+        "prompt": (
+            f"{mall_context}\n\nUser question: {prompt}"
+        ),
+        "stream": False,
+        "options": {
+            "temperature": 0.7,
+            "num_predict": 250,
+        },
+    }
+
+    request = urllib.request.Request(
+        "http://localhost:11434/api/generate",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            result = json.loads(response.read().decode("utf-8"))
+            text = result.get("response", "").strip()
+            if text:
+                return text
+    except Exception:
+        return None
+
+    return None
+
+
 def ask_openai_chat(prompt):
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
@@ -808,9 +867,15 @@ def build_chat_context():
 def generate_chatbot_reply(message):
     context = build_chat_context()
     prompt = message if not context else f"{context}\n\nCurrent user message: {message}"
+
+    ollama_reply = ask_ollama_chat(prompt)
+    if ollama_reply:
+        return ollama_reply
+
     openai_reply = ask_openai_chat(prompt)
     if openai_reply:
         return openai_reply
+
     return generate_local_chat_reply(message)
 
 # main menu
