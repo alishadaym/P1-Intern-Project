@@ -984,9 +984,22 @@ def find_shop_from_message(message):
 
 
 def is_confirmation_message(message):
-    return message.casefold().strip() in {
-        "yes", "yeah", "yep", "sure", "please", "yes please", "okay", "ok", "go ahead"
-    }
+    """Return True for a short affirmative reply to a pending store action.
+
+    Users often reply with phrases such as "yes, please" or "sure, take me
+    there" instead of repeating "map navigation".  A pending store in the
+    session makes those replies unambiguous enough to show its map link.
+    """
+    normalized = message.casefold().strip().lstrip("!,. ")
+    affirmative_starts = (
+        "yes", "yeah", "yep", "sure", "okay", "ok", "please", "go ahead"
+    )
+    return any(
+        normalized == phrase
+        or normalized.startswith(f"{phrase} ")
+        or normalized.startswith(f"{phrase},")
+        for phrase in affirmative_starts
+    )
 
 
 def build_chat_context():
@@ -1086,6 +1099,9 @@ def chat_api():
     if not message:
         return jsonify({"reply": "Please type a message first."}), 400
 
+    # Treat a natural affirmative reply as confirmation for the most recently
+    # mentioned store.  The user does not need to repeat "map navigation".
+    confirmation = is_confirmation_message(message)
     selected_shop = find_shop_from_message(message)
     if selected_shop:
         session["navigation_shop"] = {
@@ -1100,7 +1116,7 @@ def chat_api():
     session["chat_memory"] = memory
 
     reply = generate_chatbot_reply(message)
-    if selected_shop and not is_confirmation_message(message):
+    if selected_shop and not confirmation:
         if "navigation" not in reply.casefold() and "directions" not in reply.casefold():
             reply = f"{reply}\n\nWould you like navigation to {selected_shop['shop_name']}?"
     memory.append({"role": "assistant", "content": reply})
@@ -1110,7 +1126,7 @@ def chat_api():
 
     navigation_shop = session.get("navigation_shop")
     navigation_url = None
-    if navigation_shop and is_confirmation_message(message):
+    if navigation_shop and confirmation:
         navigation_url = url_for(
             "map_page",
             shop=navigation_shop["shop_code"],
