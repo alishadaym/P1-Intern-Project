@@ -259,7 +259,6 @@ function closeShopDetails()
     shopModal.hidden = true;
     activeShopId = null;
     highlightSelectedShop(null);
-    clearSelectedShopPanel();
     resetUtilityMapZoom();
 
     if (lastShopTrigger)
@@ -267,11 +266,6 @@ function closeShopDetails()
         lastShopTrigger.focus();
         lastShopTrigger = null;
     }
-}
-
-function clearSelectedShopPanel()
-{
-    document.getElementById("selected-shop-details").textContent = "No shop selected";
 }
 
 function setNavigationButtonState(isNavigating)
@@ -1430,11 +1424,6 @@ function selectShop(shopId)
 
     hideShopSuggestions();
 
-    updateSelectedShopPanel(
-        shopId,
-        shop
-    );
-
     renderUtilityLocations();
     highlightSelectedShop(shopId);
     showShopDetails(shop);
@@ -1473,7 +1462,6 @@ function selectUtility(utilityId)
     };
 
     document.getElementById("shop-select").value = "";
-    document.getElementById("selected-shop-details").textContent = "No shop selected";
 
     renderUtilityLocations();
     highlightSelectedShop(utilityId);
@@ -1482,55 +1470,6 @@ function selectUtility(utilityId)
     {
         startNavigation();
     }
-}
-
-// UPDATE SELECTED SHOP PANEL
-function updateSelectedShopPanel(shopId, shop)
-{
-    const panel =
-        document.getElementById(
-            "selected-shop-details"
-        );
-
-    panel.innerHTML = `
-        <div class="shop-details-card">
-
-            <strong class="shop-details-name">
-                ${shop.name}
-            </strong>
-
-            ${
-                shop.category
-                ? `<div>${shop.category}</div>`
-                : ""
-            }
-
-            ${
-                shop.unit
-                ? `<div>Unit: ${shop.unit}</div>`
-                : ""
-            }
-
-            ${
-                shop.floor
-                ? `<div>${shop.floor}</div>`
-                : ""
-            }
-
-            ${
-                shop.operatingHours
-                ? `<div>Hours: ${shop.operatingHours}</div>`
-                : ""
-            }
-
-            ${
-                shop.description
-                ? `<div>${shop.description}</div>`
-                : ""
-            }
-
-        </div>
-    `;
 }
 
 // HIGHLIGHT SELECTED SHOP

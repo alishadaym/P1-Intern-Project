@@ -553,17 +553,14 @@ main {
         margin-top: 20px;
     }
 
-    .selected-shop-section,
     .category-shops-section {
         margin-top: 20px;
     }
 
-    .selected-shop-section h3,
     .category-shops-section h3 {
         margin-bottom: 10px;
     }
 
-    #selected-shop-details,
     #category-shop-list {
         font-size: 14px;
     }
