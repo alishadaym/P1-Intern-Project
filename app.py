@@ -4,9 +4,12 @@ from db import get_db_connection
 from simulate_occupancy import run_simulator
 from locations import LOCATIONS, MAP_WIDTH, MAP_HEIGHT, SHOPS, NODE_MAP
 from scan_log import read_scans, record_scan
+from simulate_occupancy import run_simulator
 
 import json
 import os
+import secrets
+import threading
 import uuid
 import threading
 import urllib.request
@@ -28,6 +31,16 @@ def start_occupancy_simulator():
 
 
 start_occupancy_simulator()
+# Keeps restroom occupancy changing for visitors without needing real foot
+# traffic. Runs in-process rather than as a separate Render service, so it
+# only makes sense with a single app worker - gunicorn's default (see
+# Procfile) - since multiple workers would each run their own simulation
+# and fight over the same cubicles.
+threading.Thread(target=run_simulator, daemon=True).start()
+
+GENERAL_VOUCHER_TYPES = {
+    "parking": "Parking Voucher",
+}
 
 def load_map():
     map_path = os.path.join("data", "map.json")
@@ -691,6 +704,271 @@ def forgot_password_api():
 
     return jsonify({
         "message": "Please contact the system administrator to reset your password."
+    })
+
+@app.route("/feedback")
+def feedback_page():
+    return render_template("feedback.html")
+
+@app.route("/api/feedback", methods=["POST"])
+def submit_feedback():
+
+    data = request.get_json()
+
+    name = data.get("name")
+    email = data.get("email")
+    phone = data.get("phone")
+    incident_date = data.get("incident_date") or None
+    message = data.get("message", "").strip()
+    resolution = data.get("resolution")
+
+    if not message:
+        return jsonify({
+            "error": "Please describe your feedback before submitting."
+        }), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    query = """
+        INSERT INTO feedback
+        (name, email, phone, incident_date, message, resolution)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """
+
+    cursor.execute(
+        query,
+        (name or None, email or None, phone or None, incident_date, message, resolution or None)
+    )
+    connection.commit()
+
+    new_feedback_id = cursor.lastrowid
+
+    cursor.close()
+    connection.close()
+
+    return jsonify({
+        "message": "Thank you! Your feedback has been submitted.",
+        "feedback_id": new_feedback_id
+    }), 201
+
+@app.route("/admin/login")
+def admin_login_page():
+    return render_template("admin_login.html")
+
+@app.route("/api/admin/login", methods=["POST"])
+def admin_login():
+    data = request.get_json()
+
+    username = data.get("username")
+    password = data.get("password")
+
+    if not username or not password:
+        return jsonify({
+            "error": "Username and password are required"
+        }), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        "SELECT id, username, password FROM admins WHERE username = %s",
+        (username,)
+    )
+    admin = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+
+    if admin is None or not check_password_hash(admin["password"], password):
+        return jsonify({
+            "error": "Invalid username or password"
+        }), 401
+
+    session["admin_id"] = admin["id"]
+    session["admin_username"] = admin["username"]
+
+    return jsonify({
+        "message": "Login successful"
+    })
+
+@app.route("/admin/feedback")
+def admin_feedback_page():
+    if "admin_id" not in session:
+        return redirect("/admin/login")
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT id, name, email, phone, incident_date, message, topic, resolution, submitted_at
+        FROM feedback
+        ORDER BY submitted_at DESC
+    """)
+    feedback = cursor.fetchall()
+
+    # Group by topic (case-insensitive, blanks excluded) so the admin can
+    # see how many distinct visitors reported the same underlying issue
+    topic_groups = {}
+    for item in feedback:
+        topic = (item.get("topic") or "").strip()
+        if not topic:
+            continue
+
+        key = topic.lower()
+        group = topic_groups.setdefault(key, {"topic": topic, "emails": set(), "count": 0})
+        group["count"] += 1
+        if item.get("email"):
+            group["emails"].add(item["email"])
+
+    cursor.close()
+    connection.close()
+
+    topics = []
+    for group in topic_groups.values():
+        topics.append({
+            "topic": group["topic"],
+            "count": group["count"],
+            "distinct_visitors": len(group["emails"])
+        })
+
+    topics.sort(key=lambda t: t["count"], reverse=True)
+
+    return render_template(
+        "admin_feedback.html",
+        feedback=feedback,
+        topics=topics,
+        general_voucher_types=GENERAL_VOUCHER_TYPES
+    )
+
+@app.route("/api/admin/feedback/<int:feedback_id>/topic", methods=["PUT"])
+def set_feedback_topic(feedback_id):
+    if "admin_id" not in session:
+        return jsonify({"error": "Login required"}), 401
+
+    data = request.get_json()
+    topic = (data.get("topic") or "").strip() or None
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        "UPDATE feedback SET topic = %s WHERE id = %s",
+        (topic, feedback_id)
+    )
+    connection.commit()
+
+    cursor.close()
+    connection.close()
+
+    return jsonify({"message": "Topic updated"})
+
+@app.route("/api/admin/vouchers/issue", methods=["POST"])
+def issue_vouchers():
+    if "admin_id" not in session:
+        return jsonify({"error": "Login required"}), 401
+
+    data = request.get_json()
+    topic = (data.get("topic") or "").strip()
+    voucher_type = (data.get("voucher_type") or "").strip()
+    shop_code = (data.get("shop_code") or "").strip() or None
+
+    if not topic:
+        return jsonify({"error": "Topic is required"}), 400
+
+    if voucher_type == "shop":
+        if not shop_code:
+            return jsonify({"error": "Please choose a shop"}), 400
+    elif voucher_type in GENERAL_VOUCHER_TYPES:
+        shop_code = None
+    else:
+        return jsonify({"error": "Please choose a valid voucher type"}), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    if voucher_type == "shop":
+        cursor.execute("SELECT shop_name FROM shops WHERE shop_code = %s", (shop_code,))
+        shop = cursor.fetchone()
+        if not shop:
+            cursor.close()
+            connection.close()
+            return jsonify({"error": "Shop not found"}), 400
+        voucher_label = f"{shop['shop_name']} Voucher"
+    else:
+        voucher_label = GENERAL_VOUCHER_TYPES[voucher_type]
+
+    cursor.execute(
+        "SELECT DISTINCT email FROM feedback WHERE LOWER(TRIM(topic)) = %s AND email IS NOT NULL AND email <> ''",
+        (topic.lower(),)
+    )
+    emails = [row["email"] for row in cursor.fetchall()]
+
+    cursor.execute(
+        "SELECT email FROM vouchers WHERE LOWER(topic) = %s AND voucher_type = %s AND shop_code <=> %s",
+        (topic.lower(), voucher_type, shop_code)
+    )
+    already_issued = {row["email"] for row in cursor.fetchall()}
+
+    issued = []
+    for email in emails:
+        if email in already_issued:
+            continue
+
+        code = "DPULZE-" + secrets.token_hex(4).upper()
+        cursor.execute(
+            "INSERT INTO vouchers (topic, voucher_type, shop_code, email, code) VALUES (%s, %s, %s, %s, %s)",
+            (topic, voucher_type, shop_code, email, code)
+        )
+        issued.append({"email": email, "code": code, "voucher_type": voucher_label})
+
+    connection.commit()
+
+    cursor.close()
+    connection.close()
+
+    return jsonify({
+        "message": f"Issued {len(issued)} voucher(s)",
+        "vouchers": issued
+    })
+
+@app.route("/api/admin/vouchers")
+def get_vouchers():
+    if "admin_id" not in session:
+        return jsonify({"error": "Login required"}), 401
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT v.id, v.topic, v.voucher_type, v.shop_code, v.email, v.code, v.issued_at,
+               s.shop_name
+        FROM vouchers v
+        LEFT JOIN shops s ON s.shop_code = v.shop_code
+        ORDER BY v.issued_at DESC
+    """)
+    vouchers = cursor.fetchall()
+
+    for voucher in vouchers:
+        if voucher["voucher_type"] == "shop":
+            voucher["voucher_type_label"] = f"{voucher['shop_name'] or 'Unknown Shop'} Voucher"
+        else:
+            voucher["voucher_type_label"] = GENERAL_VOUCHER_TYPES.get(
+                voucher["voucher_type"], voucher["voucher_type"]
+            )
+
+    cursor.close()
+    connection.close()
+
+    return jsonify(vouchers)
+
+@app.route("/api/admin/logout", methods=["POST"])
+def admin_logout():
+    session.pop("admin_id", None)
+    session.pop("admin_username", None)
+
+    return jsonify({
+        "message": "Logged out successfully"
     })
 
 def get_session_id() -> str:
