@@ -714,16 +714,26 @@ def get_shop_categories():
     return categories
 
 
-def get_dpulze_shop_overview(limit=25):
+def get_dpulze_shop_overview(limit=None):
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT s.shop_name, s.category, f.floor_name
-        FROM shops s
-        LEFT JOIN floors f ON f.id = s.floor_id
-        ORDER BY f.id, s.shop_name
-        LIMIT %s
-    """, (limit,))
+    if limit is None:
+        cursor.execute("""
+            SELECT s.shop_name, s.category, s.description, s.full_description,
+                   s.products_services, f.floor_name
+            FROM shops s
+            LEFT JOIN floors f ON f.id = s.floor_id
+            ORDER BY f.id, s.shop_name
+        """)
+    else:
+        cursor.execute("""
+            SELECT s.shop_name, s.category, s.description, s.full_description,
+                   s.products_services, f.floor_name
+            FROM shops s
+            LEFT JOIN floors f ON f.id = s.floor_id
+            ORDER BY f.id, s.shop_name
+            LIMIT %s
+        """, (limit,))
     shops = cursor.fetchall()
     cursor.close()
     connection.close()
@@ -760,9 +770,19 @@ def get_dpulze_map_locations():
 
 def build_mall_context():
     categories = get_shop_categories()
-    shops = get_dpulze_shop_overview(limit=25)
+    shops = get_dpulze_shop_overview()
     facilities = get_dpulze_facility_overview()
     locations = get_dpulze_map_locations()
+
+    def shop_detail(shop):
+        detail = (
+            shop.get("products_services")
+            or shop.get("full_description")
+            or shop.get("description")
+            or shop.get("category")
+            or "general mall offerings"
+        )
+        return str(detail).strip()
 
     category_text = ", ".join(categories) if categories else "general shopping"
     facility_text = ", ".join(
@@ -770,8 +790,8 @@ def build_mall_context():
     ) if facilities else "restroom, OKU restroom, baby diaper room, lift"
 
     shop_text = "; ".join(
-        f"{shop['shop_name']} ({shop['category'] or 'General'} on {shop['floor_name'] or 'ground floor'})"
-        for shop in shops[:12]
+        f"{shop['shop_name']} ({shop['category'] or 'General'} on {shop['floor_name'] or 'ground floor'}): {shop_detail(shop)}"
+        for shop in shops
     ) if shops else "No store list available"
 
     location_text = "; ".join(
@@ -781,6 +801,8 @@ def build_mall_context():
     return (
         "You are the AI concierge for Dpulze Mall. "
         "Answer questions only using the Dpulze Mall data in this app. "
+        "Use the full shops catalogue in the database, especially the store names, categories, descriptions, full_description, and products_services fields. "
+        "When a user asks for stores that sell a product or item, review the complete shops table and list every matching store based on its product/services description. "
         "Do not invent stores, facilities, sections, or food courts that are not present in the mall data. "
         "If a location or store is not listed in the Dpulze database or map, say it is not available in Dpulze Mall. "
         "The available Dpulze map locations include: "
@@ -841,8 +863,11 @@ def ask_openai_chat(prompt):
             {
                 "role": "system",
                 "content": (
-                    "You are a helpful mall concierge. Answer user questions about stores, mall navigation, "
-                    "shopping recommendations, and general mall services. Keep replies concise, friendly, and practical."
+                    "You are a helpful mall concierge for Dpulze Mall. Use the mall database as the source of truth. "
+                    "When someone asks which stores sell an item, search across the full shops catalogue and list all matching stores with their selling details. "
+                    "Do not rely on a few famous brands or generic recommendations if the database contains more specific matches. "
+                    "Answer user questions about stores, mall navigation, shopping recommendations, and general mall services. "
+                    "Keep replies concise, friendly, and practical."
                 ),
             },
             {"role": "user", "content": prompt},
@@ -926,7 +951,12 @@ def build_chat_context():
 
 def generate_chatbot_reply(message):
     context = build_chat_context()
+    db_guidance = (
+        "Use the full shops table and all product/service descriptions in the database before recommending or listing stores. "
+        "Do not default to a few well-known shops unless they are the only matching stores in the database."
+    )
     prompt = message if not context else f"{context}\n\nCurrent user message: {message}"
+    prompt = f"{db_guidance}\n\n{prompt}"
 
     ollama_reply = ask_ollama_chat(prompt)
     if ollama_reply:

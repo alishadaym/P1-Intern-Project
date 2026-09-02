@@ -10,6 +10,8 @@ class ChatContextTests(unittest.TestCase):
         self.assertIn("dpulze", lowered)
         self.assertIn("this mall", lowered)
         self.assertIn("facility", lowered)
+        self.assertIn("description", lowered)
+        self.assertIn("products", lowered)
 
 
 if __name__ == "__main__":
