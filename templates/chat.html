@@ -120,6 +120,21 @@
         .chat-form button:hover {
             background: #593d31;
         }
+
+        .navigation-link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 9px 12px;
+            border-radius: 8px;
+            background: #6f4b3e;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .navigation-link:hover {
+            background: #593d31;
+        }
     </style>
 </head>
 <body>
@@ -152,6 +167,15 @@
             message.className = `message ${role}`;
             message.textContent = text;
             chatBody.appendChild(message);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function addNavigationLink(url) {
+            const link = document.createElement("a");
+            link.className = "navigation-link";
+            link.href = url;
+            link.textContent = "Open Map Navigation";
+            chatBody.lastElementChild.appendChild(link);
             chatBody.scrollTop = chatBody.scrollHeight;
         }
 
@@ -201,6 +225,9 @@
                 const lastMessage = chatBody.lastElementChild;
                 if (lastMessage) {
                     lastMessage.textContent = data.reply || "I’m not sure, but I can help with mall information and recommendations.";
+                }
+                if (data.navigation_url) {
+                    addNavigationLink(data.navigation_url);
                 }
             } catch (error) {
                 const lastMessage = chatBody.lastElementChild;

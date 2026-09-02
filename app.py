@@ -1,4 +1,4 @@
-from flask import Flask, abort, jsonify, request, render_template, session, redirect
+from flask import Flask, abort, jsonify, request, render_template, session, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_db_connection
 from simulate_occupancy import run_simulator
@@ -719,16 +719,16 @@ def get_dpulze_shop_overview(limit=None):
     cursor = connection.cursor(dictionary=True)
     if limit is None:
         cursor.execute("""
-            SELECT s.shop_name, s.category, s.description, s.full_description,
-                   s.products_services, f.floor_name
+                SELECT s.shop_code, s.shop_name, s.operating_hours, s.category, s.description,
+                     s.full_description, s.products_services, f.floor_name
             FROM shops s
             LEFT JOIN floors f ON f.id = s.floor_id
             ORDER BY f.id, s.shop_name
         """)
     else:
         cursor.execute("""
-            SELECT s.shop_name, s.category, s.description, s.full_description,
-                   s.products_services, f.floor_name
+                SELECT s.shop_code, s.shop_name, s.operating_hours, s.category, s.description,
+                     s.full_description, s.products_services, f.floor_name
             FROM shops s
             LEFT JOIN floors f ON f.id = s.floor_id
             ORDER BY f.id, s.shop_name
@@ -814,6 +814,39 @@ def build_mall_context():
         "Sample Dpulze shops currently in the database: "
         f"{shop_text}. "
         "Keep replies concise, friendly, and specific to Dpulze Mall."
+    )
+
+
+def build_recommendation_guidance(message):
+    lowered = message.lower()
+    if not any(keyword in lowered for keyword in ("shoe", "shoes", "footwear", "sneaker", "sneakers")):
+        return ""
+
+    shops = get_dpulze_shop_overview()
+    shoe_terms = (
+        "shoe", "footwear", "sneaker", "sandal", "boot", "sportswear", "sporting", "running", "slipper"
+    )
+    matching_shops = []
+    for shop in shops:
+        if "permanently closed" in str(shop.get("operating_hours") or "").lower():
+            continue
+        searchable_text = " ".join(
+            str(shop.get(field) or "")
+            for field in ("shop_name", "category", "description", "full_description", "products_services")
+        ).lower()
+        if any(term in searchable_text for term in shoe_terms):
+            matching_shops.append(
+                f"{shop['shop_name']} ({shop['category'] or 'General'}): "
+                f"{shop.get('products_services') or shop.get('full_description') or shop.get('description') or shop.get('category') or 'No selling details'}"
+            )
+
+    matching_text = "; ".join(matching_shops) if matching_shops else "No shoe-related store was found"
+    return (
+        "This is a shoe/footwear request. Only recommend stores whose category or selling details "
+        "match shoes, footwear, sneakers, sandals, boots, sportswear, sporting goods, running shoes, or slippers. "
+        "Do not include electronics, telecommunications, food, beauty, furniture, banking, or other unrelated stores. "
+        "The database-matched shoe stores are: "
+        f"{matching_text}."
     )
 
 
@@ -939,6 +972,23 @@ def get_chat_memory():
     return session["chat_memory"]
 
 
+def find_shop_from_message(message):
+    normalized_message = message.casefold()
+    shops = get_dpulze_shop_overview()
+    matches = [
+        shop for shop in shops
+        if shop.get("shop_code") and shop.get("shop_name")
+        and shop["shop_name"].casefold() in normalized_message
+    ]
+    return max(matches, key=lambda shop: len(shop["shop_name"])) if matches else None
+
+
+def is_confirmation_message(message):
+    return message.casefold().strip() in {
+        "yes", "yeah", "yep", "sure", "please", "yes please", "okay", "ok", "go ahead"
+    }
+
+
 def build_chat_context():
     memory = get_chat_memory()
     if not memory:
@@ -950,13 +1000,21 @@ def build_chat_context():
 
 
 def generate_chatbot_reply(message):
+    if is_confirmation_message(message) and session.get("navigation_shop"):
+        shop = session["navigation_shop"]
+        return (
+            f"Sure. Open Map Navigation and enter {shop['shop_name']} in the shop search. "
+            "The map will select the store and show the route from your current starting point."
+        )
+
     context = build_chat_context()
     db_guidance = (
         "Use the full shops table and all product/service descriptions in the database before recommending or listing stores. "
         "Do not default to a few well-known shops unless they are the only matching stores in the database."
     )
+    recommendation_guidance = build_recommendation_guidance(message)
     prompt = message if not context else f"{context}\n\nCurrent user message: {message}"
-    prompt = f"{db_guidance}\n\n{prompt}"
+    prompt = f"{db_guidance}\n{recommendation_guidance}\n\n{prompt}"
 
     ollama_reply = ask_ollama_chat(prompt)
     if ollama_reply:
@@ -1028,6 +1086,13 @@ def chat_api():
     if not message:
         return jsonify({"reply": "Please type a message first."}), 400
 
+    selected_shop = find_shop_from_message(message)
+    if selected_shop:
+        session["navigation_shop"] = {
+            "shop_code": selected_shop["shop_code"],
+            "shop_name": selected_shop["shop_name"],
+        }
+
     memory = get_chat_memory()
     memory.append({"role": "user", "content": message})
     if len(memory) > 12:
@@ -1035,16 +1100,29 @@ def chat_api():
     session["chat_memory"] = memory
 
     reply = generate_chatbot_reply(message)
+    if selected_shop and not is_confirmation_message(message):
+        if "navigation" not in reply.casefold() and "directions" not in reply.casefold():
+            reply = f"{reply}\n\nWould you like navigation to {selected_shop['shop_name']}?"
     memory.append({"role": "assistant", "content": reply})
     if len(memory) > 12:
         memory = memory[-12:]
     session["chat_memory"] = memory
 
-    return jsonify({"reply": reply})
+    navigation_shop = session.get("navigation_shop")
+    navigation_url = None
+    if navigation_shop and is_confirmation_message(message):
+        navigation_url = url_for(
+            "map_page",
+            shop=navigation_shop["shop_code"],
+            navigate="1",
+        )
+
+    return jsonify({"reply": reply, "navigation_url": navigation_url})
 
 @app.route("/api/chat/reset", methods=["POST"])
 def chat_reset_api():
     session.pop("chat_memory", None)
+    session.pop("navigation_shop", None)
     return jsonify({"status": "cleared"})
 
 # if __name__ == "__main__":
