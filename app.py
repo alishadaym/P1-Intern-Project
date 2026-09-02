@@ -9,6 +9,8 @@ import json
 import os
 import uuid
 import threading
+import urllib.request
+import urllib.parse
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
@@ -695,6 +697,109 @@ def get_session_id() -> str:
     return session["session_id"]
 
 
+<<<<<<< Updated upstream
+=======
+def get_shop_categories():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT DISTINCT TRIM(category) AS category
+        FROM shops
+        WHERE category IS NOT NULL AND TRIM(category) <> ''
+        ORDER BY category
+    """)
+    categories = [row["category"] for row in cursor.fetchall()]
+    cursor.close()
+    connection.close()
+    return categories
+
+
+def ask_openai_chat(prompt):
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        return None
+
+    payload = {
+        "model": "gpt-4o-mini",
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "You are a helpful mall concierge. Answer user questions about stores, mall navigation, "
+                    "shopping recommendations, and general mall services. Keep replies concise, friendly, and practical."
+                ),
+            },
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.7,
+        "max_tokens": 250,
+    }
+
+    request = urllib.request.Request(
+        "https://api.openai.com/v1/chat/completions",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            result = json.loads(response.read().decode("utf-8"))
+            return result["choices"][0]["message"]["content"].strip()
+    except Exception:
+        return None
+
+
+def generate_local_chat_reply(message):
+    if not message or not message.strip():
+        return "Please send a question or shopping request."
+
+    text = message.strip()
+    lowered = text.lower()
+    categories = get_shop_categories()
+    category_hint = ", ".join(categories[:6]) if categories else "fashion, food, electronics, services"
+
+    if any(keyword in lowered for keyword in ["hi", "hello", "hey", "good morning", "good afternoon"]):
+        return "Hi! I can help with mall information, store suggestions, categories, and shopping recommendations."
+
+    if any(keyword in lowered for keyword in ["where", "locat", "direction", "map", "find"]):
+        return "You can use the mall map in the navigation page to find stores and facilities. I can also suggest nearby categories or relevant shops."
+
+    if any(keyword in lowered for keyword in ["recommend", "suggest", "shop", "buy", "looking for", "need"]):
+        if any(keyword in lowered for keyword in ["food", "eat", "restaurant", "cafe"]):
+            return "For food and dining, try the food and dining sections in the mall directory. If you want, I can narrow it down by budget or vibe."
+        if any(keyword in lowered for keyword in ["clothes", "fashion", "apparel", "outfit", "dress"]):
+            return "For fashion and apparel, look for the clothing and lifestyle categories in the mall. I can also suggest a quick shopping route for a casual or premium look."
+        if any(keyword in lowered for keyword in ["kids", "baby", "diaper", "family"]):
+            return "For family needs, check the baby care and family-friendly facilities on the map. You can also look for kid-friendly or family-oriented stores in the directory."
+        return (
+            f"I can help with shopping suggestions. Popular categories in this mall include: {category_hint}. "
+            "Tell me your preference, such as fashion, food, family needs, or budget, and I’ll narrow it down."
+        )
+
+    if any(keyword in lowered for keyword in ["bathroom", "toilet", "restroom", "baby diaper", "oku"]):
+        return "You can check the map for restroom, OKU restroom, and baby diaper room locations. The app also shows live availability for these facilities."
+
+    if any(keyword in lowered for keyword in ["opening", "hours", "close", "time"]):
+        return "Store hours are usually listed in the shop details on the map and directory. I can help you find the right store based on availability or shopping type."
+
+    return (
+        "I can help with mall navigation, store recommendations, categories, and shopping preferences. "
+        "Ask me for nearby stores, family-friendly spots, food options, or general mall help."
+    )
+
+
+def generate_chatbot_reply(message):
+    openai_reply = ask_openai_chat(message)
+    if openai_reply:
+        return openai_reply
+    return generate_local_chat_reply(message)
+
+# main menu
+>>>>>>> Stashed changes
 @app.route("/")
 def index():
     current = session.get("current_location")
@@ -726,6 +831,17 @@ def scans():
 @app.route("/shops")
 def shops():
     return redirect("/")
+
+@app.route("/api/chat", methods=["POST"])
+def chat_api():
+    payload = request.get_json(silent=True) or {}
+    message = (payload.get("message") or "").strip()
+
+    if not message:
+        return jsonify({"reply": "Please type a message first."}), 400
+
+    reply = generate_chatbot_reply(message)
+    return jsonify({"reply": reply})
 
 if __name__ == "__main__":
     app.run(debug=True)
