@@ -116,6 +116,13 @@
             chatBody.scrollTop = chatBody.scrollHeight;
         }
 
+        function clearSessionMemory() {
+            fetch("/api/chat/reset", { method: "POST" });
+        }
+
+        window.addEventListener("pagehide", clearSessionMemory);
+        window.addEventListener("beforeunload", clearSessionMemory);
+
         chatForm.addEventListener("submit", async function (event) {
             event.preventDefault();
             const message = chatInput.value.trim();

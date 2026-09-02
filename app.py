@@ -789,8 +789,26 @@ def generate_local_chat_reply(message):
     )
 
 
+def get_chat_memory():
+    if "chat_memory" not in session:
+        session["chat_memory"] = []
+    return session["chat_memory"]
+
+
+def build_chat_context():
+    memory = get_chat_memory()
+    if not memory:
+        return ""
+
+    recent = memory[-6:]
+    lines = [f"{item['role']}: {item['content']}" for item in recent]
+    return "Conversation memory:\n" + "\n".join(lines)
+
+
 def generate_chatbot_reply(message):
-    openai_reply = ask_openai_chat(message)
+    context = build_chat_context()
+    prompt = message if not context else f"{context}\n\nCurrent user message: {message}"
+    openai_reply = ask_openai_chat(prompt)
     if openai_reply:
         return openai_reply
     return generate_local_chat_reply(message)
@@ -834,11 +852,9 @@ def location(name):
     record_scan(name, get_session_id(), previous_location)
     return redirect("/")
 
-
 @app.route("/scans")
 def scans():
     return redirect("/")
-
 
 @app.route("/shops")
 def shops():
@@ -857,8 +873,24 @@ def chat_api():
     if not message:
         return jsonify({"reply": "Please type a message first."}), 400
 
+    memory = get_chat_memory()
+    memory.append({"role": "user", "content": message})
+    if len(memory) > 12:
+        memory = memory[-12:]
+    session["chat_memory"] = memory
+
     reply = generate_chatbot_reply(message)
+    memory.append({"role": "assistant", "content": reply})
+    if len(memory) > 12:
+        memory = memory[-12:]
+    session["chat_memory"] = memory
+
     return jsonify({"reply": reply})
+
+@app.route("/api/chat/reset", methods=["POST"])
+def chat_reset_api():
+    session.pop("chat_memory", None)
+    return jsonify({"status": "cleared"})
 
 # if __name__ == "__main__":
 #     app.run(debug=True)
