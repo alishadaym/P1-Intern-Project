@@ -314,7 +314,10 @@ CREATE TABLE utilities (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO utilities (utility_type, name, map_code, floor, created_at)
+ALTER TABLE utilities
+ADD COLUMN map_code VARCHAR(100);
+
+INSERT INTO utilities (utility_type, name, map_code, floor)
 VALUES 
 ('Restroom', 'Restroom - Centre', 'ground_toilet_centre', 'G'),
 ('Restroom', 'Restroom - West Wing', '', '1'),
@@ -545,3 +548,46 @@ SET
     products_services = 'Sunglasses, frame, accessories, contact lens',
     website_url = 'https://jacsoptometry.com/'
 WHERE id = '32';
+
+UPDATE shops
+SET
+    full_description = 'World of Perfumes is a Malaysian fragrance retail and wholesale distribution company. Established in 1997, the brand is highly regarded for offering an extensive catalog of premium international designer brands, classic old-school scents, and authentic Arabic/oriental fragrances at budget-friendly prices.',
+    products_services = 'Fragrances, perfumes'
+WHERE id = '33';
+
+UPDATE shops
+SET
+    full_description = 'We were founded in April 2010 as a consumer electronics and smart manufacturing company with smartphones and smart hardware connected by an IoT platform at its core.',
+    products_services = 'Mobile, wearables, smart home appliances, POCO',
+    website_url = 'https://www.mi.com/my/'
+WHERE id = '34';
+
+UPDATE shops
+SET
+    full_description = 'As a proudly homegrown Malaysian beauty brand, Elianto believes that beauty is a form of self-expression. We offer a wide range of quality cosmetics, fragrances, body care, and beauty essentials designed to help individuals feel confident and express their unique style every day.',
+    products_services = 'Fragrance, make up, beauty products, shower products, skin care',
+    website_url = 'https://eliantocosmetics.com/'
+WHERE id = '35';
+
+// for ajumma (id = '36'), still pending since its a clothing store instead of a korean restaurant
+
+UPDATE shops
+SET
+    full_description = 'PARCA''s fushion of elegant modest fashion and modern Asian batikwear, designed for global audiences.',
+    products_services = 'Blouses, oversized tops, palazzo pants, skirts, tunics, kebayas, traditional maxi sarungs, pario-style slip-on skirts',
+    website_url = 'https://parca.com.my/'
+WHERE id = '37';
+
+UPDATE shops
+SET
+    full_description = 'Maxis Berhad, Malaysia''s leading integrated telecommunications service provider, headquarted in Kuala Lumpur. It delivers comprehensive 4G and 5G mobile services, high-speed fibre broadband, and enterprise digital solutions to millions of customers nationwide.',
+    products_services = 'Mobile plans, home plans, devices',
+    website_url = 'https://www.maxis.com.my/en/home/'
+WHERE id = '38';
+
+UPDATE shops
+SET
+    full_description = 'Starbucks in Malaysia is operated by Berjaya Starbucks Coffee Company Sdn Bhd., a licensee of Starbucks Coffee International Inc. and owned by Berjaya Food Berhad. From its first store opening in Kuala Lumpur on 17 December 1998, Starbucks has expanded to 11 states and all three federal territories across the nation. Currently, there are more than 320 stores throughout Malaysia, including over 58 Drive-Thru stores and 10 Reserve™ stores. After more than twenty-years of operations, Starbucks has grown not only to become the favorite coffee place for Malaysians but also a productive member of communities across the country.',
+    products_services = 'Coffee, handcrafted beverages, foods, merchandise, ',
+    website_url = 'https://www.starbucks.com.my/'
+WHERE id = '39';
