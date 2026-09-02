@@ -326,8 +326,6 @@ VALUES
 ('Lift', 'Lift - South Wing', 'ground_life_south', 'G');
 
 
-
-
 //CUBICLES TABLE
 -- Cubicles belonging to a utility (mainly used for restrooms)
 CREATE TABLE cubicles (
@@ -346,3 +344,25 @@ VALUES
 (1, 3, 'Available'),
 (1, 4, 'Available'),
 (1, 5, 'Available');
+
+
+//oku and baby diaper room occupancy
+-- Example: OKU restroom utility id = 3
+INSERT INTO cubicles (utility_id, cubicle_number, status)
+VALUES
+(3, 1, 'Available');
+
+-- Example: Baby diaper room utility id = 4
+INSERT INTO cubicles (utility_id, cubicle_number, status)
+VALUES
+(4, 1, 'Available'),
+(4, 2, 'Available'),
+(4, 3, 'Available');
+
+
+//running ollama for ai chatbox
+1. download ollama on device
+2. on windows powershell, run "ollama pull llama3.2"
+3. after finish downloading, run "ollama list" to confirm ollama exists
+4. run "ollama serve"
+5. to confirm server is working, run "http://localhost:11434/api/tags". if JSON loads, ollama is running.
