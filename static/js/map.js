@@ -219,10 +219,6 @@ document.addEventListener("DOMContentLoaded", async function()
         .getElementById("category-select")
         .addEventListener("change", renderCategoryShops);
 
-    document
-        .getElementById("utility-select")
-        .addEventListener("change", renderUtilityLocations);
-
     // SHOP DETAILS MODAL
     const shopModal = document.getElementById("shop-modal");
     const closeShopModal = document.getElementById("close-shop-modal");
@@ -657,8 +653,8 @@ async function refreshUtilityData()
         await loadUtilities();
         drawPOIMarkers();
 
-        const utilitySelect = document.getElementById("utility-select");
-        if (utilitySelect.value)
+        const categorySelect = document.getElementById("category-select");
+        if (categorySelect.value === "utilities")
         {
             renderUtilityLocations();
         }
@@ -704,8 +700,13 @@ function getUtilityStatusLabel(utility)
 
 function renderUtilityLocations()
 {
-    const utilityType = document.getElementById("utility-select").value;
-    const utilityList = document.getElementById("utility-list");
+    if (document.getElementById("category-select").value !== "utilities")
+    {
+        return;
+    }
+
+    const utilityType = "all";
+    const utilityList = document.getElementById("category-shop-list");
 
     utilityList.innerHTML = "";
 
@@ -791,7 +792,7 @@ function populateShopDropdown()
 // CATEGORY FILTER
 function populateCategoryDropdown() {
     const categorySelect = document.getElementById("category-select");
-    categorySelect.innerHTML = "<option value=\"\">All categories</option>";
+    categorySelect.innerHTML = "<option value=\"\">Select a category</option>";
 
     categoryNames
         .forEach(category => {
@@ -800,14 +801,28 @@ function populateCategoryDropdown() {
             option.textContent = category;
             categorySelect.appendChild(option);
         });
+
+    const utilitiesOption = document.createElement("option");
+    utilitiesOption.value = "utilities";
+    utilitiesOption.textContent = "Utilities";
+    categorySelect.appendChild(utilitiesOption);
 }
 
 function renderCategoryShops() {
     const category = document.getElementById("category-select").value;
     const shopList = document.getElementById("category-shop-list");
+    const resultsTitle = document.getElementById("category-results-title");
+
+    if (category === "utilities") {
+        resultsTitle.textContent = "Utilities";
+        renderUtilityLocations();
+        return;
+    }
+
+    resultsTitle.textContent = "Shops in Category";
 
     if (!category) {
-        shopList.textContent = "Choose a category";
+        shopList.textContent = "Select a category to see shops or utilities";
         return;
     }
 
@@ -1808,8 +1823,13 @@ function getUtilityStatusLabel(utility)
 
 function renderUtilityLocations()
 {
-    const utilityType = document.getElementById("utility-select").value;
-    const utilityList = document.getElementById("utility-list");
+    if (document.getElementById("category-select").value !== "utilities")
+    {
+        return;
+    }
+
+    const utilityType = "all";
+    const utilityList = document.getElementById("category-shop-list");
 
     utilityList.innerHTML = "";
 
@@ -2024,8 +2044,8 @@ async function refreshUtilityData()
         await loadUtilities();
         drawPOIMarkers();
 
-        const utilitySelect = document.getElementById("utility-select");
-        if (utilitySelect.value)
+        const categorySelect = document.getElementById("category-select");
+        if (categorySelect.value === "utilities")
         {
             renderUtilityLocations();
         }
