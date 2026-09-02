@@ -306,3 +306,104 @@ SET
     products_services = 'Face product, hair product, body product, fragrance, makeup, gifts',
     website_url = 'https://www.thebodyshop.com.my/'
 WHERE id = '17';
+
+UPDATE shops
+SET
+    full_description = 'Rethink what you know of ordinary convenience stores. At FamilyMart, we’ve combined a dizzying array of store offerings into one single location. Do it all at our stores. Be spoilt for choice with our snacks and meals – all delivered daily for surpassing freshness.',
+    products_services = 'Sandwiches, bakery bread, coffee, tea, oden, onigiri, hot snacks, salads, bento boxes, soft serve ice cream, desserts, crackers & chips, light snacks & chocolates',
+    website_url = 'https://familymart.com.my/'
+WHERE id = '18';
+
+UPDATE shops
+SET
+    full_description = 'SOXWORLD is a Malaysia born brand dated back in the 80''s. The first outlet was established in Komtar, Penang and currently, we are slightly under 100 outlets nationwide. Starting with only socks, we are now the leading retailer of socks, hosiery, undergarments, winter accessories, sleepwear, and caps. SOXWORLD is a brand for everyone! Starting from newborn till senior, we have something for you in each stage. Allow us to walk beside you along this fabulous journey.',
+    products_services = 'Socks, undergarments, swimwear',
+    website_url = 'https://www.soxworld.com/'
+WHERE id = '19';
+
+UPDATE shops
+SET
+    full_description = 'Mr. Dakgalbi specializes in a Korean traditional cuisine consisting of stir-fried marinated chicken in chili pepper paste served with rice cake and a fine selection of side dishes.',
+    products_services = 'Pan grilled Dakgalbi, pan fried rice, side dishes'
+WHERE id = '20';
+
+UPDATE shops
+SET
+    full_description = 'Inspired by one of their family recipes, the co-founders then continued to research & enhance the technique further and even took up apprenticeships with street hawkers to master the finer art of cooking. Although it has its roots from a traditional Chinese recipe, we have refined the technique to appeal to discerning Malaysian palates and the GO marquee is now recognized as a Malaysian brand. We aspire to expand the GO experience all over to the ASIA Pacific region based on the key values: Premium Quality, Flavorful, Affordability.',
+    products_services = 'Pan Mee, soup noodle, ramen, pickled vegetables, nyonya curry, golden pumpin soup, mala, claypot, soup rice, rice, snacks, beverages',
+    website_url = 'https://www.gonoodlehouse.com.my/'
+WHERE id = '21';
+
+UPDATE shops
+SET
+    full_description = 'Happikiddo is a home-grown Malaysian baby shop. Our favourite thing in the world is to get parents excited and make kids happy, and we have been doing it since 2012.',
+    products_services = 'Diapers & changing, bath & body, household & cleaning, bottles & formula, cups & tableware, food & snacks, food prep & storage, high chairs & seating, sleep & comfort, playpens & playmats, tables & chairs, walkers, bouncers & rockers, strollers, car seats, baby carriers, bags, travel accessories, gift',
+    website_url = 'https://www.happikiddo.com/'
+WHERE id = '22';
+
+UPDATE shops
+SET
+    full_description = 'Home’s Harmony started in the mid 1990s , specializing in home linen, bedding accessories, sheets, towels, cushions and coordinating household accessories. Today, we have expanded to 23 retail outlets throughout Malaysia strategically in the Central Region, Northern Region and Southern Region. Home’s Harmony is the one stop supply centre when it comes to home and living.',
+    products_services = 'Bedding, bath, floor covering, kitchen items, cushion',
+    website_url = 'https://homes-harmony.com/'
+WHERE id = '23';
+
+UPDATE shops
+SET
+    full_description = 'Royal Sporting House is a multi-brand sports retailer offering athletic apparel, footwear, and accessories from major brands.',
+    products_services = 'Shoes, training gear, swimwear, lifestyle accessories'
+WHERE id = '24';
+
+UPDATE shops
+SET
+    full_description = 'Good2U is inspired by everyday comfort for all. Our extensive collection of comfortable, stylish, and affordable garments are designed to provide you with maximum value. Good2U is more than just clothing, it''s an experience. Our focus on quality and versatility allows us to create long-lasting wardrobe staples that empowers you to express your own individual style with ease.',
+    products_services = 'T-shirts, jackets, shorts'
+WHERE id = '25';
+
+UPDATE shops
+SET
+    full_description = 'Hong Leong Bank Berhad is a regional financial services company based in Malaysia, with presence in Singapore, Hong Kong, Vietnam, Cambodia and China. The Bank is technology-focused and emphasises the development of financial capabilities to serve its clients across the five geographies. Hong Leong Bank Berhad (“HLB” or “the Bank”) is listed on Bursa Malaysia and forms part of the Hong Leong Group. Headquartered in Kuala Lumpur, the Bank has a strong Malaysian entrepreneurship heritage.',
+    products_services = 'Open bank account, credit card application, personal loan application, insurance, investment remittance & foreign currency',
+    website_url = 'https://www.hlb.com.my/en/personal-banking/home.html'
+WHERE id = '26';
+
+UPDATE shops
+SET
+    full_description = 'Skechers, a Fortune 500® company established in 1992, develops comfortable, innovative, stylish and quality products at a reasonable price. Our mission from day one continues today. With a broad range of fits for every age and need, Skechers is a complete lifestyle, fashion and performance brand recognized by consumers around the world.',
+    products_services = 'Shoes, tops, bottoms, skirts & dresses, jackets, hoodies, pullovers, sports attire, bags, accessories',
+    website_url = 'https://www.skechers.com.my/'
+WHERE id = '27';
+
+UPDATE shops
+SET
+    full_description = 'Since its inception in March 2008, BeauMedic had always pride itself in providing the most advanced bespoke treatments for a comprehensive range of skin conditions. Our headquarter is situated in Selangor, Malaysia. All our skin therapists are continuously trained to methodically analyse skin conditions before presenting clients with personalised solutions.',
+    products_services = 'Laser hair removal, face lifting, wrinkle reduction, ice facial, HIFU',
+    website_url = 'https://www.beaumedic.co/'
+WHERE id = '28';
+
+UPDATE shops
+SET
+    full_description = 'MC Vogue aims to fill the gaps in the fashion industry for the need of modest and casual style for Asian women. MC Vogue’s mission is to make modest yet casual clothes available for all women. We are balancing the high-quality fabric with the goal of achieving a fair pricing point so that our customers can comfortably afford our products. Our passion for simple and casual, yet vital modest wear leads us to design functional, comfortable, and versatile clothing for women.',
+    products_services = 'Tops, pants, skirts, dress, outfit set',
+    website_url = 'https://www.mcvogue.com.my/'
+WHERE id = '29';
+
+UPDATE shops
+SET
+    full_description = 'From the very start, we believed that clothing should fit seamlessly into your everyday life. Started in 2009, we noticed how difficult it was to find clothes that were both comfortable and stylish for everyday wear. To solve this, our dream was simple: to create pieces people could wear from morning to night, that made them feel confident.',
+    products_services = 'Menswear, Womenswear, bags',
+    website_url = 'https://mnbonline.com.my/'
+WHERE id = '30';
+
+UPDATE shops
+SET
+    full_description = 'Sparkle & Silver Fine Jewellery is a retail jewelry boutique that specializes in a wide variety of fine silver jewelry pieces, ranging from everyday staples to intricate gifting items.',
+    products_services = 'Curated silver pieces, gifting specialists'
+WHERE id = '31';
+
+UPDATE shops
+SET
+    full_description = 'At Jac''s Optometry, we pride about our premium yet personal; stylish yet affordable alternatives for your best vision and clarity.',
+    products_services = 'Sunglasses, frame, accessories, contact lens',
+    website_url = 'https://jacsoptometry.com/'
+WHERE id = '32';
