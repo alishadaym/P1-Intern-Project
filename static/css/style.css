@@ -1,73 +1,243 @@
+/* 1. GLOBAL SETTINGS */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
+:root {
+    --brown: #524646;
+    --light_olive: #A8A492;
+    --cream: #FCF2E5;
+    --orange: #EC5B38;
+    --peach: #F0997D;
+
+    --text-brown: #524646;
+    --border: #d8c5b0;
+}
+
 body {
     min-width: 0;
-    font-family: 'Times New Roman', Times, serif;
-    background: #f4f4f4;
+    margin: 0;
+
+    font-family: Arial, sans-serif;
+
+    background: var(--light_olive);
+
     overflow-x: hidden;
 }
 
+/* 2. HEADER */
 header {
     position: relative;
-    background: #524646;
-    color: white;
-    padding: 20px;
+
+    width: 100%;
+    min-height: 108px;
+
+    padding: 25px 70px;
+
+    background: var(--brown);
+    color: var(--cream);
+
     text-align: center;
-    /* Tall enough that .login-button (absolutely positioned, next to
-       the "You scanned" line) still fits inside the header even when
-       that line isn't rendered yet (nothing scanned this session). */
-    min-height: 93px;
 }
 
-.scanned-location {
-    font-size: 14px;
-    color: #d9c9c9;
+header h1 {
+    margin: 0;
+
+    font-family: "Times New Roman", serif;
+
+    font-size: 38px;
+    line-height: 1;
+
+    color: var(--cream);
 }
 
+/* 3. HAMBURGER BUTTON */
+.menu-toggle {
+    position: absolute;
+
+    top: 30px;
+    left: 25px;
+
+    border: none;
+    background: transparent;
+
+    color: var(--cream);
+
+    font-size: 32px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    z-index: 1100;
+}
+
+/* 4. SIDE MENU */
+.side-menu {
+    position: fixed;
+
+    top: 0;
+    left: -290px;
+
+    width: 290px;
+    height: 100vh;
+
+    padding: 75px 22px 25px;
+
+    background: var(--brown);
+
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    z-index: 2000;
+
+    transition: left 0.3s ease;
+
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.25);
+}
+
+.side-menu.open {
+    left: 0;
+}
+
+.side-menu a {
+    display: block;
+
+    padding: 15px 12px;
+
+    color: var(--cream);
+
+    text-decoration: none;
+    text-align: left;
+
+    font-size: 17px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.side-menu a:hover {
+    background: #6b5b5b;
+
+    border-radius: 7px;
+}
+
+.menu-close {
+    position: absolute;
+
+    top: 18px;
+    right: 18px;
+
+    border: none;
+    background: transparent;
+
+    color: var(--cream);
+
+    font-size: 32px;
+
+    cursor: pointer;
+}
+
+/* 5. MAIN PAGE LAYOUT */
 main {
     display: flex;
-    min-height: calc(100vh - 80px);
+
+    width: 100%;
+
+    min-height: calc(100vh - 108px);
+
+    background: var(--cream);
 }
 
+/* 6. NAVIGATION SIDEBAR */
 .sidebar {
-    flex: 0 0 280px;
-    width: 280px;
-    padding: 20px;
-    background: #FCF2E5;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    flex: 0 0 320px;
+
+    width: 320px;
+
+    padding: 25px 22px;
+
+    background: var(--cream);
+
+    color: var(--text-brown);
+
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.10);
+}
+
+.sidebar h2,
+.sidebar h3 {
+    font-family: "Times New Roman", serif;
+
+    color: var(--text-brown);
 }
 
 .sidebar h2 {
-    margin-bottom: 25px;
+    margin-bottom: 28px;
+
+    font-size: 28px;
 }
 
-.sidebar select, .sidebar input, .sidebar button {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
+.sidebar h3 {
+    margin-bottom: 8px;
 }
 
-.sidebar input {
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font: inherit;
+/* 7. SIDEBAR FORM */
+.sidebar label {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: var(--text-brown);
 }
 
+.sidebar select,
+.sidebar input,
 .sidebar button {
-    cursor: pointer;
-    border: none;
-    background: #EC5B38;
-    color: white;
-    border-radius: 5px;
+    width: 100%;
+
+    padding: 11px;
+
+    margin-bottom: 11px;
+
+    font-family: Arial, sans-serif;
+    font-size: 15px;
 }
 
-.sidebar button:hover {
-    background: #F0997D;
+.sidebar select,
+.sidebar input {
+    border: 1px solid var(--border);
+
+    border-radius: 6px;
+
+    background: white;
+
+    color: #3d3029;
+}
+
+.sidebar input:focus,
+.sidebar select:focus {
+    outline: 2px solid var(--peach);
+    outline-offset: 1px;
+}
+
+/* 8. NAVIGATE BUTTON */
+.sidebar .navigate-btn {
+    border: none;
+
+    border-radius: 7px;
+
+    background: var(--orange);
+
+    color: white;
+
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+}
+
+.sidebar .navigate-btn:hover {
+    background: var(--peach);
 }
 
 .navigate-btn.stop-navigation {
@@ -78,29 +248,43 @@ main {
     background: #a91f1f;
 }
 
+/* 9. HIDDEN SHOP SELECT */
 .hidden-select {
     display: none;
 }
 
+/* 10. SHOP SEARCH AUTOCOMPLETE */
 .shop-autocomplete {
     position: relative;
 }
 
 .shop-suggestions {
     display: none;
+
     position: absolute;
+
     top: 100%;
     left: 0;
     right: 0;
-    z-index: 20;
-    margin: 0 0 10px;
+
+    z-index: 50;
+
+    margin: -8px 0 10px;
+
     padding: 0;
-    list-style: none;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+
     max-height: 240px;
+
     overflow-y: auto;
+
+    list-style: none;
+
+    background: white;
+
+    border: 1px solid var(--border);
+
+    border-radius: 6px;
+
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
@@ -110,53 +294,88 @@ main {
 
 .shop-suggestions li {
     padding: 10px;
+
+    color: var(--text-brown);
+
     cursor: pointer;
 }
 
 .shop-suggestions li:hover,
 .shop-suggestions li.active {
-    background: #FCF2E5;
+    background: var(--cream);
 }
 
 .shop-suggestions li.no-results {
     color: #888;
+
     cursor: default;
 }
 
 .shop-suggestions li.no-results:hover {
-    background: none;
+    background: white;
 }
 
-.shop-info, .legend {
-    margin-top:30px;
+/* 11. SHOP INFORMATION */
+.shop-info,
+.legend {
+    margin-top: 25px;
 }
 
+.shop-info h3,
+.legend h3 {
+    margin-bottom: 8px;
+}
+
+/* 12. CATEGORY SHOP SECTION */
 .category-shops-section {
-    margin-top: 30px;
+    margin-top: 28px;
+}
+
+.category-shops-section h3 {
+    margin-bottom: 8px;
 }
 
 #category-shop-list {
     height: 220px;
     max-height: 220px;
+
     overflow-y: auto;
+
     padding: 8px;
-    border: 1px solid #d8c5b0;
-    border-radius: 4px;
-    background: #fffaf4;
+
+    border: 1px solid var(--border);
+
+    border-radius: 7px;
+
+    background: var(--cream);
 }
 
 #category-shop-list .category-shop-item {
     display: block;
+
     width: 100%;
+
     min-height: 44px;
-    margin-bottom: 6px;
-    padding: 8px 10px;
-    border: 1px solid #d8c5b0;
-    border-radius: 4px;
+
+    margin-bottom: 7px;
+
+    padding: 10px 12px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 8px;
+
     background: white;
-    color: #3d3029;
+
+    color: var(--text-brown);
+
     text-align: left;
+
     cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
 }
 
 #category-shop-list .category-shop-item:last-child {
@@ -164,131 +383,125 @@ main {
 }
 
 #category-shop-list .category-shop-item:hover {
-    background: #f8dfc8;
+    background: var(--peach);
 }
 
+/* 13. UTILITIES */
 .utility-section {
     margin-top: 20px;
 }
 
 .utility-list-item {
     display: block;
+
     width: 100%;
+
     min-height: 44px;
-    margin-bottom: 6px;
-    padding: 8px 10px;
-    border: 1px solid #d8c5b0;
-    border-radius: 4px;
-    background: #fffaf4;
-    color: #3d3029;
+
+    margin-bottom: 7px;
+
+    padding: 9px 10px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 7px;
+
+    background: white;
+
+    color: var(--text-brown);
+
     text-align: left;
+
     cursor: pointer;
 }
 
 .utility-list-item:hover {
-    background: #f8dfc8;
+    background: var(--peach);
 }
 
 .utility-list-item.selected {
-    background: #8a6952;
-    border-color: #694b38;
-    color: white;
+    background: var(--brown);
+
+    border-color: var(--brown);
+
+    color: var(--cream);
 }
 
 .utility-list-item.selected:hover {
-    background: #76553f;
+    background: #6b5b5b;
 }
 
 .utility-list-item:disabled {
-    background: #eee;
-    color: #888;
+    background: #eeeeee;
+
+    color: #888888;
+
     cursor: not-allowed;
 }
 
 .utility-status {
     display: block;
+
     margin-top: 3px;
+
     font-size: 0.9em;
 }
 
-.shop-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    display: grid;
-    place-items: center;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.45);
+/* 14. MAP SECTION */
+.map-section {
+    min-width: 0;
+
+    flex: 1;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    overflow: auto;
+
+    padding: 40px;
+
+    background: #f5f4f1;
 }
 
-.shop-modal[hidden] {
-    display: none;
-}
-
-.shop-modal-content {
+/* 15. MAP VIEWPORT */
+.map-viewport {
     position: relative;
-    width: min(420px, 100%);
-    max-height: min(560px, 90vh);
-    overflow-y: auto;
-    padding: 28px 24px 24px;
+
+    width: 100%;
+    max-width: 1150px;
+
+    aspect-ratio: 1038 / 553;
+
+    overflow: hidden;
+
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.utility-modal {
-    display: block;
-    padding: 0;
-    background: transparent;
-    pointer-events: none;
-}
-
-.utility-modal-content {
-    position: fixed;
-    width: min(210px, calc(100vw - 20px));
-    max-height: 145px;
-    padding: 12px 12px 10px;
-    pointer-events: auto;
-    transform: none;
-}
-
-.utility-modal-content::before {
+/* 16. MAP CONTAINER */
+.map-container {
     position: absolute;
-    top: 50%;
-    left: -10px;
-    width: 0;
-    height: 0;
-    border-top: 10px solid transparent;
-    border-bottom: 10px solid transparent;
-    border-right: 10px solid white;
-    content: "";
-    transform: translateY(-50%);
-}
 
-.utility-modal-content.left::before {
-    right: -10px;
-    left: auto;
-    border-right: 0;
-    border-left: 10px solid white;
-}
+    inset: 0;
 
-.utility-modal-content h2 {
-    padding-right: 24px;
-    font-size: 1rem;
-}
+    width: 100%;
+    height: 100%;
 
-.utility-modal-content .shop-modal-details {
-    margin-top: 5px;
-    font-size: 0.85rem;
-    line-height: 1.25;
-}
+    transform: translate(0, 0) scale(1);
 
-.utility-modal-content .shop-modal-details p {
-    margin-top: 4px;
+    transform-origin: center center;
+
+    transition: transform 0.25s ease;
+
+    will-change: transform;
 }
 
 .map-container.map-zoomed {
     cursor: grab;
+
     touch-action: none;
 }
 
@@ -296,41 +509,288 @@ main {
     cursor: grabbing;
 }
 
-.shop-modal-content h2 {
-    padding-right: 32px;
-    color: #3d3029;
+/* 17. FLOOR MAP IMAGE */
+#floor-map {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+
+    display: block;
 }
 
-.shop-modal-close {
+/* 18. SVG MAP OVERLAY */
+#map-overlay {
     position: absolute;
-    top: 8px;
-    right: 10px;
-    width: 44px;
-    height: 44px;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    pointer-events: auto;
+
+    z-index: 10;
+}
+
+/* 19. MAP ZOOM CONTROLS */
+.map-controls {
+    position: absolute;
+
+    top: 12px;
+    right: 12px;
+
+    z-index: 20;
+
+    display: grid;
+
+    gap: 6px;
+
+    width: 42px;
+}
+
+.map-controls button {
+    min-height: 36px;
+
     margin: 0;
-    border: 0;
-    background: transparent;
-    color: #3d3029;
-    font-size: 28px;
-    line-height: 1;
+
+    padding: 4px;
+
+    border: 1px solid var(--brown);
+
+    border-radius: 6px;
+
+    background: var(--cream);
+
+    color: var(--brown);
+
+    font-family: Arial, sans-serif;
+
+    font-size: 20px;
+
     cursor: pointer;
 }
 
+.map-controls button:hover {
+    background: var(--peach);
+}
+
+.map-controls #zoom-reset-btn {
+    font-size: 12px;
+}
+
+/* 20. USER LOCATION MARKER */
+#user-marker {
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+}
+
+/* 21. NAVIGATION ROUTE */
+#route-line {
+    fill: none;
+
+    stroke: red;
+
+    stroke-width: 6;
+
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* 22. INTERNAL NAVIGATION LINES */
+.navigation-line {
+    stroke: #777;
+
+    stroke-width: 2;
+
+    stroke-dasharray: 5 5;
+
+    opacity: 0.5;
+}
+
+.navigation-node {
+    fill: #1976d2;
+
+    stroke: white;
+
+    stroke-width: 2;
+}
+
+.navigation-node-label {
+    fill: #1976d2;
+
+    font-size: 10px;
+    font-weight: bold;
+}
+
+#navigation-lines,
+#navigation-nodes {
+    display: none;
+}
+
+/* 23. POI / UTILITY MARKERS */
+.poi-marker {
+    fill: #ff9800;
+
+    stroke: white;
+
+    stroke-width: 3;
+
+    pointer-events: all;
+
+    cursor: pointer;
+}
+
+.poi-marker.utility-marker {
+    fill: transparent;
+
+    stroke: transparent;
+}
+
+.poi-marker.utility-marker.utility-selected {
+    fill: var(--orange);
+
+    stroke: white;
+
+    stroke-width: 3;
+}
+
+.poi-selected {
+    stroke: #e53935;
+
+    stroke-width: 5;
+}
+
+.poi-label {
+    fill: #222;
+
+    font-size: 12px;
+
+    font-weight: bold;
+}
+
+/* 24. CLICKABLE SHOP AREAS */
+.shop-hotspot {
+    fill: transparent;
+
+    stroke: transparent;
+
+    stroke-width: 2;
+
+    pointer-events: all;
+
+    cursor: pointer;
+
+    transition:
+        fill 0.2s ease,
+        stroke 0.2s ease;
+}
+
+.shop-hotspot:hover {
+    fill: rgba(240, 153, 125, 0.25);
+
+    stroke: var(--peach);
+}
+
+.shop-hotspot.selected {
+    fill: rgba(236, 91, 56, 0.30);
+
+    stroke: var(--orange);
+
+    stroke-width: 3;
+}
+
+/* 25. SHOP MODAL BACKGROUND */
+.shop-modal {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 3000;
+
+    display: grid;
+
+    place-items: center;
+
+    padding: 20px;
+
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.shop-modal[hidden] {
+    display: none;
+}
+
+/* 26. SHOP MODAL */
+.shop-modal-content {
+    position: relative;
+
+    width: min(520px, 100%);
+
+    max-height: min(650px, 90vh);
+
+    overflow-y: auto;
+
+    padding: 32px 30px 28px;
+
+    background: var(--cream);
+
+    border-radius: 15px;
+
+    color: var(--text-brown);
+
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+.shop-modal-content h2 {
+    padding-right: 40px;
+
+    color: var(--text-brown);
+
+    font-size: 28px;
+}
+
+/* 27. MODAL CLOSE X */
+.shop-modal-close {
+    position: absolute;
+
+    top: 10px;
+    right: 12px;
+
+    width: 42px;
+    height: 42px;
+
+    margin: 0;
+
+    border: none;
+
+    background: transparent;
+
+    color: var(--text-brown);
+
+    font-size: 30px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    border-radius: 50%;
+}
+
 .shop-modal-close:hover {
-    background: #f4e6d8;
+    background: var(--peach);
 }
 
-.utility-modal-content .shop-modal-close {
-    top: 3px;
-    right: 3px;
-    width: 30px;
-    height: 30px;
-    font-size: 20px;
-}
-
+/* 28. MODAL DETAILS */
 .shop-modal-details {
     margin-top: 16px;
-    color: #524646;
+
+    color: var(--text-brown);
+
     line-height: 1.5;
 }
 
@@ -342,271 +802,253 @@ main {
     display: none;
 }
 
-.shop-info h3, .legend h3 {
-    margin-bottom: 10px;
-}
-
-.map-section {
-    min-width: 0;
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: auto;
-    padding: 20px;
-}
-
-.map-viewport {
-    position: relative;
-    width: 100%;
-    max-width: 1038px;
-    aspect-ratio: 1038 / 553;
-    overflow: hidden;
-    background: #e6ded2;
-}
-
-.map-container {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    transform: translate(0, 0) scale(1);
-    transform-origin: center center;
-    transition: transform 0.25s ease;
-    will-change: transform;
-}
-
-.map-controls {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    z-index: 20;
-    display: grid;
-    gap: 6px;
-    width: 42px;
-}
-
-.map-controls button {
-    min-height: 36px;
-    margin: 0;
-    padding: 4px;
-    border: 1px solid #6d5748;
-    border-radius: 4px;
-    background: white;
-    color: #3d3029;
-    font: inherit;
-    font-size: 20px;
-    cursor: pointer;
-}
-
-.map-controls button:hover {
-    background: #f8dfc8;
-}
-
-.map-controls #zoom-reset-btn {
-    font-size: 12px;
-}
-
-#floor-map {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+/* 29. UTILITY POPUP */
+.utility-modal {
     display: block;
+
+    padding: 0;
+
+    background: transparent;
+
+    pointer-events: none;
 }
 
-#map-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+.utility-modal-content {
+    position: fixed;
+
+    width: min(210px, calc(100vw - 20px));
+
+    max-height: 145px;
+
+    padding: 12px 12px 10px;
+
+    background: var(--cream);
+
     pointer-events: auto;
-    z-index: 10;
+
+    transform: none;
 }
 
-#user-marker {
-    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+.utility-modal-content::before {
+    position: absolute;
+
+    top: 50%;
+    left: -10px;
+
+    width: 0;
+    height: 0;
+
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-right: 10px solid var(--cream);
+
+    content: "";
+
+    transform: translateY(-50%);
 }
 
-#route-line {
-    fill: none;
-    stroke: red;
-    stroke-width: 6;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+.utility-modal-content.left::before {
+    right: -10px;
+    left: auto;
+
+    border-right: 0;
+
+    border-left: 10px solid var(--cream);
 }
 
-.navigation-line {
-    stroke: #777;
-    stroke-width: 2;
-    stroke-dasharray: 5 5;
-    opacity: 0.5;
+.utility-modal-content h2 {
+    padding-right: 24px;
+
+    font-size: 1rem;
 }
 
-.navigation-node {
-    fill: #1976d2;
-    stroke: white;
-    stroke-width: 2;
+.utility-modal-content .shop-modal-details {
+    margin-top: 5px;
+
+    font-size: 0.85rem;
+
+    line-height: 1.25;
 }
 
-.navigation-node-label {
-    fill: #1976d2;
-    font-size: 10px;
-    font-weight: bold;
+.utility-modal-content .shop-modal-details p {
+    margin-top: 4px;
 }
 
-#navigation-lines,
-#navigation-nodes {
-    display: none;
+.utility-modal-content .shop-modal-close {
+    top: 3px;
+    right: 3px;
+
+    width: 30px;
+    height: 30px;
+
+    font-size: 20px;
 }
 
-.poi-marker {
-    fill: #ff9800;
-    stroke: white;
-    stroke-width: 3;
-    pointer-events: all;
-    cursor: pointer;
+/* 30. FOOTER */
+.site-footer {
+    display: flex;
+
+    justify-content: center;
+
+    padding: 10px;
+
+    background: var(--cream);
 }
 
-/* .poi-marker.utility-marker {
-    fill: #ff9800;
-    stroke: white;
-} */
+/* 31. PHONE / TABLET */
+@media screen and (max-width: 700px) {
 
-.poi-marker.utility-marker {
-    fill: transparent;
-    stroke: transparent;
-}
+    body {
+        background: var(--cream);
+    }
 
-.poi-marker.utility-marker.utility-selected {
-    fill: #d96b32;
-    stroke: white;
-    stroke-width: 3;
-}
-
-.poi-label {
-    fill: #222;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.shop-hotspot {
-    fill: transparent;
-    stroke: transparent;
-    stroke-width: 2;
-
-    pointer-events: all;
-    cursor: pointer;
-
-    transition:
-        fill 0.2s ease,
-        stroke 0.2s ease;
-}
-
-.shop-hotspot:hover {
-    fill: rgba(255, 152, 0, 0.18);
-    stroke: rgba(255, 152, 0, 0.60);
-}
-
-.shop-hotspot.selected {
-    fill: rgba(255, 152, 0, 0.30);
-    stroke: #ff9800;
-    stroke-width: 3;
-}
-
-.poi-selected {
-    stroke: #e53935;
-    stroke-width: 5;
-}
-
-@media (max-width: 700px) {
+    /* HEADER */
     header {
-        padding: 16px 12px;
+        min-height: 95px;
+
+        padding: 20px 55px;
     }
 
     header h1 {
-        font-size: 1.35rem;
-        line-height: 1.2;
+        font-size: 27px;
+
+        line-height: 1;
     }
 
+    /* MENU BUTTON */
+    .menu-toggle {
+        top: 24px;
+        left: 18px;
+
+        font-size: 29px;
+    }
+
+    /* SIDE MENU */
+    .side-menu {
+        left: -270px;
+
+        width: 270px;
+    }
+
+    .side-menu.open {
+        left: 0;
+    }
+
+    /* MAIN */
     main {
         display: flex;
+
         flex-direction: column;
+
         min-height: 0;
+
+        background: var(--cream);
     }
 
-    .sidebar {
+    /* MAP FIRST */
+    .map-section {
+        order: -1;
+
         width: 100%;
-        padding: 16px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+        padding: 10px;
+
+        overflow: visible;
+
+        background: white;
+    }
+
+    .map-viewport {
+        width: 100%;
+
+        max-width: none;
+
+        box-shadow: none;
+    }
+
+    /* SIDEBAR BELOW MAP */
+    .sidebar {
+        flex: none;
+
+        width: 100%;
+
+        padding: 20px 16px;
+
+        background: var(--cream);
+
+        box-shadow: none;
     }
 
     .sidebar h2 {
-        margin-bottom: 14px;
+        margin-bottom: 18px;
+
+        font-size: 25px;
     }
 
+    /* FORM */
+    .sidebar select,
+    .sidebar input,
+    .sidebar button {
+        width: 100%;
+
+        min-height: 44px;
+    }
+
+    /* SHOP INFORMATION */
     .shop-info,
     .legend {
         margin-top: 20px;
     }
 
+    /* CATEGORY */
     .category-shops-section {
-        margin-top: 20px;
-    }
-
-    .category-shops-section h3 {
-        margin-bottom: 10px;
+        margin-top: 22px;
     }
 
     #category-shop-list {
+        height: 200px;
+
+        max-height: 200px;
+
         font-size: 14px;
     }
 
-    .category-shop-item {
-        display: block;
-        width: 100%;
+    #category-shop-list .category-shop-item {
         min-height: 44px;
-        margin-bottom: 6px;
-        padding: 8px 10px;
-        border: 1px solid #d8c5b0;
-        border-radius: 4px;
-        background: #fffaf4;
-        color: #3d3029;
-        text-align: left;
-        cursor: pointer;
+
+        padding: 11px;
     }
 
-    .category-shop-item:hover {
-        background: #f8dfc8;
-    }
-
-    #category-shop-list {
-        height: 190px;
-        max-height: 190px;
-    }
-
+    /* SEARCH SUGGESTIONS */
     .shop-suggestions li {
         min-height: 44px;
+
         padding: 12px 10px;
     }
 
-    .map-section {
-        order: -1;
-        width: 100%;
-        padding: 12px;
-        overflow: visible;
+    /* MODAL */
+    .shop-modal {
+        padding: 15px;
     }
 
-    .map-container {
+    .shop-modal-content {
         width: 100%;
+
+        max-height: 85vh;
+
+        padding: 28px 22px 24px;
     }
 
+    .shop-modal-content h2 {
+        font-size: 24px;
+    }
+
+    /* UTILITY POPUP */
     .utility-modal-content {
         width: min(175px, calc(100vw - 16px));
+
         max-height: 120px;
+
         padding: 10px 10px 8px;
     }
 
@@ -616,42 +1058,5 @@ main {
 
     .utility-modal-content .shop-modal-details {
         font-size: 0.75rem;
-    }
-}
-
-.site-footer {
-    display: flex;
-    justify-content: center;
-    padding: 10px;
-}
-
-.login-button {
-        display: inline-block;
-        padding: 5px 10px;
-        font-size: 12px;
-        background-color: #7b5b3d;
-        color: white;
-        text-decoration: none;
-        border-radius: 4px;
-        margin-top: 0px;
-        position: absolute;
-        top: 58px;
-        right: 10px;
-}
-
-.login-button:hover {
-    background-color: #5a3e2b;
-}
-
-@media (max-width: 700px) {
-    .login-button {
-        /* Side-by-side with "You scanned" only works when both fit on
-           one line; shop names vary too much in length for that on
-           narrow screens, so stack it in-flow above that line instead. */
-        position: static;
-        display: inline-block;
-        padding: 4px 8px;
-        font-size: 11px;
-        margin-top: 8px;
     }
 }
