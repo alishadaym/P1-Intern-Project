@@ -3,6 +3,20 @@ let selectedShopId = null;
 let shopDatabase = {};
 let shopRecords = [];
 let categoryNames = [];
+let selectedDestination = null;
+let utilityRecords = [];
+let selectedUtilityId = null;
+let activeUtilityId = null;
+let utilityRefreshInProgress = false;
+let activeShopId = null;
+let utilityMapZoom = 1;
+let utilityMapPanX = 0;
+let utilityMapPanY = 0;
+let utilityMapDragStartX = 0;
+let utilityMapDragStartY = 0;
+let utilityMapDragStartPanX = 0;
+let utilityMapDragStartPanY = 0;
+let utilityMapDragging = false;
 
 // LOAD MAP DATA FROM FLASK
 async function loadMapData()
@@ -27,7 +41,6 @@ async function loadMapData()
 
         drawNavigationNetwork();
         drawUserMarker();
-        drawPOIMarkers();
         drawShopHotspots();
     }
     catch (error)
@@ -117,6 +130,8 @@ document.addEventListener("DOMContentLoaded", async function()
     console.log("Dpulze navigation applicaiton started.");
 
     await loadMapData();
+    await loadUtilities();
+    drawPOIMarkers();
     await loadShopDatabase();
     await loadCategories();
     populateShopDropdown();
@@ -128,7 +143,7 @@ document.addEventListener("DOMContentLoaded", async function()
 
     if (navigateButton)
     {
-        navigateButton.addEventListener("click", startNavigation);
+        navigateButton.addEventListener("click", toggleNavigation);
         console.log("Navigate button ready.");
     }
     else
@@ -185,7 +200,376 @@ document.addEventListener("DOMContentLoaded", async function()
     document
         .getElementById("category-select")
         .addEventListener("change", renderCategoryShops);
+
+    document
+        .getElementById("utility-select")
+        .addEventListener("change", renderUtilityLocations);
+
+    const shopModal = document.getElementById("shop-modal");
+    const closeShopModal = document.getElementById("close-shop-modal");
+    const utilityModal = document.getElementById("utility-modal");
+    const closeUtilityModal = document.getElementById("close-utility-modal");
+
+    closeShopModal.addEventListener("click", closeShopDetails);
+    closeUtilityModal.addEventListener("click", closeUtilityDetails);
+    shopModal.addEventListener("click", function(event)
+    {
+        if (event.target === shopModal)
+        {
+            closeShopDetails();
+        }
+    });
+    utilityModal.addEventListener("click", function(event)
+    {
+        if (event.target === utilityModal)
+        {
+            closeUtilityDetails();
+        }
+    });
+    document.addEventListener("keydown", function(event)
+    {
+        if (event.key === "Escape" && !shopModal.hidden)
+        {
+            closeShopDetails();
+        }
+        if (event.key === "Escape" && !utilityModal.hidden)
+        {
+            closeUtilityDetails();
+        }
+    });
+
+    window.setInterval(refreshUtilityData, 5000);
+
+    const mapContainer = document.querySelector(".map-container");
+    const mapViewport = document.getElementById("map-viewport");
+    mapContainer.addEventListener("pointerdown", startUtilityMapPan);
+    mapContainer.addEventListener("pointermove", moveUtilityMapPan);
+    mapContainer.addEventListener("pointerup", endUtilityMapPan);
+    mapContainer.addEventListener("pointercancel", endUtilityMapPan);
+    mapViewport.addEventListener("wheel", zoomMapWithWheel, { passive: false });
+    document.getElementById("zoom-in-btn").addEventListener("click", () => changeMapZoom(0.25));
+    document.getElementById("zoom-out-btn").addEventListener("click", () => changeMapZoom(-0.25));
+    document.getElementById("zoom-reset-btn").addEventListener("click", closeUtilityDetails);
 });
+
+let lastShopTrigger = null;
+
+function closeShopDetails()
+{
+    const shopModal = document.getElementById("shop-modal");
+    shopModal.hidden = true;
+    activeShopId = null;
+    highlightSelectedShop(null);
+    resetUtilityMapZoom();
+
+    if (lastShopTrigger)
+    {
+        lastShopTrigger.focus();
+        lastShopTrigger = null;
+    }
+}
+
+function setNavigationButtonState(isNavigating)
+{
+    const navigateButton = document.getElementById("navigate-btn");
+
+    navigateButton.textContent = isNavigating
+        ? "Stop Navigation"
+        : "Navigate";
+    navigateButton.classList.toggle("stop-navigation", isNavigating);
+}
+
+function toggleNavigation()
+{
+    const routeLine = document.getElementById("route-line");
+
+    if (routeLine.getAttribute("points"))
+    {
+        stopNavigation();
+        return;
+    }
+
+    startNavigation();
+}
+
+function stopNavigation()
+{
+    document.getElementById("route-line").setAttribute("points", "");
+    setNavigationButtonState(false);
+}
+
+function showShopDetails(shop)
+{
+    const shopModal = document.getElementById("shop-modal");
+    const mapPoint = getShopMapPoint(shop.mapId);
+
+    activeShopId = shop.mapId;
+    lastShopTrigger = document.activeElement;
+    document.getElementById("modal-shop-name").textContent = shop.name || "Unnamed Shop";
+    document.getElementById("modal-shop-category").textContent = shop.category || "";
+    document.getElementById("modal-shop-unit").textContent = shop.unit ? `Unit: ${shop.unit}` : "";
+    document.getElementById("modal-shop-floor").textContent = shop.floor || "";
+    document.getElementById("modal-shop-hours").textContent = shop.operatingHours ? `Hours: ${shop.operatingHours}` : "";
+    document.getElementById("modal-shop-description").textContent = shop.description || "";
+    utilityMapZoom = 2;
+    utilityMapPanX = 0;
+    utilityMapPanY = 0;
+    centerMapOnUtility(mapPoint);
+    applyUtilityMapTransform();
+    document.querySelector(".map-container").classList.add("map-zoomed");
+    shopModal.hidden = false;
+    positionMapPopover("shop-modal", `.shop-hotspot[data-shop-id="${shop.mapId}"]`);
+    document.getElementById("close-shop-modal").focus();
+}
+
+function getShopMapPoint(shopId)
+{
+    const mapShop = mapData.shop_locations[shopId];
+
+    if (Number.isFinite(mapShop.x) && Number.isFinite(mapShop.y))
+    {
+        return mapShop;
+    }
+
+    const hotspot = document.querySelector(
+        `.shop-hotspot[data-shop-id="${shopId}"]`
+    );
+    const bounds = hotspot.getBBox();
+
+    return {
+        x: bounds.x + bounds.width / 2,
+        y: bounds.y + bounds.height / 2
+    };
+}
+
+function closeUtilityDetails()
+{
+    document.getElementById("utility-modal").hidden = true;
+    activeUtilityId = null;
+    clearSelectedUtilityMarker();
+    resetUtilityMapZoom();
+}
+
+function showUtilityDetails(utility)
+{
+    const utilityModal = document.getElementById("utility-modal");
+    const mapContainer = document.querySelector(".map-container");
+    activeUtilityId = utility.utility_code;
+    setSelectedUtilityMarker(activeUtilityId);
+    updateUtilityModal(utility);
+    utilityMapZoom = 2;
+    utilityMapPanX = 0;
+    utilityMapPanY = 0;
+    centerMapOnUtility(utility);
+    applyUtilityMapTransform();
+    mapContainer.classList.add("utility-zoomed");
+    utilityModal.hidden = false;
+    positionUtilityModal(utility.utility_code);
+    document.getElementById("close-utility-modal").focus();
+}
+
+function updateUtilityModal(utility)
+{
+    const status = getUtilityStatusLabel(utility);
+
+    document.getElementById("modal-utility-name").textContent = utility.name;
+    document.getElementById("modal-utility-floor").textContent = `Floor: ${utility.floor}`;
+    document.getElementById("modal-utility-status").textContent = status
+        ? status
+        : "Available";
+}
+
+function positionUtilityModal(utilityId)
+{
+    positionMapPopover(
+        "utility-modal",
+        `#poi-markers circle[data-poi-id="${utilityId}"]`
+    );
+}
+
+function positionMapPopover(modalId, markerSelector)
+{
+    requestAnimationFrame(function()
+    {
+        const modal = document.getElementById(modalId);
+        const modalContent = modal.querySelector(".utility-modal-content");
+        const viewportBounds = document.getElementById("map-viewport").getBoundingClientRect();
+        const marker = document.querySelector(markerSelector);
+
+        if (!marker)
+        {
+            return;
+        }
+
+        const markerBounds = marker.getBoundingClientRect();
+        const contentBounds = modalContent.getBoundingClientRect();
+        const margin = 12;
+        let left = markerBounds.right + margin;
+        let top = markerBounds.top + (markerBounds.height - contentBounds.height) / 2;
+
+        modalContent.classList.remove("left");
+        if (left + contentBounds.width > viewportBounds.right - margin)
+        {
+            left = markerBounds.left - contentBounds.width - margin;
+            modalContent.classList.add("left");
+        }
+
+        left = Math.max(
+            viewportBounds.left + margin,
+            Math.min(left, viewportBounds.right - contentBounds.width - margin)
+        );
+        top = Math.max(
+            viewportBounds.top + margin,
+            Math.min(top, viewportBounds.bottom - contentBounds.height - margin)
+        );
+
+        modalContent.style.left = `${left}px`;
+        modalContent.style.top = `${top}px`;
+    });
+}
+
+function resetUtilityMapZoom()
+{
+    const mapContainer = document.querySelector(".map-container");
+
+    if (mapContainer)
+    {
+        utilityMapZoom = 1;
+        utilityMapPanX = 0;
+        utilityMapPanY = 0;
+        mapContainer.style.transform = "";
+        mapContainer.classList.remove("utility-zoomed");
+        mapContainer.classList.remove("map-zoomed");
+    }
+}
+
+function applyUtilityMapTransform()
+{
+    const mapContainer = document.querySelector(".map-container");
+
+    if (mapContainer)
+    {
+        mapContainer.classList.toggle("map-zoomed", utilityMapZoom > 1);
+        mapContainer.style.transform =
+            `translate(${utilityMapPanX}px, ${utilityMapPanY}px) scale(${utilityMapZoom})`;
+    }
+}
+
+function clampMapPan()
+{
+    const mapViewport = document.getElementById("map-viewport");
+    const maximumPanX = mapViewport.clientWidth * (utilityMapZoom - 1) / 2;
+    const maximumPanY = mapViewport.clientHeight * (utilityMapZoom - 1) / 2;
+
+    utilityMapPanX = Math.max(-maximumPanX, Math.min(maximumPanX, utilityMapPanX));
+    utilityMapPanY = Math.max(-maximumPanY, Math.min(maximumPanY, utilityMapPanY));
+}
+
+function centerMapOnUtility(utility)
+{
+    const mapViewport = document.getElementById("map-viewport");
+    const baseX = utility.x / mapData.image.width * mapViewport.clientWidth;
+    const baseY = utility.y / mapData.image.height * mapViewport.clientHeight;
+
+    utilityMapPanX = mapViewport.clientWidth / 2 -
+        (mapViewport.clientWidth / 2 + (baseX - mapViewport.clientWidth / 2) * utilityMapZoom);
+    utilityMapPanY = mapViewport.clientHeight / 2 -
+        (mapViewport.clientHeight / 2 + (baseY - mapViewport.clientHeight / 2) * utilityMapZoom);
+    clampMapPan();
+}
+
+function changeMapZoom(amount)
+{
+    const nextZoom = Math.max(1, Math.min(4, utilityMapZoom + amount));
+    if (nextZoom === utilityMapZoom)
+    {
+        return;
+    }
+
+    utilityMapZoom = nextZoom;
+    clampMapPan();
+    applyUtilityMapTransform();
+    if (activeUtilityId)
+    {
+        positionUtilityModal(activeUtilityId);
+    }
+    if (activeShopId)
+    {
+        positionMapPopover(
+            "shop-modal",
+            `.shop-hotspot[data-shop-id="${activeShopId}"]`
+        );
+    }
+}
+
+function zoomMapWithWheel(event)
+{
+    event.preventDefault();
+    changeMapZoom(event.deltaY < 0 ? 0.25 : -0.25);
+}
+
+function startUtilityMapPan(event)
+{
+    const mapContainer = document.querySelector(".map-container");
+
+    if (
+        utilityMapZoom <= 1
+        || event.target.closest(".shop-hotspot, .poi-marker")
+    )
+    {
+        return;
+    }
+
+    utilityMapDragging = true;
+    utilityMapDragStartX = event.clientX;
+    utilityMapDragStartY = event.clientY;
+    utilityMapDragStartPanX = utilityMapPanX;
+    utilityMapDragStartPanY = utilityMapPanY;
+    mapContainer.classList.add("dragging");
+    mapContainer.setPointerCapture(event.pointerId);
+}
+
+function moveUtilityMapPan(event)
+{
+    if (!utilityMapDragging)
+    {
+        return;
+    }
+
+    const mapContainer = document.querySelector(".map-container");
+    utilityMapPanX = utilityMapDragStartPanX + event.clientX - utilityMapDragStartX;
+    utilityMapPanY = utilityMapDragStartPanY + event.clientY - utilityMapDragStartY;
+    clampMapPan();
+    applyUtilityMapTransform();
+    if (activeUtilityId)
+    {
+        positionUtilityModal(activeUtilityId);
+    }
+    if (activeShopId)
+    {
+        positionMapPopover(
+            "shop-modal",
+            `.shop-hotspot[data-shop-id="${activeShopId}"]`
+        );
+    }
+}
+
+function endUtilityMapPan(event)
+{
+    if (!utilityMapDragging)
+    {
+        return;
+    }
+
+    const mapContainer = document.querySelector(".map-container");
+    utilityMapDragging = false;
+    mapContainer.classList.remove("dragging");
+
+    if (event.pointerId !== undefined && mapContainer.hasPointerCapture(event.pointerId))
+    {
+        mapContainer.releasePointerCapture(event.pointerId);
+    }
+}
 
 // DRAW USER CURRENT LOCATION
 function drawUserMarker()
@@ -223,6 +607,142 @@ function getShopLabel(shopId)
         (shop && shop.name) ||
         shopId.replace(/_\d+$/, "").replace(/_/g, " ").replace(/\b\w/g, letter => letter.toUpperCase())
     );
+}
+
+async function loadUtilities()
+{
+    const response = await fetch("/api/utilities");
+
+    if (!response.ok)
+    {
+        throw new Error("Failed to load utilities.");
+    }
+
+    utilityRecords = await response.json();
+    mapData.facilities = Object.fromEntries(
+        utilityRecords.map(utility => [utility.utility_code, utility])
+    );
+}
+
+async function refreshUtilityData()
+{
+    if (utilityRefreshInProgress)
+    {
+        return;
+    }
+
+    utilityRefreshInProgress = true;
+
+    try
+    {
+        await loadUtilities();
+        drawPOIMarkers();
+
+        const utilitySelect = document.getElementById("utility-select");
+        if (utilitySelect.value)
+        {
+            renderUtilityLocations();
+        }
+
+        if (activeUtilityId)
+        {
+            const utility = mapData.facilities[activeUtilityId];
+            if (utility)
+            {
+                updateUtilityModal(utility);
+                positionUtilityModal(activeUtilityId);
+            }
+            else
+            {
+                closeUtilityDetails();
+            }
+        }
+    }
+    catch (error)
+    {
+        console.error("Error refreshing utilities:", error);
+    }
+    finally
+    {
+        utilityRefreshInProgress = false;
+    }
+}
+
+function getUtilityStatusLabel(utility)
+{
+    if (utility.type === "restroom" || utility.type === "baby_diaper")
+    {
+        return `Available: ${utility.available_cubicles} | Occupied: ${utility.occupied_cubicles}`;
+    }
+
+    if (utility.type === "oku")
+    {
+        return utility.is_occupied ? "Occupied" : "Available";
+    }
+
+    return "";
+}
+
+function renderUtilityLocations()
+{
+    const utilityType = document.getElementById("utility-select").value;
+    const utilityList = document.getElementById("utility-list");
+
+    utilityList.innerHTML = "";
+
+    if (!utilityType)
+    {
+        return;
+    }
+
+    const matchingUtilities = Object.entries(mapData.facilities || {})
+        .filter(([, utility]) => utilityType === "all" || utility.type === utilityType)
+        .sort(([, a], [, b]) => {
+            const typeOrder = {
+                restroom: 1,
+                baby_diaper: 2,
+                oku: 3,
+                lift: 4,
+            };
+
+            const typeDifference = (typeOrder[a.type] || 99) - (typeOrder[b.type] || 99);
+            if (typeDifference !== 0)
+            {
+                return typeDifference;
+            }
+
+            return (a.name || "").localeCompare(b.name || "");
+        });
+
+    if (matchingUtilities.length === 0)
+    {
+        utilityList.textContent = "No locations found";
+        return;
+    }
+
+    matchingUtilities.forEach(([utilityId, utility]) =>
+    {
+        const utilityButton = document.createElement("button");
+        const statusLabel = getUtilityStatusLabel(utility);
+
+        utilityButton.type = "button";
+        utilityButton.className = "utility-list-item";
+        utilityButton.dataset.utilityId = utilityId;
+        if (utilityId === selectedUtilityId)
+        {
+            utilityButton.classList.add("selected");
+        }
+        const locationLabel = statusLabel
+            ? `${utility.floor} - ${statusLabel}`
+            : utility.floor;
+        utilityButton.innerHTML = `${utility.name}<span class="utility-status">${locationLabel}</span>`;
+        utilityButton.addEventListener("click", function()
+        {
+            selectUtility(utilityId);
+        });
+
+        utilityList.appendChild(utilityButton);
+    });
 }
 
 // SHOP DROPDOWN (hidden - always holds every shop, kept in sync with
@@ -597,6 +1117,7 @@ function drawRoute(path)
     .join(" ");
 
     routeLine.setAttribute("points", points);
+    setNavigationButtonState(true);
 
     console.log("Route drawn:", path);
 }
@@ -604,33 +1125,17 @@ function drawRoute(path)
 // START NAVIGATION
 function startNavigation()
 {
-    const shopSelect =
-        document.getElementById("shop-select");
-
-
-    // Shop can be selected either by:
-    // 1. clicking map
-    // 2. using dropdown
-    const chosenShopId =
-        selectedShopId || shopSelect.value;
-
-
-    if (!chosenShopId)
+    if (!selectedDestination)
     {
-        alert("Please select a shop.");
+        alert("Please select a shop or utility.");
         return;
     }
 
-
-    const selectedShop =
-        mapData.shop_locations[chosenShopId];
-
-
-    if (!selectedShop)
+    if (!mapData.nodes[selectedDestination.nodeId])
     {
         console.error(
-            "Selected shop not found:",
-            chosenShopId
+            "Destination node not found:",
+            selectedDestination.nodeId
         );
 
         return;
@@ -639,11 +1144,10 @@ function startNavigation()
 
     const startNodeId = window.START_NODE_ID || "node_01";
 
-    const destinationNodeId =
-        selectedShop.node_id;
+    const destinationNodeId = selectedDestination.nodeId;
 
 
-    console.log("Selected shop:", chosenShopId);
+    console.log("Selected destination:", selectedDestination.label);
     console.log("Start:", startNodeId);
     console.log("Destination:", destinationNodeId);
 
@@ -680,6 +1184,14 @@ function createPOIMarker(poiId, poi)
     marker.setAttribute("r", "10");
 
     marker.classList.add("poi-marker");
+    if (mapData.facilities && mapData.facilities[poiId])
+    {
+        marker.classList.add("utility-marker");
+        if (String(poiId) === String(activeUtilityId))
+        {
+            marker.classList.add("utility-selected");
+        }
+    }
 
     marker.dataset.poiId = poiId;
     marker.dataset.poiType = poi.type;
@@ -687,7 +1199,15 @@ function createPOIMarker(poiId, poi)
      marker.addEventListener(
         "click",
         function () {
-            selectShop(poiId);
+            if (mapData.shop_locations[poiId])
+            {
+                selectShop(poiId);
+            }
+            else if (mapData.facilities && mapData.facilities[poiId])
+            {
+                selectUtility(poiId);
+                showUtilityDetails(mapData.facilities[poiId]);
+            }
     });
 
     poiGroup.appendChild(marker);
@@ -727,6 +1247,26 @@ function drawPOIMarkers()
             }
         );
     }
+}
+
+function setSelectedUtilityMarker(utilityId)
+{
+    clearSelectedUtilityMarker();
+    const marker = document.querySelector(
+        `#poi-markers circle[data-poi-id="${utilityId}"]`
+    );
+
+    if (marker)
+    {
+        marker.classList.add("utility-selected");
+    }
+}
+
+function clearSelectedUtilityMarker()
+{
+    document
+        .querySelectorAll("#poi-markers circle.utility-selected")
+        .forEach(marker => marker.classList.remove("utility-selected"));
 }
 
 // SHOP HOTSPOT
@@ -848,12 +1388,28 @@ function selectShop(shopId)
         return;
     }
 
+    const shouldUpdateActiveRoute = Boolean(
+        document.getElementById("route-line").getAttribute("points")
+    );
+    const shopModal = document.getElementById("shop-modal");
+    if (!shopModal.hidden)
+    {
+        shopModal.hidden = true;
+        activeShopId = null;
+        highlightSelectedShop(null);
+    }
+
+    closeUtilityDetails();
+
     const dbShop = shopDatabase[shopId];
 
     // Prefer live database details (category, hours, description) once
     // connected; fall back to the map's own data so this still works
     // without a database.
     const shop = {
+        mapId: shopId,
+        x: mapShop.x,
+        y: mapShop.y,
         name: (dbShop && dbShop.display_name) || mapShop.name,
         category: dbShop && dbShop.category,
         unit: dbShop && dbShop.unit,
@@ -863,6 +1419,11 @@ function selectShop(shopId)
     };
 
     selectedShopId = shopId;
+    selectedUtilityId = null;
+    selectedDestination = {
+        label: shop.name,
+        nodeId: mapShop.node_id
+    };
 
     const shopSelect =
         document.getElementById("shop-select");
@@ -879,61 +1440,52 @@ function selectShop(shopId)
 
     hideShopSuggestions();
 
-    updateSelectedShopPanel(
-        shopId,
-        shop
-    );
-
+    renderUtilityLocations();
     highlightSelectedShop(shopId);
+    showShopDetails(shop);
+
+    if (shouldUpdateActiveRoute)
+    {
+        startNavigation();
+    }
 }
 
-// UPDATE SELECTED SHOP PANEL
-function updateSelectedShopPanel(shopId, shop)
+function selectUtility(utilityId)
 {
-    const panel =
-        document.getElementById(
-            "selected-shop-details"
-        );
+    const utility = mapData.facilities && mapData.facilities[utilityId];
 
-    panel.innerHTML = `
-        <div class="shop-details-card">
+    if (!utility)
+    {
+        return;
+    }
 
-            <strong class="shop-details-name">
-                ${shop.name}
-            </strong>
+    const shouldUpdateActiveRoute = Boolean(
+        document.getElementById("route-line").getAttribute("points")
+    );
+    const shopModal = document.getElementById("shop-modal");
+    if (!shopModal.hidden)
+    {
+        shopModal.hidden = true;
+        activeShopId = null;
+        highlightSelectedShop(null);
+    }
 
-            ${
-                shop.category
-                ? `<div>${shop.category}</div>`
-                : ""
-            }
+    selectedShopId = null;
+    selectedUtilityId = utilityId;
+    selectedDestination = {
+        label: utility.name,
+        nodeId: utility.node_id
+    };
 
-            ${
-                shop.unit
-                ? `<div>Unit: ${shop.unit}</div>`
-                : ""
-            }
+    document.getElementById("shop-select").value = "";
 
-            ${
-                shop.floor
-                ? `<div>${shop.floor}</div>`
-                : ""
-            }
+    renderUtilityLocations();
+    highlightSelectedShop(utilityId);
 
-            ${
-                shop.operatingHours
-                ? `<div>Hours: ${shop.operatingHours}</div>`
-                : ""
-            }
-
-            ${
-                shop.description
-                ? `<div>${shop.description}</div>`
-                : ""
-            }
-
-        </div>
-    `;
+    if (shouldUpdateActiveRoute)
+    {
+        startNavigation();
+    }
 }
 
 // HIGHLIGHT SELECTED SHOP

@@ -85,6 +85,46 @@ DELETE FROM shops;
 //(description still blank - fill in via the store owner's "Edit Store
 //Details" page once each shop has an account)
 INSERT INTO shops
+    (shop_name, operating_hours, category, description, floor_id)
+    ('F.O.S', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('Tone & Mann.', '10am – 10pm', 'Fashion accessories store', NULL, 1),
+    ('SSF', '10am – 10pm', 'Furniture store', NULL, 1),
+    ('Sarong By A&R', '10am – 10pm', 'Boutique', NULL, 1),
+    ('Solight', '10am – 8pm', 'Shoe Store', NULL, 1),
+    ('Nando''s', '10am – 10pm', 'Chicken Restaurant', NULL, 1),
+    ('Al-ikhsan Sports', '10am – 10pm', 'Sporting Goods Store', NULL, 1),
+    ('Baskin Robbins', '10am – 10pm', 'Ice Cream Shop', NULL, 1),
+    ('The Coffee Bean & Tea Leaf', '10am – 10pm', 'Cafe', NULL, 1),
+    ('The Body Shop', '10am – 10pm', 'Beauty Supply Store', NULL, 1),
+    ('Family Mart', '7am – 12am', 'Convenience Store', NULL, 1),
+    ('Sox World', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('Mr. Dakgalbi', '10am – 9pm', 'Korean Restaurant', NULL, 1),
+    ('Go Noodle House', '10am – 9:15pm', 'Chinese Noodle Restaurant', NULL, 1),
+    ('Happikiddo', '10am – 10pm', 'Baby Store', NULL, 1),
+    ('Home''s Harmony', '10am – 10pm', 'Furniture Store', NULL, 1),
+    ('Royal Sporting House', 'Permanently Closed', 'Sportswear Store', NULL, 1),
+    ('Good2U', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('Hong Leong Islamic Bank', 'Permanently Closed', 'Bank', NULL, 1),
+    ('Skechers', '10am – 10pm', 'Shoe Store', NULL, 1),
+    ('Kunzense Bodyline', '10:30am – 8:30pm', 'Facial Spa', NULL, 1),
+    ('MC Vogue', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('MNB', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('Sparkle & Silver Fine Jewellery', '10am – 10pm', 'Jeweller', NULL, 1),
+    ('Jac''s Optometry', '10am – 10pm', 'Optician', NULL, 1),
+    ('World of Perfumes', '10am – 10pm', 'Perfume Store', NULL, 1),
+    ('Mi Store', '10am – 10pm', 'Cell phone Store', NULL, 1),
+    ('Elianto', '10am – 10pm', 'Cosmetics Store', NULL, 1),
+    ('Ajumma', '10am – 11pm', 'Korean Restaurant', NULL, 1),
+    ('Parca Fashion', 'Permanently Closed', 'Boutique', NULL, 1),
+    ('Maxis', '10am – 9:30pm', 'Telecommunications service provider', NULL, 1),
+    ('Starbucks', 'Permanently Closed', 'Cafe', NULL, 1),
+    ('Zus Coffee', '10am – 10pm', 'Cafe', NULL, 1);
+
+    
+
+//seed all 33 real mall shops with category + operating hours
+//(description still blank - fill in via the store owner's "Edit Store
+INSERT INTO shops
     (shop_code, shop_name, operating_hours, category, description, floor_id)
 VALUES
     ('fos_shop', 'F.O.S', '10am – 10pm', 'Clothing Store', NULL, 1),
@@ -228,6 +268,104 @@ WHERE shop_code IN (
     'coffee_bean_shop','the_body_shop_shop','sox_world_shop','mr_dakgalbi_shop',
     'go_noodle_house_shop','happikiddo_shop','homes_harmony_shop'
 );
+
+-- Facilities are separate from shops because their availability changes independently.
+CREATE TABLE IF NOT EXISTS utilities (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    utility_code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    utility_type ENUM('restroom', 'baby_diaper', 'oku', 'lift') NOT NULL,
+    floor_id INT NOT NULL,
+    x_position INT NOT NULL,
+    y_position INT NOT NULL,
+    node_id VARCHAR(50) NOT NULL,
+    total_cubicles INT NULL,
+    occupied_cubicles INT NULL DEFAULT 0,
+    is_occupied BOOLEAN NULL,
+    FOREIGN KEY (floor_id) REFERENCES floors(id),
+    CHECK (total_cubicles IS NULL OR total_cubicles >= 0),
+    CHECK (occupied_cubicles IS NULL OR occupied_cubicles >= 0),
+    CHECK (total_cubicles IS NULL OR occupied_cubicles <= total_cubicles)
+);
+
+INSERT INTO utilities
+    (utility_code, name, utility_type, floor_id, x_position, y_position, node_id,
+     total_cubicles, occupied_cubicles, is_occupied)
+VALUES
+    ('ground_toilet_centre', 'Restroom - Centre', 'restroom', 1, 438, 160, 'node_44', 4, 1, NULL),
+    ('ground_baby_care', 'Baby Care Room', 'baby_diaper', 1, 508, 183, 'node_46', NULL, NULL, NULL),
+    ('ground_oku_toilet', 'OKU Accessible Toilet', 'oku', 1, 475, 175, 'node_45', NULL, NULL, FALSE),
+    ('ground_lift', 'Lift - Ground Floor', 'lift', 1, 586, 328, 'node_42', NULL, NULL, NULL)
+ON DUPLICATE KEY UPDATE
+    name = VALUES(name),
+    utility_type = VALUES(utility_type),
+    floor_id = VALUES(floor_id),
+    x_position = VALUES(x_position),
+    y_position = VALUES(y_position),
+    node_id = VALUES(node_id);
+
+//UTILITIES TABLE
+-- Main utilities table (covers restroom, oku restroom, baby diaper room, lift)
+CREATE TABLE utilities (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    utility_type VARCHAR(50) NOT NULL,   -- 'Restroom', 'OKU Restroom', 'Baby Diaper Room', 'Lift'
+    name VARCHAR(100) NOT NULL,          -- e.g. 'Restroom - Centre', 'Restroom - East Wing'
+    floor VARCHAR(20),                   -- e.g. 'G', '1', '2'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO utilities (utility_type, name, map_code, floor, created_at)
+VALUES 
+('Restroom', 'Restroom - Centre', 'ground_toilet_centre', 'G'),
+('Restroom', 'Restroom - West Wing', '', '1'),
+('OKU Restroom', 'OKU Restroom - Centre', 'ground_oku_toilet', 'G'),
+('Baby Diaper Room', 'Baby Diaper Room - Centre', 'ground_baby_care', 'G'),
+('Lift','Lift - Centre', 'ground_lift_', 'G'),
+('Lift', 'Lift - East Wing', 'ground_lift_east', 'G'),
+('Lift', 'Lift - West Wing', 'ground_lift_west', 'G'), 
+('Lift', 'Lift - South Wing', 'ground_life_south', 'G');
+
+
+//CUBICLES TABLE
+-- Cubicles belonging to a utility (mainly used for restrooms)
+CREATE TABLE cubicles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    utility_id INT NOT NULL,
+    cubicle_number INT NOT NULL,         -- 1, 2, 3...
+    status VARCHAR(20) DEFAULT 'Available', -- 'Available' or 'Occupied'
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (utility_id) REFERENCES utilities(id)
+);
+
+INSERT INTO cubicles (utility_id, cubicle_number, status)
+VALUES
+(1, 1, 'Available'),
+(1, 2, 'Available'),
+(1, 3, 'Available'),
+(1, 4, 'Available'),
+(1, 5, 'Available');
+
+
+//oku and baby diaper room occupancy
+-- Example: OKU restroom utility id = 3
+INSERT INTO cubicles (utility_id, cubicle_number, status)
+VALUES
+(3, 1, 'Available');
+
+-- Example: Baby diaper room utility id = 4
+INSERT INTO cubicles (utility_id, cubicle_number, status)
+VALUES
+(4, 1, 'Available'),
+(4, 2, 'Available'),
+(4, 3, 'Available');
+
+
+//running ollama for ai chatbox
+1. download ollama on device
+2. on windows powershell, run "ollama pull llama3.2"
+3. after finish downloading, run "ollama list" to confirm ollama exists
+4. run "ollama serve"
+5. to confirm server is working, run "http://localhost:11434/api/tags". if JSON loads, ollama is running.
 
 // new queries for full shop details modal in directory
 ALTER TABLE shops

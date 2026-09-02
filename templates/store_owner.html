@@ -49,6 +49,19 @@
             border: none;
             border-radius: 6px;
             cursor: pointer;
+            margin-right: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #editStoreButton {
+            background: #70461e;
+            color: white;
+        }
+
+        #logoutButton {
+            background: #dc3545;
+            color: white;
         }
 
         .edit-button {
@@ -100,12 +113,13 @@
     </div>
 
     <button
+        id="editStoreButton"
         class="edit-button"
         onclick="window.location.href='/store-owner/edit'">
         Edit Store Details
     </button>
 
-    <button onclick="logout()">
+    <button id="logoutButton"onclick="logout()">
         Logout
     </button>
 
