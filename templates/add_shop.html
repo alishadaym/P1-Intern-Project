@@ -22,6 +22,10 @@
         <input type="text" id="category">
         <br><br>
 
+        <label>Unit:</label>
+        <input type="text" id="unit" placeholder="e.g. G-14">
+        <br><br>
+
         <label>Operating Hours:</label>
         <input type="text" id="operating_hours" placeholder="e.g. 10am – 10pm">
         <br><br>
@@ -52,6 +56,7 @@
             const shopData = {
                 shop_name: document.getElementById("shop_name").value,
                 category: document.getElementById("category").value,
+                unit: document.getElementById("unit").value,
                 operating_hours: document.getElementById("operating_hours").value,
                 description: document.getElementById("description").value,
                 floor_id: Number(document.getElementById("floor_id").value)

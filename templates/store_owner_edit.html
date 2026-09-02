@@ -49,6 +49,8 @@
             cursor: pointer;
             margin-right: 10px;
             cursor: pointer;
+            margin-right: 10px;
+            cursor: pointer;
             border: none;
             border-radius: 5px;
         }
@@ -91,6 +93,14 @@
             type="text"
             id="category"
             value="{{ shop.category }}"
+        >
+
+        <label>Unit</label>
+        <input
+            type="text"
+            id="unit"
+            value="{{ shop.unit }}"
+            placeholder="e.g. G-14"
         >
 
         <label>Operating Hours</label>
@@ -153,6 +163,8 @@ document.getElementById("editForm").addEventListener("submit", async function(ev
         shop_name: document.getElementById("shop_name").value,
 
         category: document.getElementById("category").value,
+
+        unit: document.getElementById("unit").value,
 
         operating_hours: document.getElementById("operating_hours").value,
 

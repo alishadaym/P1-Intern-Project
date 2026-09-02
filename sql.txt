@@ -85,6 +85,46 @@ DELETE FROM shops;
 //(description still blank - fill in via the store owner's "Edit Store
 //Details" page once each shop has an account)
 INSERT INTO shops
+    (shop_name, operating_hours, category, description, floor_id)
+    ('F.O.S', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('Tone & Mann.', '10am – 10pm', 'Fashion accessories store', NULL, 1),
+    ('SSF', '10am – 10pm', 'Furniture store', NULL, 1),
+    ('Sarong By A&R', '10am – 10pm', 'Boutique', NULL, 1),
+    ('Solight', '10am – 8pm', 'Shoe Store', NULL, 1),
+    ('Nando''s', '10am – 10pm', 'Chicken Restaurant', NULL, 1),
+    ('Al-ikhsan Sports', '10am – 10pm', 'Sporting Goods Store', NULL, 1),
+    ('Baskin Robbins', '10am – 10pm', 'Ice Cream Shop', NULL, 1),
+    ('The Coffee Bean & Tea Leaf', '10am – 10pm', 'Cafe', NULL, 1),
+    ('The Body Shop', '10am – 10pm', 'Beauty Supply Store', NULL, 1),
+    ('Family Mart', '7am – 12am', 'Convenience Store', NULL, 1),
+    ('Sox World', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('Mr. Dakgalbi', '10am – 9pm', 'Korean Restaurant', NULL, 1),
+    ('Go Noodle House', '10am – 9:15pm', 'Chinese Noodle Restaurant', NULL, 1),
+    ('Happikiddo', '10am – 10pm', 'Baby Store', NULL, 1),
+    ('Home''s Harmony', '10am – 10pm', 'Furniture Store', NULL, 1),
+    ('Royal Sporting House', 'Permanently Closed', 'Sportswear Store', NULL, 1),
+    ('Good2U', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('Hong Leong Islamic Bank', 'Permanently Closed', 'Bank', NULL, 1),
+    ('Skechers', '10am – 10pm', 'Shoe Store', NULL, 1),
+    ('Kunzense Bodyline', '10:30am – 8:30pm', 'Facial Spa', NULL, 1),
+    ('MC Vogue', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('MNB', '10am – 10pm', 'Clothing Store', NULL, 1),
+    ('Sparkle & Silver Fine Jewellery', '10am – 10pm', 'Jeweller', NULL, 1),
+    ('Jac''s Optometry', '10am – 10pm', 'Optician', NULL, 1),
+    ('World of Perfumes', '10am – 10pm', 'Perfume Store', NULL, 1),
+    ('Mi Store', '10am – 10pm', 'Cell phone Store', NULL, 1),
+    ('Elianto', '10am – 10pm', 'Cosmetics Store', NULL, 1),
+    ('Ajumma', '10am – 11pm', 'Korean Restaurant', NULL, 1),
+    ('Parca Fashion', 'Permanently Closed', 'Boutique', NULL, 1),
+    ('Maxis', '10am – 9:30pm', 'Telecommunications service provider', NULL, 1),
+    ('Starbucks', 'Permanently Closed', 'Cafe', NULL, 1),
+    ('Zus Coffee', '10am – 10pm', 'Cafe', NULL, 1);
+
+    
+
+//seed all 33 real mall shops with category + operating hours
+//(description still blank - fill in via the store owner's "Edit Store
+INSERT INTO shops
     (shop_code, shop_name, operating_hours, category, description, floor_id)
 VALUES
     ('fos_shop', 'F.O.S', '10am – 10pm', 'Clothing Store', NULL, 1),
@@ -120,3 +160,189 @@ VALUES
     ('go_noodle_house_shop', 'Go Noodle House', '10am – 9:15pm', 'Chinese Noodle Restaurant', NULL, 1),
     ('happikiddo_shop', 'Happikiddo', '10am – 10pm', 'Baby Store', NULL, 1),
     ('homes_harmony_shop', 'Home''s Harmony', '10am – 10pm', 'Furniture Store', NULL, 1);
+
+//re-add unit (physical unit number, e.g. "G-14") - dropped earlier
+//alongside x_position/y_position, but that also removed real per-shop
+//unit labels store owners and visitors expect to see
+ALTER TABLE shops
+ADD COLUMN unit VARCHAR(50) AFTER category;
+
+UPDATE shops SET unit = 'G-14' WHERE shop_code = 'fos_shop';
+UPDATE shops SET unit = 'G-13' WHERE shop_code = 'tone_mann_shop';
+UPDATE shops SET unit = 'G-12' WHERE shop_code = 'ssf_shop';
+UPDATE shops SET unit = 'G-29' WHERE shop_code = 'good2u_shop';
+UPDATE shops SET unit = 'G-39' WHERE shop_code = 'family_mart_shop';
+UPDATE shops SET unit = 'G-12' WHERE shop_code = 'zus_coffee_shop';
+UPDATE shops SET unit = 'G-28' WHERE shop_code = 'hong_leong_shop';
+UPDATE shops SET unit = 'G-18' WHERE shop_code = 'mi_store_shop';
+UPDATE shops SET unit = 'G-16' WHERE shop_code = 'ajumma_shop';
+UPDATE shops SET unit = 'G-17' WHERE shop_code = 'elianto_shop';
+UPDATE shops SET unit = 'G-19' WHERE shop_code = 'world_of_perfumes_shop';
+UPDATE shops SET unit = 'G-20' WHERE shop_code = 'jacs_optometry_shop';
+UPDATE shops SET unit = 'G-24' WHERE shop_code = 'mnb_shop';
+UPDATE shops SET unit = 'G-25' WHERE shop_code = 'mc_vogue_shop';
+UPDATE shops SET unit = 'G-26' WHERE shop_code = 'kunzense_bodyline_shop';
+UPDATE shops SET unit = 'G-27' WHERE shop_code = 'skechers_shop';
+UPDATE shops SET unit = 'G-22' WHERE shop_code = 'jewellery_kiosk_shop';
+UPDATE shops SET unit = 'G-41' WHERE shop_code = 'parca_fashion_shop';
+UPDATE shops SET unit = 'G-42' WHERE shop_code = 'maxis_shop';
+UPDATE shops SET unit = 'G-30' WHERE shop_code = 'royal_sporting_house_shop';
+UPDATE shops SET unit = 'G-43' WHERE shop_code = 'starbucks_shop';
+UPDATE shops SET unit = 'G-09' WHERE shop_code = 'sarong_by_ar_shop';
+UPDATE shops SET unit = 'G-08' WHERE shop_code = 'solight_shop';
+UPDATE shops SET unit = 'G-07' WHERE shop_code = 'nandos_shop';
+UPDATE shops SET unit = 'G-06' WHERE shop_code = 'al_ikhsan_sports_shop';
+UPDATE shops SET unit = 'G-05' WHERE shop_code = 'baskin_robbins_shop';
+UPDATE shops SET unit = 'G-03' WHERE shop_code = 'coffee_bean_shop';
+UPDATE shops SET unit = 'G-37' WHERE shop_code = 'the_body_shop_shop';
+UPDATE shops SET unit = 'G-36' WHERE shop_code = 'sox_world_shop';
+UPDATE shops SET unit = 'G-35' WHERE shop_code = 'mr_dakgalbi_shop';
+UPDATE shops SET unit = 'G-34' WHERE shop_code = 'go_noodle_house_shop';
+UPDATE shops SET unit = 'G-33' WHERE shop_code = 'happikiddo_shop';
+UPDATE shops SET unit = 'G-32' WHERE shop_code = 'homes_harmony_shop';
+
+
+//UPDATE SHOPS CATEGORY
+UPDATE shops
+SET category = CASE shop_code
+    -- Fashion & Apparel
+    WHEN 'fos_shop' THEN 'Fashion'
+    WHEN 'tone_mann_shop' THEN 'Fashion'
+    WHEN 'good2u_shop' THEN 'Fashion'
+    WHEN 'mnb_shop' THEN 'Fashion'
+    WHEN 'mc_vogue_shop' THEN 'Fashion'
+    WHEN 'skechers_shop' THEN 'Fashion'
+    WHEN 'parca_fashion_shop' THEN 'Fashion'
+    WHEN 'sarong_by_ar_shop' THEN 'Fashion'
+    WHEN 'solight_shop' THEN 'Fashion'
+    WHEN 'sox_world_shop' THEN 'Fashion'
+    WHEN 'royal_sporting_house_shop' THEN 'Fashion'
+    WHEN 'jewellery_kiosk_shop' THEN 'Fashion'
+
+    -- Food & Beverages
+    WHEN 'zus_coffee_shop' THEN 'Food & Beverages'
+    WHEN 'ajumma_shop' THEN 'Food & Beverages'
+    WHEN 'nandos_shop' THEN 'Food & Beverages'
+    WHEN 'baskin_robbins_shop' THEN 'Food & Beverages'
+    WHEN 'coffee_bean_shop' THEN 'Food & Beverages'
+    WHEN 'mr_dakgalbi_shop' THEN 'Food & Beverages'
+    WHEN 'go_noodle_house_shop' THEN 'Food & Beverages'
+    WHEN 'starbucks_shop' THEN 'Food & Beverages'
+
+    -- Cosmetics & Beauty
+    WHEN 'elianto_shop' THEN 'Cosmetics & Beauty'
+    WHEN 'world_of_perfumes_shop' THEN 'Cosmetics & Beauty'
+    WHEN 'the_body_shop_shop' THEN 'Cosmetics & Beauty'
+    WHEN 'kunzense_bodyline_shop' THEN 'Cosmetics & Beauty'
+
+    -- Electronics & Telco
+    WHEN 'mi_store_shop' THEN 'Electronics'
+    WHEN 'maxis_shop' THEN 'Electronics'
+
+    -- Banking & Finance
+    WHEN 'hong_leong_shop' THEN 'Banking & Finance'
+
+    -- Health & Wellness
+    WHEN 'jacs_optometry_shop' THEN 'Health & Wellness'
+
+    -- Sports & Outdoor
+    WHEN 'al_ikhsan_sports_shop' THEN 'Sports & Outdoor'
+
+    -- Home & Living
+    WHEN 'ssf_shop' THEN 'Home & Living'
+    WHEN 'homes_harmony_shop' THEN 'Home & Living'
+
+    -- Retail / General
+    WHEN 'family_mart_shop' THEN 'Convenience Store'
+    WHEN 'happikiddo_shop' THEN 'Retail'
+
+    ELSE category
+END
+WHERE shop_code IN (
+    'fos_shop','tone_mann_shop','ssf_shop','good2u_shop','family_mart_shop',
+    'zus_coffee_shop','hong_leong_shop','mi_store_shop','ajumma_shop','elianto_shop',
+    'world_of_perfumes_shop','jacs_optometry_shop','mnb_shop','mc_vogue_shop',
+    'kunzense_bodyline_shop','skechers_shop','jewellery_kiosk_shop','parca_fashion_shop',
+    'maxis_shop','royal_sporting_house_shop','starbucks_shop','sarong_by_ar_shop',
+    'solight_shop','nandos_shop','al_ikhsan_sports_shop','baskin_robbins_shop',
+    'coffee_bean_shop','the_body_shop_shop','sox_world_shop','mr_dakgalbi_shop',
+    'go_noodle_house_shop','happikiddo_shop','homes_harmony_shop'
+);
+
+-- Facilities are separate from shops because their availability changes independently.
+CREATE TABLE IF NOT EXISTS utilities (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    utility_code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    utility_type ENUM('restroom', 'baby_diaper', 'oku', 'lift') NOT NULL,
+    floor_id INT NOT NULL,
+    x_position INT NOT NULL,
+    y_position INT NOT NULL,
+    node_id VARCHAR(50) NOT NULL,
+    total_cubicles INT NULL,
+    occupied_cubicles INT NULL DEFAULT 0,
+    is_occupied BOOLEAN NULL,
+    FOREIGN KEY (floor_id) REFERENCES floors(id),
+    CHECK (total_cubicles IS NULL OR total_cubicles >= 0),
+    CHECK (occupied_cubicles IS NULL OR occupied_cubicles >= 0),
+    CHECK (total_cubicles IS NULL OR occupied_cubicles <= total_cubicles)
+);
+
+INSERT INTO utilities
+    (utility_code, name, utility_type, floor_id, x_position, y_position, node_id,
+     total_cubicles, occupied_cubicles, is_occupied)
+VALUES
+    ('ground_toilet_centre', 'Restroom - Centre', 'restroom', 1, 438, 160, 'node_44', 4, 1, NULL),
+    ('ground_baby_care', 'Baby Care Room', 'baby_diaper', 1, 508, 183, 'node_46', NULL, NULL, NULL),
+    ('ground_oku_toilet', 'OKU Accessible Toilet', 'oku', 1, 475, 175, 'node_45', NULL, NULL, FALSE),
+    ('ground_lift', 'Lift - Ground Floor', 'lift', 1, 586, 328, 'node_42', NULL, NULL, NULL)
+ON DUPLICATE KEY UPDATE
+    name = VALUES(name),
+    utility_type = VALUES(utility_type),
+    floor_id = VALUES(floor_id),
+    x_position = VALUES(x_position),
+    y_position = VALUES(y_position),
+    node_id = VALUES(node_id);
+
+//UTILITIES TABLE
+-- Main utilities table (covers restroom, oku restroom, baby diaper room, lift)
+CREATE TABLE utilities (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    utility_type VARCHAR(50) NOT NULL,   -- 'Restroom', 'OKU Restroom', 'Baby Diaper Room', 'Lift'
+    name VARCHAR(100) NOT NULL,          -- e.g. 'Restroom - Centre', 'Restroom - East Wing'
+    floor VARCHAR(20),                   -- e.g. 'G', '1', '2'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO utilities (utility_type, name, map_code, floor, created_at)
+VALUES 
+('Restroom', 'Restroom - Centre', 'ground_toilet_centre', 'G'),
+('Restroom', 'Restroom - West Wing', '', '1'),
+('OKU Restroom', 'OKU Restroom - Centre', 'ground_oku_toilet', 'G'),
+('Baby Diaper Room', 'Baby Diaper Room - Centre', 'ground_baby_care', 'G'),
+('Lift','Lift - Centre', 'ground_lift_', 'G'),
+('Lift', 'Lift - East Wing', 'ground_lift_east', 'G'),
+('Lift', 'Lift - West Wing', 'ground_lift_west', 'G'), 
+('Lift', 'Lift - South Wing', 'ground_life_south', 'G');
+
+
+
+
+//CUBICLES TABLE
+-- Cubicles belonging to a utility (mainly used for restrooms)
+CREATE TABLE cubicles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    utility_id INT NOT NULL,
+    cubicle_number INT NOT NULL,         -- 1, 2, 3...
+    status VARCHAR(20) DEFAULT 'Available', -- 'Available' or 'Occupied'
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (utility_id) REFERENCES utilities(id)
+);
+
+INSERT INTO cubicles (utility_id, cubicle_number, status)
+VALUES
+(1, 1, 'Available'),
+(1, 2, 'Available'),
+(1, 3, 'Available'),
+(1, 4, 'Available'),
+(1, 5, 'Available');

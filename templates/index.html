@@ -12,10 +12,10 @@
 <body>
     <header class="site-header">
         <h1>Dpulze Mall Navigation</h1>
-            <a href="/login" class="login-button">Store Owner Login</a>
-        {% if current %}
+                <a href="/login" class="login-button">Store Owner Login</a>
+        <!-- {% if current %} -->
             <p class="scanned-location">You scanned: {{ current.label }}</p>
-        {% endif %}
+        <!-- {% endif %} -->
     </header>
 
     <main>
@@ -29,50 +29,97 @@
                 <!-- <option value="first">First Floor</option> -->
             </select>
 
-            <label for="shop">Find Shop</label>
-            <select id="shop-select">
+            <label for="shop-search">Find Shop</label>
+            <div class="shop-autocomplete">
+                <input type="text" id="shop-search" placeholder="Search shops..." autocomplete="off">
+                <ul id="shop-suggestions" class="shop-suggestions"></ul>
+            </div>
+            <select id="shop-select" class="hidden-select">
                 <option value="">Select a shop</option>
+            </select>
+
+            <label for="category">Category</label>
+            <select id="category-select">
+                <option value="">All categories</option>
             </select>
 
             <button id="navigate-btn" class="navigate-btn">Navigate</button>
 
-            <div class="selected-shop-section">
-                <h3>Selected Shop</h3>
-                <div id="selected-shop-details">No shop selected</div>
+            <div class="category-shops-section">
+                <h3>Shops in Category</h3>
+                <div id="category-shop-list">Choose a category</div>
             </div>
 
-            <div class="legend">
-                <p>📍 Your Location</p>
-                <p>🛍️ Selected Shop</p>
-                <p>🚶 Navigate</p>
+            <div class="utility-section">
+                <label for="utility-select">Utilities</label>
+                <select id="utility-select">
+                    <option value="">Choose a utility</option>
+                    <option value="restroom">Restroom</option>
+                    <option value="baby_diaper">Baby diaper</option>
+                    <option value="oku">OKU accessible toilet</option>
+                    <option value="lift">Lift</option>
+                </select>
+                <div id="utility-list">Choose a utility to see locations</div>
             </div>
 
         </aside>
 
         <section class="map-section">
-            <div class="map-container">
-                <img src="{{ url_for('static', filename='img/dpulze_ground_floor.png') }}"
-                    id="floor-map" alt="Dpulze Ground Floor Map">
+            <div class="map-viewport" id="map-viewport">
+                <div class="map-container">
+                    <img src="{{ url_for('static', filename='img/dpulze_ground_floor.png') }}"
+                        id="floor-map" alt="Dpulze Ground Floor Map">
 
-                <svg id="map-overlay" viewBox="0 0 1038 553" preserveAspectRatio="xMidYMid meet">
-                    <g id="navigation-lines"></g>
-                    <g id="navigation-nodes"></g>
-                
-                    <!-- Clickable shop areas -->
-                    <g id="shop-hotspots"></g>
-                
-                    <!-- POI markers -->
-                    <g id="poi-markers"></g>
-                
-                    <!-- Route -->
-                    <polyline id="route-line" points=""></polyline>
-                
-                    <!-- User -->
-                    <image id="user-marker" href="{{ url_for('static', filename='img/user-pin.png') }}" width="24" height="36"></image>
-                </svg>                
+                    <svg id="map-overlay" viewBox="0 0 1038 553" preserveAspectRatio="xMidYMid meet">
+                        <g id="navigation-lines"></g>
+                        <g id="navigation-nodes"></g>
+                    
+                        <!-- Clickable shop areas -->
+                        <g id="shop-hotspots"></g>
+                    
+                        <!-- POI markers -->
+                        <g id="poi-markers"></g>
+                    
+                        <!-- Route -->
+                        <polyline id="route-line" points=""></polyline>
+                    
+                        <!-- User -->
+                        <image id="user-marker" href="{{ url_for('static', filename='img/user-pin.png') }}" width="24" height="36"></image>
+                    </svg>
+                </div>
+                <div class="map-controls" aria-label="Map zoom controls">
+                    <button id="zoom-in-btn" type="button" aria-label="Zoom in">+</button>
+                    <button id="zoom-out-btn" type="button" aria-label="Zoom out">-</button>
+                    <button id="zoom-reset-btn" type="button" aria-label="Reset map view">Reset</button>
+                </div>
             </div>
         </section>
     </main>
+
+    <div class="shop-modal utility-modal" id="shop-modal" hidden>
+        <div class="shop-modal-content utility-modal-content shop-popover-content" role="dialog" aria-modal="true" aria-labelledby="modal-shop-name">
+            <button class="shop-modal-close" id="close-shop-modal" type="button" aria-label="Close store details">&times;</button>
+            <h2 id="modal-shop-name"></h2>
+            <div class="shop-modal-details" id="modal-shop-details">
+                <p id="modal-shop-category"></p>
+                <p id="modal-shop-unit"></p>
+                <p id="modal-shop-floor"></p>
+                <p id="modal-shop-hours"></p>
+                <p id="modal-shop-description"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="shop-modal utility-modal" id="utility-modal" hidden>
+        <div class="shop-modal-content utility-modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-utility-name">
+            <button class="shop-modal-close" id="close-utility-modal" type="button" aria-label="Close utility details">&times;</button>
+            <h2 id="modal-utility-name"></h2>
+            <div class="shop-modal-details">
+                <p id="modal-utility-floor"></p>
+                <p id="modal-utility-status"></p>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Set by scanning a location QR code (see app.py's index route);

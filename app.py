@@ -1,15 +1,31 @@
 from flask import Flask, abort, jsonify, request, render_template, session, redirect
 from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_db_connection
+from simulate_occupancy import run_simulator
 from locations import LOCATIONS, MAP_WIDTH, MAP_HEIGHT, SHOPS, NODE_MAP
 from scan_log import read_scans, record_scan
 
 import json
 import os
 import uuid
+import threading
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
+
+def start_occupancy_simulator():
+    if app.debug and os.environ.get("WERKZEUG_RUN_MAIN") != "true":
+        return
+
+    simulator_thread = threading.Thread(
+        target=run_simulator,
+        name="occupancy-simulator",
+        daemon=True
+    )
+    simulator_thread.start()
+
+
+start_occupancy_simulator()
 
 def load_map():
     map_path = os.path.join("data", "map.json")
@@ -33,8 +49,10 @@ def get_shops():
             s.shop_name,
             s.operating_hours,
             s.category,
+            s.unit,
             s.description,
             s.floor_id,
+            s.unit,
             f.floor_name,
             f.floor_code
         FROM shops s
@@ -50,6 +68,89 @@ def get_shops():
     connection.close()
 
     return jsonify(shops)
+
+@app.route("/api/categories")
+def get_categories():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT DISTINCT TRIM(category) AS category
+        FROM shops
+        WHERE category IS NOT NULL AND TRIM(category) <> ''
+        ORDER BY category
+    """)
+    categories = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return jsonify(categories)
+
+@app.route("/api/utilities")
+def get_utilities():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT
+            u.id AS utility_id,
+            u.name,
+            u.map_code,
+            CASE
+                WHEN u.utility_type = 'toilet' THEN 'restroom'
+                ELSE u.utility_type
+            END AS type,
+            u.floor,
+            COUNT(c.id) AS total_cubicles,
+            COALESCE(SUM(LOWER(c.status) = 'occupied'), 0) AS occupied_cubicles
+        FROM utilities u
+        LEFT JOIN cubicles c ON c.utility_id = u.id
+        GROUP BY u.id, u.name, u.utility_type, u.floor
+        ORDER BY u.utility_type, u.name
+    """)
+    utilities = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    map_facilities = load_map().get("facilities", {})
+    used_map_facilities = set()
+
+    for utility in utilities:
+        utility_type = utility["type"].strip().lower().replace(" ", "_")
+        if utility_type in ("toilet", "restroom"):
+            utility_type = "restroom"
+        elif "baby" in utility_type and "diaper" in utility_type:
+            utility_type = "baby_diaper"
+        elif utility_type.startswith("oku"):
+            utility_type = "oku"
+        elif utility_type.startswith("lift"):
+            utility_type = "lift"
+        utility["type"] = utility_type
+        utility["utility_id"] = int(utility["utility_id"])
+        utility["utility_code"] = utility["map_code"] or str(utility["utility_id"])
+        utility["total_cubicles"] = int(utility["total_cubicles"] or 0)
+        utility["occupied_cubicles"] = int(utility["occupied_cubicles"] or 0)
+        utility["available_cubicles"] = (
+            utility["total_cubicles"] - utility["occupied_cubicles"]
+        )
+        utility["is_occupied"] = utility["type"] == "oku" and utility["occupied_cubicles"] > 0
+
+        matching_facility = None
+        if utility["map_code"] in map_facilities:
+            matching_facility = (utility["map_code"], map_facilities[utility["map_code"]])
+
+        if matching_facility:
+            facility_id, facility = matching_facility
+            used_map_facilities.add(facility_id)
+            utility.update({
+                "x": facility["x"],
+                "y": facility["y"],
+                "node_id": facility["node_id"]
+            })
+
+    return jsonify(utilities)
 
 #allowing to send data to /api/shops
 @app.route("/api/shops", methods=["POST"])
@@ -73,8 +174,8 @@ def add_shop():
 
     query = """
         INSERT INTO shops
-        (shop_name, category, description, floor_id)
-        VALUES (%s, %s, %s, %s)
+        (shop_name, operating_hours, category, unit, description, floor_id)
+        VALUES (%s, %s, %s, %s, %s, %s)
     """
 
     values = (
@@ -627,7 +728,4 @@ def shops():
     return redirect("/")
 
 # if __name__ == "__main__":
-#     app.run(debug=True)
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+#     app.run(host="0.0.0.0", port=5000, debug=True)
