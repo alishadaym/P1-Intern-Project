@@ -119,6 +119,14 @@ def update_occupancy():
     active_count = sum(
         1 for cubicle in cubicles if cubicle["status"] == "occupied"
     )
+    cursor.execute("""
+        SELECT c.id
+        FROM cubicles c
+        JOIN utilities u ON u.id = c.utility_id
+        WHERE LOWER(u.utility_type) IN ('restroom', 'toilet')
+          AND LOWER(c.status) = 'occupied'
+    """)
+    active_count = len(cursor.fetchall())
 
     occupied_count = 0
     if active_count == 0:

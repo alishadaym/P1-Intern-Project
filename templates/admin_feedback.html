@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback - Admin - DPULZE</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #564228;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .admin-box {
+            max-width: 1000px;
+            margin: auto;
+            background: #ffffff;
+            padding: 25px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        #logoutButton {
+            padding: 8px 18px;
+            cursor: pointer;
+            border: none;
+            border-radius: 20px;
+            background: #6c757d;
+            color: white;
+            font-size: 13px;
+        }
+
+        .table-wrapper {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+            vertical-align: top;
+        }
+
+        th {
+            background: #eaf3fc;
+            white-space: nowrap;
+        }
+
+        td.message-cell,
+        td.resolution-cell {
+            max-width: 260px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        td.topic-cell input {
+            width: 100%;
+            min-width: 140px;
+            padding: 6px 8px;
+            font-size: 13px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        td.topic-cell input.saved {
+            border-color: #4caf50;
+        }
+
+        #emptyMessage {
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .section-title {
+            margin-top: 35px;
+            font-size: 1.2rem;
+        }
+
+        .topics-table th,
+        .topics-table td {
+            font-size: 14px;
+        }
+
+        .voucher-picker {
+            position: relative;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .voucher-search {
+            padding: 6px 8px;
+            font-size: 13px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 180px;
+            box-sizing: border-box;
+        }
+
+        .voucher-suggestions {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            margin: 2px 0 0;
+            padding: 0;
+            list-style: none;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .voucher-suggestions.visible {
+            display: block;
+        }
+
+        .voucher-suggestions li {
+            padding: 8px 10px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .voucher-suggestions li:hover,
+        .voucher-suggestions li.active {
+            background: #FCF2E5;
+        }
+
+        .voucher-suggestions li.no-results {
+            color: #888;
+            cursor: default;
+        }
+
+        .issue-voucher-btn {
+            padding: 6px 14px;
+            cursor: pointer;
+            border: none;
+            border-radius: 16px;
+            background: #70461e;
+            color: white;
+            font-size: 13px;
+        }
+
+        .issue-voucher-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .voucher-result {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #444;
+        }
+
+        code.voucher-code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="admin-box">
+
+    <div class="admin-header">
+        <h1>Visitor Feedback</h1>
+        <button type="button" id="logoutButton">Logout</button>
+    </div>
+
+    {% if feedback %}
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Submitted</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Date</th>
+                    <th>Feedback</th>
+                    <th>Requested Resolution</th>
+                    <th>Topic</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in feedback %}
+                <tr>
+                    <td>{{ item.submitted_at }}</td>
+                    <td>{{ item.name or "" }}</td>
+                    <td>{{ item.email or "" }}</td>
+                    <td>{{ item.phone or "" }}</td>
+                    <td>{{ item.incident_date or "" }}</td>
+                    <td class="message-cell">{{ item.message }}</td>
+                    <td class="resolution-cell">{{ item.resolution or "" }}</td>
+                    <td class="topic-cell">
+                        <input
+                            type="text"
+                            value="{{ item.topic or '' }}"
+                            placeholder="e.g. Ground floor toilets"
+                            data-feedback-id="{{ item.id }}"
+                        >
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p id="emptyMessage">No feedback has been submitted yet.</p>
+    {% endif %}
+
+    <h2 class="section-title">Recurring Issues</h2>
+    <p style="color:#666; font-size:13px;">
+        Tag complaints with the same Topic above (e.g. "Ground floor toilets") to group
+        them here. When multiple visitors report the same issue, issue them a voucher.
+    </p>
+
+    {% if topics %}
+    <div class="table-wrapper">
+        <table class="topics-table">
+            <thead>
+                <tr>
+                    <th>Topic</th>
+                    <th>Reports</th>
+                    <th>Distinct Visitors</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in topics %}
+                <tr>
+                    <td>{{ t.topic }}</td>
+                    <td>{{ t.count }}</td>
+                    <td>{{ t.distinct_visitors }}</td>
+                    <td>
+                        <div class="voucher-picker" data-topic="{{ t.topic }}">
+                            <input
+                                type="text"
+                                class="voucher-search"
+                                placeholder="Search shop or Parking..."
+                                autocomplete="off"
+                            >
+                            <ul class="voucher-suggestions"></ul>
+                        </div>
+                        <button
+                            type="button"
+                            class="issue-voucher-btn"
+                            data-topic="{{ t.topic }}"
+                            disabled
+                        >
+                            Issue Voucher
+                        </button>
+                        <div class="voucher-result" data-topic-result="{{ t.topic }}"></div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p id="emptyMessage">No topics tagged yet.</p>
+    {% endif %}
+
+    <h2 class="section-title">Issued Vouchers</h2>
+    <div class="table-wrapper">
+        <table id="vouchersTable">
+            <thead>
+                <tr>
+                    <th>Issued</th>
+                    <th>Topic</th>
+                    <th>Type</th>
+                    <th>Email</th>
+                    <th>Code</th>
+                </tr>
+            </thead>
+            <tbody id="vouchersTableBody">
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+
+document.getElementById("logoutButton").addEventListener("click", async function() {
+
+    const response = await fetch("/api/admin/logout", {
+        method: "POST"
+    });
+
+    if (response.ok) {
+        window.location.href = "/admin/login";
+    }
+
+});
+
+document.querySelectorAll("td.topic-cell input").forEach(function(input) {
+
+    input.addEventListener("change", async function() {
+
+        const feedbackId = input.dataset.feedbackId;
+
+        const response = await fetch(`/api/admin/feedback/${feedbackId}/topic`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ topic: input.value })
+        });
+
+        if (response.ok) {
+            input.classList.add("saved");
+            setTimeout(function() {
+                input.classList.remove("saved");
+            }, 1500);
+        }
+
+    });
+
+});
+
+// VOUCHER TARGET PICKER (type-ahead: every shop, plus the general
+// "Parking Voucher" option) - same combobox pattern as the guest map's
+// shop search, reused here so the admin can pick exactly which store
+// (or parking) a voucher applies to
+const generalVoucherTypes = {{ general_voucher_types | tojson }};
+let voucherChoices = [];
+
+async function loadVoucherChoices() {
+    const response = await fetch("/api/shops");
+    const shops = response.ok ? await response.json() : [];
+
+    voucherChoices = [];
+
+    Object.entries(generalVoucherTypes).forEach(([value, label]) => {
+        voucherChoices.push({ type: value, shopCode: null, label: label });
+    });
+
+    shops
+        .filter(shop => shop.shop_code)
+        .forEach(shop => {
+            voucherChoices.push({ type: "shop", shopCode: shop.shop_code, label: shop.shop_name });
+        });
+}
+
+function renderVoucherSuggestions(picker, searchText) {
+    const suggestionsList = picker.querySelector(".voucher-suggestions");
+    const query = (searchText || "").trim().toLowerCase();
+
+    suggestionsList.innerHTML = "";
+    picker.activeSuggestionIndex = -1;
+
+    const matches = voucherChoices.filter(choice => choice.label.toLowerCase().includes(query));
+
+    if (matches.length === 0) {
+        const noResults = document.createElement("li");
+        noResults.className = "no-results";
+        noResults.textContent = "No matches found";
+        suggestionsList.appendChild(noResults);
+    } else {
+        matches.forEach(choice => {
+            const item = document.createElement("li");
+            item.textContent = choice.label;
+
+            item.addEventListener("click", function() {
+                chooseVoucherTarget(picker, choice);
+            });
+
+            suggestionsList.appendChild(item);
+        });
+    }
+
+    suggestionsList.classList.add("visible");
+}
+
+function hideVoucherSuggestions(picker) {
+    picker.querySelector(".voucher-suggestions").classList.remove("visible");
+    picker.activeSuggestionIndex = -1;
+}
+
+function chooseVoucherTarget(picker, choice) {
+    const searchInput = picker.querySelector(".voucher-search");
+    const issueButton = document.querySelector(`.issue-voucher-btn[data-topic="${picker.dataset.topic}"]`);
+
+    searchInput.value = choice.label;
+    picker.dataset.selectedType = choice.type;
+    picker.dataset.selectedShopCode = choice.shopCode || "";
+
+    hideVoucherSuggestions(picker);
+    issueButton.disabled = false;
+}
+
+document.querySelectorAll(".voucher-picker").forEach(function(picker) {
+
+    const searchInput = picker.querySelector(".voucher-search");
+    const issueButton = document.querySelector(`.issue-voucher-btn[data-topic="${picker.dataset.topic}"]`);
+    picker.activeSuggestionIndex = -1;
+
+    searchInput.addEventListener("input", function() {
+        // Typing invalidates whatever was previously selected
+        picker.dataset.selectedType = "";
+        picker.dataset.selectedShopCode = "";
+        issueButton.disabled = true;
+        renderVoucherSuggestions(picker, searchInput.value);
+    });
+
+    searchInput.addEventListener("focus", function() {
+        renderVoucherSuggestions(picker, searchInput.value);
+    });
+
+    searchInput.addEventListener("keydown", function(event) {
+        const suggestionsList = picker.querySelector(".voucher-suggestions");
+        const items = Array.from(suggestionsList.querySelectorAll("li:not(.no-results)"));
+
+        if (!suggestionsList.classList.contains("visible") || items.length === 0) {
+            return;
+        }
+
+        if (event.key === "ArrowDown") {
+            event.preventDefault();
+            picker.activeSuggestionIndex = (picker.activeSuggestionIndex + 1) % items.length;
+        } else if (event.key === "ArrowUp") {
+            event.preventDefault();
+            picker.activeSuggestionIndex = (picker.activeSuggestionIndex - 1 + items.length) % items.length;
+        } else if (event.key === "Enter") {
+            event.preventDefault();
+            const chosenIndex = picker.activeSuggestionIndex >= 0 ? picker.activeSuggestionIndex : 0;
+            const chosenLabel = items[chosenIndex].textContent;
+            const chosenChoice = voucherChoices.find(choice => choice.label === chosenLabel);
+            if (chosenChoice) {
+                chooseVoucherTarget(picker, chosenChoice);
+            }
+            return;
+        } else if (event.key === "Escape") {
+            hideVoucherSuggestions(picker);
+            return;
+        } else {
+            return;
+        }
+
+        items.forEach(item => item.classList.remove("active"));
+        items[picker.activeSuggestionIndex].classList.add("active");
+    });
+
+    document.addEventListener("click", function(event) {
+        if (!picker.contains(event.target)) {
+            hideVoucherSuggestions(picker);
+        }
+    });
+
+});
+
+document.querySelectorAll(".issue-voucher-btn").forEach(function(button) {
+
+    button.addEventListener("click", async function() {
+
+        const topic = button.dataset.topic;
+        const picker = document.querySelector(`.voucher-picker[data-topic="${topic}"]`);
+        const resultBox = document.querySelector(`[data-topic-result="${topic}"]`);
+        const voucherType = picker.dataset.selectedType;
+        const shopCode = picker.dataset.selectedShopCode;
+
+        if (!voucherType) {
+            resultBox.textContent = "Please choose a shop or Parking first.";
+            return;
+        }
+
+        button.disabled = true;
+
+        try {
+
+            const response = await fetch("/api/admin/vouchers/issue", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ topic: topic, voucher_type: voucherType, shop_code: shopCode })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                resultBox.textContent = result.message;
+                loadVouchers();
+            } else {
+                resultBox.textContent = result.error || "Failed to issue vouchers.";
+            }
+
+        } catch (error) {
+            resultBox.textContent = "Unable to connect to the server.";
+        } finally {
+            button.disabled = false;
+        }
+
+    });
+
+});
+
+loadVoucherChoices();
+
+async function loadVouchers() {
+
+    const response = await fetch("/api/admin/vouchers");
+
+    if (!response.ok) {
+        return;
+    }
+
+    const vouchers = await response.json();
+    const body = document.getElementById("vouchersTableBody");
+
+    body.innerHTML = "";
+
+    if (vouchers.length === 0) {
+        body.innerHTML = "<tr><td colspan=\"5\">No vouchers issued yet.</td></tr>";
+        return;
+    }
+
+    vouchers.forEach(function(v) {
+        const row = document.createElement("tr");
+
+        const issuedCell = document.createElement("td");
+        issuedCell.textContent = v.issued_at;
+
+        const topicCell = document.createElement("td");
+        topicCell.textContent = v.topic;
+
+        const typeCell = document.createElement("td");
+        typeCell.textContent = v.voucher_type_label || v.voucher_type;
+
+        const emailCell = document.createElement("td");
+        emailCell.textContent = v.email;
+
+        const codeCell = document.createElement("td");
+        const codeEl = document.createElement("code");
+        codeEl.className = "voucher-code";
+        codeEl.textContent = v.code;
+        codeCell.appendChild(codeEl);
+
+        row.append(issuedCell, topicCell, typeCell, emailCell, codeCell);
+        body.appendChild(row);
+    });
+
+}
+
+loadVouchers();
+
+</script>
+
+</body>
+</html>

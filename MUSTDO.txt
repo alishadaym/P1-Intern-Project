@@ -310,6 +310,7 @@ CREATE TABLE utilities (
     id INT AUTO_INCREMENT PRIMARY KEY,
     utility_type VARCHAR(50) NOT NULL,   -- 'Restroom', 'OKU Restroom', 'Baby Diaper Room', 'Lift'
     name VARCHAR(100) NOT NULL,          -- e.g. 'Restroom - Centre', 'Restroom - East Wing'
+    map_code VARCHAR(100),
     floor VARCHAR(20),                   -- e.g. 'G', '1', '2'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -323,10 +324,10 @@ VALUES
 ('Restroom', 'Restroom - West Wing', '', '1'),
 ('OKU Restroom', 'OKU Restroom - Centre', 'ground_oku_toilet', 'G'),
 ('Baby Diaper Room', 'Baby Diaper Room - Centre', 'ground_baby_care', 'G'),
-('Lift','Lift - Centre', 'ground_lift_', 'G'),
+('Lift','Lift - Centre', 'ground_lift_centre', 'G'),
 ('Lift', 'Lift - East Wing', 'ground_lift_east', 'G'),
 ('Lift', 'Lift - West Wing', 'ground_lift_west', 'G'), 
-('Lift', 'Lift - South Wing', 'ground_life_south', 'G');
+('Lift', 'Lift - South Wing', 'ground_lift_south', 'G');
 
 
 //CUBICLES TABLE
