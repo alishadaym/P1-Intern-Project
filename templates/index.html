@@ -125,7 +125,7 @@
     <script>
         // Set by scanning a location QR code (see app.py's index route);
         // falls back to the main entrance when nothing has been scanned yet.
-        // window.START_NODE_ID = {{ (start_node or "node_01") | tojson }};
+        window.START_NODE_ID = {{ (start_node or "node_01") | tojson }};
     </script>
     <script src="{{ url_for('static', filename='js/map.js' )}}"></script>
 </body>

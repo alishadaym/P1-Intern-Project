@@ -26,21 +26,66 @@
             "hotspot": {
                 "type": "polygon",
                 "points": [
-                    [132, 53],
-                    [390, 122],
-                    [372, 185],
-                    [355, 182],
-                    [352, 195],
-                    [337, 192],
-                    [322, 240],
-                    [293, 260],
-                    [230, 242],
-                    [242, 193],
-                    [200, 180],
-                    [209, 142],
-                    [149, 124],
-                    [158, 85],
-                    [127, 76]
+                    [
+                        132,
+                        53
+                    ],
+                    [
+                        390,
+                        122
+                    ],
+                    [
+                        372,
+                        185
+                    ],
+                    [
+                        355,
+                        182
+                    ],
+                    [
+                        352,
+                        195
+                    ],
+                    [
+                        337,
+                        192
+                    ],
+                    [
+                        322,
+                        240
+                    ],
+                    [
+                        293,
+                        260
+                    ],
+                    [
+                        230,
+                        242
+                    ],
+                    [
+                        242,
+                        193
+                    ],
+                    [
+                        200,
+                        180
+                    ],
+                    [
+                        209,
+                        142
+                    ],
+                    [
+                        149,
+                        124
+                    ],
+                    [
+                        158,
+                        85
+                    ],
+                    [
+                        127,
+                        76
+                    ]
                 ]
             }
         },
@@ -53,10 +98,22 @@
             "hotspot": {
                 "type": "polygon",
                 "points": [
-                    [105, 157],
-                    [235, 195],
-                    [210, 285],
-                    [80, 251]
+                    [
+                        105,
+                        157
+                    ],
+                    [
+                        235,
+                        195
+                    ],
+                    [
+                        210,
+                        285
+                    ],
+                    [
+                        80,
+                        251
+                    ]
                 ]
             }
         },
@@ -69,17 +126,50 @@
             "hotspot": {
                 "type": "polygon",
                 "points": [
-                    [80, 255],
-                    [210, 291],
-                    [218, 291],
-                    [218, 380],
-                    [197, 380],
-                    [197, 416],
-                    [218, 416],
-                    [218, 505],
-                    [107, 505],
-                    [107, 330],
-                    [61, 318]
+                    [
+                        80,
+                        255
+                    ],
+                    [
+                        210,
+                        291
+                    ],
+                    [
+                        218,
+                        291
+                    ],
+                    [
+                        218,
+                        380
+                    ],
+                    [
+                        197,
+                        380
+                    ],
+                    [
+                        197,
+                        416
+                    ],
+                    [
+                        218,
+                        416
+                    ],
+                    [
+                        218,
+                        505
+                    ],
+                    [
+                        107,
+                        505
+                    ],
+                    [
+                        107,
+                        330
+                    ],
+                    [
+                        61,
+                        318
+                    ]
                 ]
             }
         },
@@ -92,10 +182,22 @@
             "hotspot": {
                 "type": "polygon",
                 "points": [
-                    [810, 212],
-                    [927, 232],
-                    [908, 312],
-                    [810, 312]
+                    [
+                        810,
+                        212
+                    ],
+                    [
+                        927,
+                        232
+                    ],
+                    [
+                        908,
+                        312
+                    ],
+                    [
+                        810,
+                        312
+                    ]
                 ]
             }
         },
@@ -106,17 +208,48 @@
             "y": 484,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
+                "type": "polygon",
                 "points": [
-                    [515, 453],
-                    [545, 453],
-                    [545, 443],
-                    [578, 443],
-                    [578, 525],
-                    [515, 525]
+                    [
+                        515,
+                        453
+                    ],
+                    [
+                        545,
+                        453
+                    ],
+                    [
+                        545,
+                        443
+                    ],
+                    [
+                        578,
+                        443
+                    ],
+                    [
+                        578,
+                        525
+                    ],
+                    [
+                        515,
+                        525
+                    ]
                 ]
             }
-        },        
+        },
+        "zus_coffee_shop": {
+            "name": "Zus Coffee",
+            "node_id": "node_12",
+            "x": 175,
+            "y": 620,
+            "floor": "Ground Floor",
+            "hotspot": {
+                "x": 111,
+                "y": 601,
+                "width": 127,
+                "height": 37
+            }
+        },
         "hong_leong_shop": {
             "name": "Hong Leong Islamic Bank",
             "node_id": "node_28",
@@ -124,12 +257,24 @@
             "y": 230,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
-                "points":[
-                    [767, 205],
-                    [805, 211],
-                    [805, 273],
-                    [767, 273]
+                "type": "polygon",
+                "points": [
+                    [
+                        767,
+                        205
+                    ],
+                    [
+                        805,
+                        211
+                    ],
+                    [
+                        805,
+                        273
+                    ],
+                    [
+                        767,
+                        273
+                    ]
                 ]
             }
         },
@@ -140,12 +285,24 @@
             "y": 231,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
-                "points":[
-                    [413, 194],
-                    [451, 203],
-                    [434, 272],
-                    [394, 262]
+                "type": "polygon",
+                "points": [
+                    [
+                        413,
+                        194
+                    ],
+                    [
+                        451,
+                        203
+                    ],
+                    [
+                        434,
+                        272
+                    ],
+                    [
+                        394,
+                        262
+                    ]
                 ]
             }
         },
@@ -157,12 +314,24 @@
             "floor": "Ground Floor",
             "hotspot": {
                 "type": "polygon",
-                "points":[
-                    [331, 223],
-                    [358, 230],
-                    [353, 249],
-                    [326, 242]
-                ]                
+                "points": [
+                    [
+                        331,
+                        223
+                    ],
+                    [
+                        358,
+                        230
+                    ],
+                    [
+                        353,
+                        249
+                    ],
+                    [
+                        326,
+                        242
+                    ]
+                ]
             }
         },
         "elianto_shop": {
@@ -172,12 +341,24 @@
             "y": 242,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
-                "points":[
-                    [362, 225], 
-                    [398, 235],
-                    [392, 260],
-                    [356, 250]
+                "type": "polygon",
+                "points": [
+                    [
+                        362,
+                        225
+                    ],
+                    [
+                        398,
+                        235
+                    ],
+                    [
+                        392,
+                        260
+                    ],
+                    [
+                        356,
+                        250
+                    ]
                 ]
             }
         },
@@ -188,12 +369,24 @@
             "y": 244,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
-                "points":[
-                    [470, 208],
-                    [507, 219],
-                    [490, 286],
-                    [452, 276]
+                "type": "polygon",
+                "points": [
+                    [
+                        470,
+                        208
+                    ],
+                    [
+                        507,
+                        219
+                    ],
+                    [
+                        490,
+                        286
+                    ],
+                    [
+                        452,
+                        276
+                    ]
                 ]
             }
         },
@@ -204,12 +397,24 @@
             "y": 257,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
-                "points":[
-                    [510, 219],
-                    [544, 228],
-                    [525, 297],
-                    [492, 287]
+                "type": "polygon",
+                "points": [
+                    [
+                        510,
+                        219
+                    ],
+                    [
+                        544,
+                        228
+                    ],
+                    [
+                        525,
+                        297
+                    ],
+                    [
+                        492,
+                        287
+                    ]
                 ]
             }
         },
@@ -220,12 +425,24 @@
             "y": 225,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
-                "points":[
-                    [603, 176],
-                    [640, 183],
-                    [640, 274],
-                    [603, 274]
+                "type": "polygon",
+                "points": [
+                    [
+                        603,
+                        176
+                    ],
+                    [
+                        640,
+                        183
+                    ],
+                    [
+                        640,
+                        274
+                    ],
+                    [
+                        603,
+                        274
+                    ]
                 ]
             }
         },
@@ -236,12 +453,24 @@
             "y": 228,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
-                "points":[
-                    [644, 183],
-                    [681, 190],
-                    [681, 274],
-                    [644, 274]
+                "type": "polygon",
+                "points": [
+                    [
+                        644,
+                        183
+                    ],
+                    [
+                        681,
+                        190
+                    ],
+                    [
+                        681,
+                        274
+                    ],
+                    [
+                        644,
+                        274
+                    ]
                 ]
             }
         },
@@ -252,12 +481,24 @@
             "y": 232,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
-                "points":[
-                    [685, 190],
-                    [723, 197],
-                    [723, 274],
-                    [685, 274]
+                "type": "polygon",
+                "points": [
+                    [
+                        685,
+                        190
+                    ],
+                    [
+                        723,
+                        197
+                    ],
+                    [
+                        723,
+                        274
+                    ],
+                    [
+                        685,
+                        274
+                    ]
                 ]
             }
         },
@@ -268,12 +509,24 @@
             "y": 235,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
-                "points":[
-                    [726, 197],
-                    [763, 203],
-                    [763, 274],
-                    [726, 274]
+                "type": "polygon",
+                "points": [
+                    [
+                        726,
+                        197
+                    ],
+                    [
+                        763,
+                        203
+                    ],
+                    [
+                        763,
+                        274
+                    ],
+                    [
+                        726,
+                        274
+                    ]
                 ]
             }
         },
@@ -284,14 +537,32 @@
             "y": 280,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
-                "points":[
-                    [533, 277],
-                    [550, 282],
-                    [567, 280],
-                    [567, 294],
-                    [549, 295],
-                    [530, 290]
+                "type": "polygon",
+                "points": [
+                    [
+                        533,
+                        277
+                    ],
+                    [
+                        550,
+                        282
+                    ],
+                    [
+                        567,
+                        280
+                    ],
+                    [
+                        567,
+                        294
+                    ],
+                    [
+                        549,
+                        295
+                    ],
+                    [
+                        530,
+                        290
+                    ]
                 ]
             }
         },
@@ -302,28 +573,52 @@
             "y": 302,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
-                "points":[
-                    [341, 307],
-                    [408, 326],
-                    [408, 338],
-                    [341, 338]
+                "type": "polygon",
+                "points": [
+                    [
+                        341,
+                        307
+                    ],
+                    [
+                        408,
+                        326
+                    ],
+                    [
+                        408,
+                        338
+                    ],
+                    [
+                        341,
+                        338
+                    ]
                 ]
             }
         },
         "maxis_shop": {
             "name": "Maxis",
-            "node_id": "node_23",
+            "node_id": "node_42",
             "x": 586,
             "y": 328,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
-                "points":[
-                    [574, 313],
-                    [598, 313],
-                    [598, 353],
-                    [574, 353]
+                "type": "polygon",
+                "points": [
+                    [
+                        574,
+                        313
+                    ],
+                    [
+                        598,
+                        313
+                    ],
+                    [
+                        598,
+                        353
+                    ],
+                    [
+                        574,
+                        353
+                    ]
                 ]
             }
         },
@@ -334,12 +629,24 @@
             "y": 341,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
-                "points":[
-                    [809, 318],
-                    [907, 318],
-                    [895, 355],
-                    [809, 355]
+                "type": "polygon",
+                "points": [
+                    [
+                        809,
+                        318
+                    ],
+                    [
+                        907,
+                        318
+                    ],
+                    [
+                        895,
+                        355
+                    ],
+                    [
+                        809,
+                        355
+                    ]
                 ]
             }
         },
@@ -350,12 +657,24 @@
             "y": 357,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
-                "points":[
-                    [628, 343],
-                    [708, 343],
-                    [708, 374],
-                    [628, 374]
+                "type": "polygon",
+                "points": [
+                    [
+                        628,
+                        343
+                    ],
+                    [
+                        708,
+                        343
+                    ],
+                    [
+                        708,
+                        374
+                    ],
+                    [
+                        628,
+                        374
+                    ]
                 ]
             }
         },
@@ -366,7 +685,6 @@
             "y": 376,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"rect",
                 "x": 238,
                 "y": 354,
                 "width": 40,
@@ -390,20 +708,44 @@
         "nandos_shop": {
             "name": "Nando's",
             "node_id": "node_07",
-            "x": 335,
-            "y": 376,
+            "x": 337,
+            "y": 369,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
-                "points":[
-                    [318, 355],
-                    [352, 355],
-                    [352, 506],
-                    [238, 506],
-                    [238, 465],
-                    [281, 465],
-                    [281, 446],
-                    [318, 446]
+                "type": "polygon",
+                "points": [
+                    [
+                        318,
+                        355
+                    ],
+                    [
+                        352,
+                        355
+                    ],
+                    [
+                        352,
+                        506
+                    ],
+                    [
+                        238,
+                        506
+                    ],
+                    [
+                        238,
+                        465
+                    ],
+                    [
+                        281,
+                        465
+                    ],
+                    [
+                        281,
+                        446
+                    ],
+                    [
+                        318,
+                        446
+                    ]
                 ]
             }
         },
@@ -411,7 +753,7 @@
             "name": "Al-Ikhsan Sports",
             "node_id": "node_06",
             "x": 376,
-            "y": 376,
+            "y": 372,
             "floor": "Ground Floor",
             "hotspot": {
                 "type":"rect",
@@ -425,7 +767,7 @@
             "name": "Baskin Robbins",
             "node_id": "node_05",
             "x": 423,
-            "y": 376,
+            "y": 371,
             "floor": "Ground Floor",
             "hotspot": {
                 "type":"rect",
@@ -442,7 +784,6 @@
             "y": 425,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"rect",
                 "x": 449,
                 "y": 382,
                 "width": 39,
@@ -456,11 +797,10 @@
             "y": 424,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"rect",
-                "x": 515,
+                "x": 514,
                 "y": 398,
                 "width": 28,
-                "height": 52.5
+                "height": 52
             }
         },
         "sox_world_shop": {
@@ -470,11 +810,10 @@
             "y": 418,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"rect",
                 "x": 546,
                 "y": 398,
                 "width": 32,
-                "height": 41.5
+                "height": 41
             }
         },
         "mr_dakgalbi_shop": {
@@ -484,7 +823,6 @@
             "y": 460,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"rect",
                 "x": 598,
                 "y": 396,
                 "width": 43,
@@ -498,10 +836,9 @@
             "y": 460,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"rect",
-                "x": 644,
+                "x": 643,
                 "y": 396,
-                "width": 42,
+                "width": 43,
                 "height": 129
             }
         },
@@ -512,7 +849,6 @@
             "y": 460,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"rect",
                 "x": 689,
                 "y": 396,
                 "width": 43,
@@ -526,83 +862,61 @@
             "y": 460,
             "floor": "Ground Floor",
             "hotspot": {
-                "type":"polygon",
-                "points":[
-                    [735, 396],
-                    [788, 396],
-                    [788, 441],
-                    [778, 441],
-                    [778, 525],
-                    [735, 525]
+                "type": "polygon",
+                "points": [
+                    [
+                        735,
+                        396
+                    ],
+                    [
+                        788,
+                        396
+                    ],
+                    [
+                        788,
+                        441
+                    ],
+                    [
+                        778,
+                        441
+                    ],
+                    [
+                        778,
+                        525
+                    ],
+                    [
+                        735,
+                        525
+                    ]
                 ]
             }
         }
     },
-    "facilities": {
-        "ground_toilet_centre": {
-            "name": "Toilet - Centre",
-            "type": "toilet",
-            "floor": "Ground Floor",
-            "status": "available",
-            "x": 438,
-            "y": 160,
-            "node_id": "node_47"
+    "nodes": {
+        "node_01": {
+            "x": 500,
+            "y": 505
         },
-        "ground_baby_care": {
-            "name": "Baby Care Room",
-            "type": "baby_diaper",
-            "floor": "Ground Floor",
-            "status": "available",
-            "x": 508,
-            "y": 183,
-            "node_id": "node_49"
+        "node_02": {
+            "x": 500,
+            "y": 370
         },
-        "ground_oku_toilet": {
-            "name": "OKU Accessible Toilet",
-            "type": "oku",
-            "floor": "Ground Floor",
-            "status": "available",
-            "x": 475,
-            "y": 175,
-            "node_id": "node_48"
+        "node_03": {
+            "x": 470,
+            "y": 370
         },
-        "ground_lift_centre": {
-            "name": "Lift - Ground Floor",
-            "type": "lift",
-            "floor": "Ground Floor",
-            "status": "available",
-            "x": 575,
-            "y": 250,
-            "node_id": "node_55"
+        "node_04": {
+            "x": 470,
+            "y": 345
         },
-        "ground_lift_west": {
-            "name": "Lift - West Wing",
-            "type": "lift",
-            "floor": "Ground Floor",
-            "status": "available",
-            "x": 184,
-            "y": 156,
-            "node_id": "node_57"
+        "node_05": {
+            "x": 422,
+            "y": 345
         },
-        "ground_lift_south": {
-            "name": "Lift - South Wing",
-            "type": "lift",
-            "floor": "Ground Floor",
-            "status": "available",
-            "x": 255,
-            "y": 445,
-            "node_id": "node_51"
+        "node_06": {
+            "x": 375,
+            "y": 345
         },
-        "ground_lift_east": {
-            "name": "Lift - East Wing",
-            "type": "lift",
-            "floor": "Ground Floor",
-            "status": "available",
-            "x": 835,
-            "y": 413,
-            "node_id": "node_54"
-        },
-        
         "node_07": {
             "x": 335,
             "y": 345
@@ -768,131 +1082,295 @@
             "y": 156
         }
     },
-    "nodes": {
-        "node_01": {"x": 500,"y": 505},
-        "node_02": {"x": 500,"y": 370},
-        "node_03": {"x": 470,"y": 370},
-        "node_04": {"x": 470,"y": 345},
-        "node_05": {"x": 422,"y": 345},
-        "node_06": {"x": 375,"y": 345},
-        "node_07": {"x": 335,"y": 345},
-        "node_08": {"x": 300,"y": 345},
-        "node_09": {"x": 260,"y": 345},
-        "node_10": {"x": 227,"y": 345},
-        "node_11": {"x": 227,"y": 400},
-        "node_12": {"x": 210,"y": 400},
-        "node_13": {"x": 230,"y": 270},
-        "node_14": {"x": 270,"y": 260},
-        "node_15": {"x": 320,"y": 275},
-        "node_16": {"x": 340,"y": 255},
-        "node_17": {"x": 370,"y": 264},
-        "node_18": {"x": 413,"y": 275},
-        "node_19": {"x": 470,"y": 290},
-        "node_20": {"x": 505,"y": 300},
-        "node_21": {"x": 545,"y": 310},
-        "node_22": {"x": 545,"y": 300},
-        "node_23": {"x": 590,"y": 300},
-        "node_24": {"x": 620,"y": 282},
-        "node_25": {"x": 663,"y": 282},
-        "node_26": {"x": 705,"y": 282},
-        "node_27": {"x": 745,"y": 282},
-        "node_28": {"x": 785,"y": 282},
-        "node_29": {"x": 805,"y": 282},
-        "node_30": {"x": 805,"y": 335},
-        "node_31": {"x": 805,"y": 375},
-        "node_32": {"x": 760,"y": 385},
-        "node_33": {"x": 710,"y": 385},
-        "node_34": {"x": 665,"y": 385},
-        "node_35": {"x": 620,"y": 387},
-        "node_36": {"x": 565,"y": 387},
-        "node_37": {"x": 530,"y": 387},
-        "node_38": {"x": 505,"y": 387},
-        "node_39": {"x": 505,"y": 480},
-        "node_40": {"x": 300,"y": 310},
-        "node_41": {"x": 335,"y": 325},
-        "node_42": {"x": 585,"y": 360},
-        "node_43": {"x": 620,"y": 360},
-        "node_44": {"x": 440,"y": 282},
-        "node_45": {"x": 462,"y": 200},
-        "node_46": {"x": 430,"y": 190},
-        "node_47": {"x": 432,"y": 183},
-        "node_48": {"x": 475,"y": 195},
-        "node_49": {"x": 507,"y": 200},
-        "node_50": {"x": 505,"y": 210},
-        "node_51": {"x": 255,"y": 420},
-        "node_52": {"x": 790,"y": 382},
-        "node_53": {"x": 805,"y": 393},
-        "node_54": {"x": 835,"y": 393},
-        "node_55": {"x": 580,"y": 270},
-        "node_56": {"x": 270,"y": 190},
-        "node_57": {"x": 210,"y": 160}
-    },
     "connections": [
-        ["node_01","node_02"],
-        ["node_02","node_03"],
-        ["node_03","node_04"],
-        ["node_04","node_05"],
-        ["node_05","node_06"],
-        ["node_06","node_07"],
-        ["node_07","node_08"],
-        ["node_08","node_09"],
-        ["node_09","node_10"],
-        ["node_10","node_11"],
-        ["node_11","node_12"],
-        ["node_13","node_14"],
-        ["node_14","node_15"],
-        ["node_15","node_16"],
-        ["node_10","node_13"],
-        ["node_16","node_17"],
-        ["node_17","node_18"],
-        ["node_18","node_44"],
-        ["node_44","node_19"],
-        ["node_19","node_20"],
-        ["node_20","node_21"],
-        ["node_21","node_22"],
-        ["node_22","node_23"],
-        ["node_23","node_24"],
-        ["node_24","node_25"],
-        ["node_25","node_26"],
-        ["node_26","node_27"],
-        ["node_27","node_28"],
-        ["node_28","node_29"],
-        ["node_29","node_30"],
-        ["node_30","node_31"],
-        ["node_31","node_52"],
-        ["node_52","node_32"],
-        ["node_32","node_33"],
-        ["node_33","node_34"],
-        ["node_34","node_35"],
-        ["node_35","node_36"],
-        ["node_36","node_37"],
-        ["node_37","node_38"],
-        ["node_38","node_39"],
-        ["node_39","node_01"],
-        ["node_38","node_02"],
-        ["node_08","node_40"],
-        ["node_07","node_41"],
-        ["node_36","node_42"],
-        ["node_35","node_43"],
-        ["node_40","node_15"],
-        ["node_05","node_18"],
-        ["node_04","node_19"],
-        ["node_04","node_20"],
-        ["node_02","node_21"],
-        ["node_24","node_43"],
-        ["node_32","node_27"],
-        ["node_33","node_27"],
-        ["node_44","node_45"],
-        ["node_45","node_46"],
-        ["node_46","node_47"],
-        ["node_45","node_48"],
-        ["node_45","node_50"],
-        ["node_50","node_49"],
-        ["node_11","node_51"],
-        ["node_52","node_53"],
-        ["node_53","node_54"],
-        ["node_23","node_55"],
-        ["node_14","node_56"],
-        ["node_56","node_57"]
-    ]
+        [
+            "node_01",
+            "node_02"
+        ],
+        [
+            "node_02",
+            "node_03"
+        ],
+        [
+            "node_03",
+            "node_04"
+        ],
+        [
+            "node_04",
+            "node_05"
+        ],
+        [
+            "node_05",
+            "node_06"
+        ],
+        [
+            "node_06",
+            "node_07"
+        ],
+        [
+            "node_07",
+            "node_08"
+        ],
+        [
+            "node_08",
+            "node_09"
+        ],
+        [
+            "node_09",
+            "node_10"
+        ],
+        [
+            "node_10",
+            "node_11"
+        ],
+        [
+            "node_11",
+            "node_12"
+        ],
+        [
+            "node_13",
+            "node_14"
+        ],
+        [
+            "node_14",
+            "node_15"
+        ],
+        [
+            "node_15",
+            "node_16"
+        ],
+        [
+            "node_10",
+            "node_13"
+        ],
+        [
+            "node_16",
+            "node_17"
+        ],
+        [
+            "node_17",
+            "node_18"
+        ],
+        [
+            "node_18",
+            "node_19"
+        ],
+        [
+            "node_19",
+            "node_20"
+        ],
+        [
+            "node_20",
+            "node_21"
+        ],
+        [
+            "node_21",
+            "node_22"
+        ],
+        [
+            "node_22",
+            "node_23"
+        ],
+        [
+            "node_23",
+            "node_24"
+        ],
+        [
+            "node_24",
+            "node_25"
+        ],
+        [
+            "node_25",
+            "node_26"
+        ],
+        [
+            "node_26",
+            "node_27"
+        ],
+        [
+            "node_27",
+            "node_28"
+        ],
+        [
+            "node_28",
+            "node_29"
+        ],
+        [
+            "node_29",
+            "node_30"
+        ],
+        [
+            "node_30",
+            "node_31"
+        ],
+        [
+            "node_31",
+            "node_32"
+        ],
+        [
+            "node_32",
+            "node_33"
+        ],
+        [
+            "node_33",
+            "node_34"
+        ],
+        [
+            "node_34",
+            "node_35"
+        ],
+        [
+            "node_35",
+            "node_36"
+        ],
+        [
+            "node_36",
+            "node_37"
+        ],
+        [
+            "node_37",
+            "node_38"
+        ],
+        [
+            "node_38",
+            "node_39"
+        ],
+        [
+            "node_39",
+            "node_01"
+        ],
+        [
+            "node_38",
+            "node_02"
+        ],
+        [
+            "node_08",
+            "node_40"
+        ],
+        [
+            "node_07",
+            "node_41"
+        ],
+        [
+            "node_36",
+            "node_42"
+        ],
+        [
+            "node_35",
+            "node_43"
+        ],
+        [
+            "node_40",
+            "node_15"
+        ],
+        [
+            "node_05",
+            "node_18"
+        ],
+        [
+            "node_04",
+            "node_19"
+        ],
+        [
+            "node_04",
+            "node_20"
+        ],
+        [
+            "node_02",
+            "node_21"
+        ],
+        [
+            "node_24",
+            "node_43"
+        ],
+        [
+            "node_32",
+            "node_27"
+        ],
+        [
+            "node_33",
+            "node_27"
+        ],
+        [
+            "node_44",
+            "node_45"
+        ],
+        [
+            "node_45",
+            "node_46"
+        ],
+        [
+            "node_46",
+            "node_19"
+        ],
+        [
+            "node_47",
+            "node_13"
+        ]
+    ],
+    "facilities": {
+        "ground_toilet_centre": {
+            "name": "Toilet - Centre",
+            "type": "toilet",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 438,
+            "y": 160,
+            "node_id": "node_44"
+        },
+        "ground_oku_toilet": {
+            "name": "OKU Accessible Toilet",
+            "type": "oku",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 475,
+            "y": 175,
+            "node_id": "node_45"
+        },
+        "ground_baby_care": {
+            "name": "Baby Care Room",
+            "type": "baby_diaper",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 508,
+            "y": 183,
+            "node_id": "node_46"
+        },
+        "ground_lift_": {
+            "name": "Lift - Ground Floor",
+            "type": "lift",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 575,
+            "y": 250,
+            "node_id": "node_23"
+        },
+        "ground_lift_west": {
+            "name": "Lift - West Wing",
+            "type": "lift",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 184,
+            "y": 156,
+            "node_id": "node_47"
+        },
+        "ground_lift_south": {
+            "name": "Lift - South Wing",
+            "type": "lift",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 255,
+            "y": 445,
+            "node_id": "node_11"
+        },
+        "ground_lift_east": {
+            "name": "Lift - East Wing",
+            "type": "lift",
+            "floor": "Ground Floor",
+            "status": "available",
+            "x": 835,
+            "y": 413,
+            "node_id": "node_31"
+        }
+    }
 }

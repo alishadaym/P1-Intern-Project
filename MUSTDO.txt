@@ -85,46 +85,6 @@ DELETE FROM shops;
 //(description still blank - fill in via the store owner's "Edit Store
 //Details" page once each shop has an account)
 INSERT INTO shops
-    (shop_name, operating_hours, category, description, floor_id)
-    ('F.O.S', '10am – 10pm', 'Clothing Store', NULL, 1),
-    ('Tone & Mann.', '10am – 10pm', 'Fashion accessories store', NULL, 1),
-    ('SSF', '10am – 10pm', 'Furniture store', NULL, 1),
-    ('Sarong By A&R', '10am – 10pm', 'Boutique', NULL, 1),
-    ('Solight', '10am – 8pm', 'Shoe Store', NULL, 1),
-    ('Nando''s', '10am – 10pm', 'Chicken Restaurant', NULL, 1),
-    ('Al-ikhsan Sports', '10am – 10pm', 'Sporting Goods Store', NULL, 1),
-    ('Baskin Robbins', '10am – 10pm', 'Ice Cream Shop', NULL, 1),
-    ('The Coffee Bean & Tea Leaf', '10am – 10pm', 'Cafe', NULL, 1),
-    ('The Body Shop', '10am – 10pm', 'Beauty Supply Store', NULL, 1),
-    ('Family Mart', '7am – 12am', 'Convenience Store', NULL, 1),
-    ('Sox World', '10am – 10pm', 'Clothing Store', NULL, 1),
-    ('Mr. Dakgalbi', '10am – 9pm', 'Korean Restaurant', NULL, 1),
-    ('Go Noodle House', '10am – 9:15pm', 'Chinese Noodle Restaurant', NULL, 1),
-    ('Happikiddo', '10am – 10pm', 'Baby Store', NULL, 1),
-    ('Home''s Harmony', '10am – 10pm', 'Furniture Store', NULL, 1),
-    ('Royal Sporting House', 'Permanently Closed', 'Sportswear Store', NULL, 1),
-    ('Good2U', '10am – 10pm', 'Clothing Store', NULL, 1),
-    ('Hong Leong Islamic Bank', 'Permanently Closed', 'Bank', NULL, 1),
-    ('Skechers', '10am – 10pm', 'Shoe Store', NULL, 1),
-    ('Kunzense Bodyline', '10:30am – 8:30pm', 'Facial Spa', NULL, 1),
-    ('MC Vogue', '10am – 10pm', 'Clothing Store', NULL, 1),
-    ('MNB', '10am – 10pm', 'Clothing Store', NULL, 1),
-    ('Sparkle & Silver Fine Jewellery', '10am – 10pm', 'Jeweller', NULL, 1),
-    ('Jac''s Optometry', '10am – 10pm', 'Optician', NULL, 1),
-    ('World of Perfumes', '10am – 10pm', 'Perfume Store', NULL, 1),
-    ('Mi Store', '10am – 10pm', 'Cell phone Store', NULL, 1),
-    ('Elianto', '10am – 10pm', 'Cosmetics Store', NULL, 1),
-    ('Ajumma', '10am – 11pm', 'Korean Restaurant', NULL, 1),
-    ('Parca Fashion', 'Permanently Closed', 'Boutique', NULL, 1),
-    ('Maxis', '10am – 9:30pm', 'Telecommunications service provider', NULL, 1),
-    ('Starbucks', 'Permanently Closed', 'Cafe', NULL, 1),
-    ('Zus Coffee', '10am – 10pm', 'Cafe', NULL, 1);
-
-    
-
-//seed all 33 real mall shops with category + operating hours
-//(description still blank - fill in via the store owner's "Edit Store
-INSERT INTO shops
     (shop_code, shop_name, operating_hours, category, description, floor_id)
 VALUES
     ('fos_shop', 'F.O.S', '10am – 10pm', 'Clothing Store', NULL, 1),
@@ -269,97 +229,113 @@ WHERE shop_code IN (
     'go_noodle_house_shop','happikiddo_shop','homes_harmony_shop'
 );
 
--- Facilities are separate from shops because their availability changes independently.
-CREATE TABLE IF NOT EXISTS utilities (
+//feedback from mall visitors (complaints/suggestions/compliments about
+//facilities) submitted via the guest-facing "Give Feedback" button -
+//not tied to a specific shop, so no foreign key to shops
+CREATE TABLE feedback (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    utility_code VARCHAR(50) NOT NULL UNIQUE,
-    name VARCHAR(100) NOT NULL,
-    utility_type ENUM('restroom', 'baby_diaper', 'oku', 'lift') NOT NULL,
-    floor_id INT NOT NULL,
-    x_position INT NOT NULL,
-    y_position INT NOT NULL,
-    node_id VARCHAR(50) NOT NULL,
-    total_cubicles INT NULL,
-    occupied_cubicles INT NULL DEFAULT 0,
-    is_occupied BOOLEAN NULL,
-    FOREIGN KEY (floor_id) REFERENCES floors(id),
-    CHECK (total_cubicles IS NULL OR total_cubicles >= 0),
-    CHECK (occupied_cubicles IS NULL OR occupied_cubicles >= 0),
-    CHECK (total_cubicles IS NULL OR occupied_cubicles <= total_cubicles)
+    name VARCHAR(150),
+    email VARCHAR(150),
+    phone VARCHAR(50),
+    incident_date DATE,
+    message TEXT NOT NULL,
+    resolution TEXT,
+    submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO utilities
-    (utility_code, name, utility_type, floor_id, x_position, y_position, node_id,
-     total_cubicles, occupied_cubicles, is_occupied)
-VALUES
-    ('ground_toilet_centre', 'Restroom - Centre', 'restroom', 1, 438, 160, 'node_44', 4, 1, NULL),
-    ('ground_baby_care', 'Baby Care Room', 'baby_diaper', 1, 508, 183, 'node_46', NULL, NULL, NULL),
-    ('ground_oku_toilet', 'OKU Accessible Toilet', 'oku', 1, 475, 175, 'node_45', NULL, NULL, FALSE),
-    ('ground_lift', 'Lift - Ground Floor', 'lift', 1, 586, 328, 'node_42', NULL, NULL, NULL)
-ON DUPLICATE KEY UPDATE
-    name = VALUES(name),
-    utility_type = VALUES(utility_type),
-    floor_id = VALUES(floor_id),
-    x_position = VALUES(x_position),
-    y_position = VALUES(y_position),
-    node_id = VALUES(node_id);
+//admin-assigned label grouping reports of the same underlying problem
+//(e.g. "Ground floor toilets") so recurring issues can be spotted and
+//rewarded with a voucher, without trying to auto-detect duplicates
+//from free-text complaints
+ALTER TABLE feedback
+ADD COLUMN topic VARCHAR(150) NULL AFTER message;
 
-//UTILITIES TABLE
--- Main utilities table (covers restroom, oku restroom, baby diaper room, lift)
+//one row per voucher issued to a visitor for reporting a recurring
+//issue - code redemption itself happens in person/manually, this just
+//tracks who was issued what
+CREATE TABLE vouchers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    topic VARCHAR(150) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    code VARCHAR(20) NOT NULL UNIQUE,
+    issued_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+//lets the admin choose what kind of voucher to issue per topic (not
+//just one generic code) - the fixed set of types (all_shops, parking)
+//lives in app.py's VOUCHER_TYPES, not a separate table, since it's a
+//short, rarely-changing list
+ALTER TABLE vouchers
+ADD COLUMN voucher_type VARCHAR(100) NOT NULL DEFAULT 'all_shops' AFTER topic;
+
+//"all_shops" (one generic mall-wide code) turned out not to be what
+//was wanted - a voucher should be redeemable at one specific store,
+//chosen per-visitor by the admin (parking stays general, not tied to
+//a shop). voucher_type is now just 'shop' or 'parking'; shop_code
+//says which store when it's 'shop'
+ALTER TABLE vouchers
+ADD COLUMN shop_code VARCHAR(50) NULL AFTER voucher_type,
+ADD CONSTRAINT fk_vouchers_shop FOREIGN KEY (shop_code) REFERENCES shops(shop_code);
+
+//reshaped to match the "We are happy to help!" form design - name/
+//email/phone/date fields plus a resolution request, replacing the
+//earlier category+contact version (table was still empty, no data
+//migration needed)
+
+//separate from store_owners - an admin isn't tied to one shop, they
+//can view all feedback submitted by visitors
+CREATE TABLE admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
+
+//initial admin account seeded directly against the live DB with a
+//hashed password (not committed here in plaintext) - username: Dpulze_admin
+
+//non-shop points of interest (toilets, lifts, baby care rooms). Each
+//utility's actual map position/node comes from data/map.json's
+//"facilities" (keyed by map_code) - this table only tracks the parts
+//that change independently of the map (name, type, and occupancy via
+//cubicles), so map moves/re-routing never require a DB migration.
 CREATE TABLE utilities (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    utility_type VARCHAR(50) NOT NULL,   -- 'Restroom', 'OKU Restroom', 'Baby Diaper Room', 'Lift'
-    name VARCHAR(100) NOT NULL,          -- e.g. 'Restroom - Centre', 'Restroom - East Wing'
-    map_code VARCHAR(100),
-    floor VARCHAR(20),                   -- e.g. 'G', '1', '2'
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    map_code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    utility_type VARCHAR(50) NOT NULL,
+    floor VARCHAR(50) NOT NULL
 );
 
-INSERT INTO utilities (utility_type, name, map_code, floor)
-VALUES 
-('Restroom', 'Restroom - Centre', 'ground_toilet_centre', 'G'),
-('Restroom', 'Restroom - West Wing', '', '1'),
-('OKU Restroom', 'OKU Restroom - Centre', 'ground_oku_toilet', 'G'),
-('Baby Diaper Room', 'Baby Diaper Room - Centre', 'ground_baby_care', 'G'),
-('Lift','Lift - Centre', 'ground_lift_centre', 'G'),
-('Lift', 'Lift - East Wing', 'ground_lift_east', 'G'),
-('Lift', 'Lift - West Wing', 'ground_lift_west', 'G'), 
-('Lift', 'Lift - South Wing', 'ground_lift_south', 'G');
-
-
-//CUBICLES TABLE
--- Cubicles belonging to a utility (mainly used for restrooms)
+//individual stalls within a utility (e.g. one restroom has several) -
+//lets occupancy be tracked per-stall rather than as one aggregate flag
 CREATE TABLE cubicles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     utility_id INT NOT NULL,
-    cubicle_number INT NOT NULL,         -- 1, 2, 3...
-    status VARCHAR(20) DEFAULT 'Available', -- 'Available' or 'Occupied'
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    status VARCHAR(20) NOT NULL DEFAULT 'available',
     FOREIGN KEY (utility_id) REFERENCES utilities(id)
 );
 
-INSERT INTO cubicles (utility_id, cubicle_number, status)
-VALUES
-(1, 1, 'Available'),
-(1, 2, 'Available'),
-(1, 3, 'Available'),
-(1, 4, 'Available'),
-(1, 5, 'Available');
+INSERT INTO utilities (map_code, name, utility_type, floor) VALUES
+    ('ground_toilet_centre', 'Toilet - Centre', 'toilet', 'Ground Floor'),
+    ('ground_oku_toilet', 'OKU Accessible Toilet', 'oku', 'Ground Floor'),
+    ('ground_baby_care', 'Baby Care Room', 'baby_diaper', 'Ground Floor'),
+    ('ground_lift_', 'Lift - Ground Floor', 'lift', 'Ground Floor'),
+    ('ground_lift_west', 'Lift - West Wing', 'lift', 'Ground Floor'),
+    ('ground_lift_south', 'Lift - South Wing', 'lift', 'Ground Floor'),
+    ('ground_lift_east', 'Lift - East Wing', 'lift', 'Ground Floor');
 
-
-//oku and baby diaper room occupancy
--- Example: OKU restroom utility id = 3
-INSERT INTO cubicles (utility_id, cubicle_number, status)
-VALUES
-(3, 1, 'Available');
-
--- Example: Baby diaper room utility id = 4
-INSERT INTO cubicles (utility_id, cubicle_number, status)
-VALUES
-(4, 1, 'Available'),
-(4, 2, 'Available'),
-(4, 3, 'Available');
-
+//4 stalls at the main restroom (1 occupied), 1 stall at the OKU toilet
+//(available) - lift/baby care aren't stall-based, so no cubicle rows
+INSERT INTO cubicles (utility_id, status)
+SELECT id, 'occupied' FROM utilities WHERE map_code = 'ground_toilet_centre'
+UNION ALL
+SELECT id, 'available' FROM utilities WHERE map_code = 'ground_toilet_centre'
+UNION ALL
+SELECT id, 'available' FROM utilities WHERE map_code = 'ground_toilet_centre'
+UNION ALL
+SELECT id, 'available' FROM utilities WHERE map_code = 'ground_toilet_centre'
+UNION ALL
+SELECT id, 'available' FROM utilities WHERE map_code = 'ground_oku_toilet';
 
 //running ollama for ai chatbox
 1. download ollama on device

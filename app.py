@@ -4,38 +4,23 @@ from db import get_db_connection
 from simulate_occupancy import run_simulator
 from locations import LOCATIONS, MAP_WIDTH, MAP_HEIGHT, SHOPS, NODE_MAP
 from scan_log import read_scans, record_scan
-from simulate_occupancy import run_simulator
 
 import json
 import os
 import secrets
 import threading
 import uuid
-import threading
 import urllib.request
 import urllib.parse
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 
-def start_occupancy_simulator():
-    if app.debug and os.environ.get("WERKZEUG_RUN_MAIN") != "true":
-        return
-
-    simulator_thread = threading.Thread(
-        target=run_simulator,
-        name="occupancy-simulator",
-        daemon=True
-    )
-    simulator_thread.start()
-
-
-start_occupancy_simulator()
-# Keeps restroom occupancy changing for visitors without needing real foot
-# traffic. Runs in-process rather than as a separate Render service, so it
-# only makes sense with a single app worker - gunicorn's default (see
-# Procfile) - since multiple workers would each run their own simulation
-# and fight over the same cubicles.
+# Keeps restroom/OKU/baby-care occupancy changing for visitors without
+# needing real foot traffic. Runs in-process rather than as a separate
+# Render service, so it only makes sense with a single app worker -
+# gunicorn's default (see Procfile) - since multiple workers would each
+# run their own simulation and fight over the same cubicles.
 threading.Thread(target=run_simulator, daemon=True).start()
 
 GENERAL_VOUCHER_TYPES = {
@@ -178,6 +163,7 @@ def add_shop():
     shop_name = data.get("shop_name")
     operating_hours = data.get("operating_hours")
     category = data.get("category")
+    unit = data.get("unit")
     description = data.get("description")
     floor_id = data.get("floor_id")
 
@@ -199,6 +185,7 @@ def add_shop():
         shop_name,
         operating_hours,
         category,
+        unit,
         description,
         floor_id
     )
@@ -235,6 +222,7 @@ def search_shops():
             s.shop_name,
             s.operating_hours,
             s.category,
+            s.unit,
             s.description,
             s.floor_id,
             f.floor_name,
@@ -281,6 +269,7 @@ def update_shop(shop_id):
     shop_name = data.get("shop_name")
     operating_hours = data.get("operating_hours")
     category = data.get("category")
+    unit = data.get("unit")
     description = data.get("description")
     floor_id = data.get("floor_id")
 
@@ -298,6 +287,7 @@ def update_shop(shop_id):
             shop_name = %s,
             operating_hours = %s,
             category = %s,
+            unit = %s,
             description = %s,
             floor_id = %s
         WHERE id = %s
@@ -307,6 +297,7 @@ def update_shop(shop_id):
         shop_name,
         operating_hours,
         category,
+        unit,
         description,
         floor_id,
         shop_id
@@ -343,6 +334,7 @@ def get_shop(shop_id):
             s.shop_name,
             s.operating_hours,
             s.category,
+            s.unit,
             s.description,
             s.floor_id,
             f.floor_name,
@@ -585,6 +577,7 @@ def store_owner_dashboard():
             s.shop_name,
             s.operating_hours,
             s.category,
+            s.unit,
             s.description
         FROM store_owners so
         JOIN shops s ON so.shop_id = s.id
@@ -1414,8 +1407,7 @@ def chat_reset_api():
     session.pop("navigation_shop", None)
     return jsonify({"status": "cleared"})
 
-# if __name__ == "__main__":
-#     app.run(debug=True)
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # use_reloader=False: the reloader re-executes this module in a second
+    # process, which would start a duplicate occupancy-simulator thread
+    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
