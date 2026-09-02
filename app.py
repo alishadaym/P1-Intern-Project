@@ -939,7 +939,7 @@ def generate_local_chat_reply(message):
     if any(keyword in lowered for keyword in ["hi", "hello", "hey", "good morning", "good afternoon"]):
         return "Hi! I can help with mall information, store suggestions, categories, and shopping recommendations."
 
-    if any(keyword in lowered for keyword in ["where", "locat", "direction", "map", "find"]):
+    if any(keyword in lowered for keyword in ["where", "locate", "direction", "map", "find"]):
         return "You can use the mall map in the navigation page to find stores and facilities. I can also suggest nearby categories or relevant shops."
 
     if any(keyword in lowered for keyword in ["recommend", "suggest", "shop", "buy", "looking for", "need"]):

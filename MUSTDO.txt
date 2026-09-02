@@ -310,6 +310,7 @@ CREATE TABLE utilities (
     id INT AUTO_INCREMENT PRIMARY KEY,
     utility_type VARCHAR(50) NOT NULL,   -- 'Restroom', 'OKU Restroom', 'Baby Diaper Room', 'Lift'
     name VARCHAR(100) NOT NULL,          -- e.g. 'Restroom - Centre', 'Restroom - East Wing'
+    map_code VARCHAR(100),
     floor VARCHAR(20),                   -- e.g. 'G', '1', '2'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
