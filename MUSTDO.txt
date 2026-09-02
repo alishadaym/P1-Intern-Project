@@ -315,16 +315,16 @@ CREATE TABLE utilities (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO utilities (utility_type, name, map_code, floor, created_at)
+INSERT INTO utilities (utility_type, name, map_code, floor)
 VALUES 
 ('Restroom', 'Restroom - Centre', 'ground_toilet_centre', 'G'),
 ('Restroom', 'Restroom - West Wing', '', '1'),
 ('OKU Restroom', 'OKU Restroom - Centre', 'ground_oku_toilet', 'G'),
 ('Baby Diaper Room', 'Baby Diaper Room - Centre', 'ground_baby_care', 'G'),
-('Lift','Lift - Centre', 'ground_lift_', 'G'),
+('Lift','Lift - Centre', 'ground_lift_centre', 'G'),
 ('Lift', 'Lift - East Wing', 'ground_lift_east', 'G'),
 ('Lift', 'Lift - West Wing', 'ground_lift_west', 'G'), 
-('Lift', 'Lift - South Wing', 'ground_life_south', 'G');
+('Lift', 'Lift - South Wing', 'ground_lift_south', 'G');
 
 
 //CUBICLES TABLE

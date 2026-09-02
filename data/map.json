@@ -566,7 +566,7 @@
             "y": 175,
             "node_id": "node_48"
         },
-        "ground_lift_": {
+        "ground_lift_centre": {
             "name": "Lift - Ground Floor",
             "type": "lift",
             "floor": "Ground Floor",
