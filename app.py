@@ -45,22 +45,25 @@ def get_shops():
     cursor = connection.cursor(dictionary=True)
 
     query = """
-        SELECT
-            s.id,
-            s.shop_code,
-            s.shop_name,
-            s.operating_hours,
-            s.category,
-            s.unit,
-            s.description,
-            s.floor_id,
-            f.floor_name,
-            f.floor_code
-        FROM shops s
-        JOIN floors f
-            ON s.floor_id = f.id
-        ORDER BY s.shop_name
-    """
+    SELECT
+        s.id,
+        s.shop_code,
+        s.shop_name,
+        s.operating_hours,
+        s.category,
+        s.unit,
+        s.description,
+        s.full_description,
+        s.products_services,
+        s.website_url,
+        s.floor_id,
+        f.floor_name,
+        f.floor_code
+    FROM shops s
+    JOIN floors f
+        ON s.floor_id = f.id
+    ORDER BY s.shop_name
+"""
 
     cursor.execute(query)
     shops = cursor.fetchall()
