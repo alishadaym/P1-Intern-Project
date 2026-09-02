@@ -20,6 +20,34 @@ quiet_until = None
 wave_target = None
 
 
+def normalize_utility_type(value):
+    """Normalize utility types from the database to the app's facility names."""
+    if value is None:
+        return ""
+
+    normalized = " ".join(str(value).strip().lower().replace("_", " ").split())
+    if "toilet" in normalized or "restroom" in normalized:
+        return "restroom"
+    if "baby" in normalized and "diaper" in normalized:
+        return "baby_diaper"
+    if "oku" in normalized:
+        return "oku"
+    return normalized
+
+
+def get_occupied_utility_types():
+    return ("restroom", "baby_diaper", "oku")
+
+
+def get_room_capacity(utility_type):
+    normalized = normalize_utility_type(utility_type)
+    if normalized == "oku":
+        return 1
+    if normalized == "baby_diaper":
+        return 3
+    return None
+
+
 def get_wave_target(current_time):
     """Return a realistic number of simultaneous restroom users."""
     is_weekday = current_time.weekday() < 5
@@ -37,6 +65,26 @@ def get_wave_target(current_time):
     return random.randint(2, 3)
 
 
+def get_supported_cubicles(cursor):
+    cursor.execute("""
+        SELECT c.id, c.status, c.updated_at, u.utility_type
+        FROM cubicles c
+        JOIN utilities u ON u.id = c.utility_id
+    """)
+
+    cubicles = []
+    for cubicle in cursor.fetchall():
+        utility_type = normalize_utility_type(cubicle["utility_type"])
+        if utility_type in get_occupied_utility_types():
+            cubicles.append({
+                "id": cubicle["id"],
+                "status": str(cubicle["status"] or "").strip().lower(),
+                "updated_at": cubicle["updated_at"],
+                "utility_type": utility_type,
+            })
+    return cubicles
+
+
 def update_occupancy():
     global quiet_until, wave_target
 
@@ -45,17 +93,13 @@ def update_occupancy():
 
     cursor.execute("SELECT NOW() AS db_now")
     current_time = cursor.fetchone()["db_now"]
-
-    cursor.execute("""
-        SELECT c.id, c.updated_at
-        FROM cubicles c
-        JOIN utilities u ON u.id = c.utility_id
-        WHERE LOWER(u.utility_type) IN ('restroom', 'toilet')
-          AND LOWER(c.status) = 'occupied'
-    """)
+    cubicles = get_supported_cubicles(cursor)
 
     released_count = 0
-    for cubicle in cursor.fetchall():
+    for cubicle in cubicles:
+        if cubicle["status"] != "occupied":
+            continue
+
         expiry = occupied_until.setdefault(
             cubicle["id"],
             cubicle["updated_at"] + timedelta(
@@ -72,14 +116,9 @@ def update_occupancy():
             released_count += cursor.rowcount
             occupied_until.pop(cubicle["id"], None)
 
-    cursor.execute("""
-        SELECT c.id
-        FROM cubicles c
-        JOIN utilities u ON u.id = c.utility_id
-        WHERE LOWER(u.utility_type) IN ('restroom', 'toilet')
-          AND LOWER(c.status) = 'occupied'
-    """)
-    active_count = len(cursor.fetchall())
+    active_count = sum(
+        1 for cubicle in cubicles if cubicle["status"] == "occupied"
+    )
 
     occupied_count = 0
     if active_count == 0:
@@ -89,27 +128,39 @@ def update_occupancy():
 
         if quiet_until is None or current_time >= quiet_until:
             wave_target = get_wave_target(current_time)
-            cursor.execute("""
-                SELECT c.id
-                FROM cubicles c
-                JOIN utilities u ON u.id = c.utility_id
-                WHERE LOWER(u.utility_type) IN ('restroom', 'toilet')
-                  AND LOWER(c.status) = 'available'
-                ORDER BY RAND()
-                LIMIT %s
-            """, (wave_target,))
-            available_cubicles = cursor.fetchall()
+            available_by_type = {}
+            for cubicle in cubicles:
+                if cubicle["status"] != "available":
+                    continue
+                available_by_type.setdefault(cubicle["utility_type"], []).append(cubicle)
 
-            for cubicle in available_cubicles:
-                occupied_until[cubicle["id"]] = current_time + timedelta(
-                    seconds=random.randint(MIN_OCCUPIED_SECONDS, MAX_OCCUPIED_SECONDS)
-                )
-                cursor.execute("""
-                    UPDATE cubicles
-                    SET status = 'Occupied', updated_at = NOW()
-                    WHERE id = %s
-                """, (cubicle["id"],))
-                occupied_count += cursor.rowcount
+            for utility_type in get_occupied_utility_types():
+                available_cubicles = available_by_type.get(utility_type, [])
+                if not available_cubicles:
+                    continue
+
+                capacity = get_room_capacity(utility_type)
+                if utility_type == "oku":
+                    max_to_occupy = 1
+                elif utility_type == "baby_diaper":
+                    max_to_occupy = min(len(available_cubicles), min(wave_target, 3))
+                else:
+                    max_to_occupy = min(len(available_cubicles), wave_target)
+
+                if capacity is not None:
+                    max_to_occupy = min(max_to_occupy, capacity)
+
+                random.shuffle(available_cubicles)
+                for cubicle in available_cubicles[:max_to_occupy]:
+                    occupied_until[cubicle["id"]] = current_time + timedelta(
+                        seconds=random.randint(MIN_OCCUPIED_SECONDS, MAX_OCCUPIED_SECONDS)
+                    )
+                    cursor.execute("""
+                        UPDATE cubicles
+                        SET status = 'Occupied', updated_at = NOW()
+                        WHERE id = %s
+                    """, (cubicle["id"],))
+                    occupied_count += cursor.rowcount
     elif wave_target is None:
         wave_target = active_count
 

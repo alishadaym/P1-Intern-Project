@@ -675,7 +675,7 @@ async function refreshUtilityData()
 
 function getUtilityStatusLabel(utility)
 {
-    if (utility.type === "restroom")
+    if (utility.type === "restroom" || utility.type === "baby_diaper")
     {
         return `Available: ${utility.available_cubicles} | Occupied: ${utility.occupied_cubicles}`;
     }
