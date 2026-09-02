@@ -7,174 +7,82 @@
 
 :root {
     --brown: #524646;
-    --light_olive: #A8A492;
+    --light-olive: #A8A492;
     --cream: #FCF2E5;
     --orange: #EC5B38;
     --peach: #F0997D;
 
     --text-brown: #524646;
+    --dark-text: #3d3029;
     --border: #d8c5b0;
+    --page-bg: #f5f4f1;
+}
+
+html,
+body {
+    min-width: 0;
+    min-height: 100%;
 }
 
 body {
-    min-width: 0;
     margin: 0;
-
     font-family: Arial, sans-serif;
-
-    background: var(--light_olive);
-
+    background: var(--light-olive);
+    color: var(--dark-text);
     overflow-x: hidden;
 }
 
 /* 2. HEADER */
 header {
     position: relative;
-
     width: 100%;
     min-height: 108px;
-
     padding: 25px 70px;
-
     background: var(--brown);
     color: var(--cream);
-
     text-align: center;
 }
 
 header h1 {
     margin: 0;
-
     font-family: "Times New Roman", serif;
-
     font-size: 38px;
     line-height: 1;
-
     color: var(--cream);
 }
 
-/* 3. HAMBURGER BUTTON */
-.menu-toggle {
-    position: absolute;
-
-    top: 30px;
-    left: 25px;
-
-    border: none;
-    background: transparent;
-
-    color: var(--cream);
-
-    font-size: 32px;
-    line-height: 1;
-
-    cursor: pointer;
-
-    z-index: 1100;
+.scanned-location {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #d9c9c9;
 }
 
-/* 4. SIDE MENU */
-.side-menu {
-    position: fixed;
-
-    top: 0;
-    left: -290px;
-
-    width: 290px;
-    height: 100vh;
-
-    padding: 75px 22px 25px;
-
-    background: var(--brown);
-
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-
-    z-index: 2000;
-
-    transition: left 0.3s ease;
-
-    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.25);
-}
-
-.side-menu.open {
-    left: 0;
-}
-
-.side-menu a {
-    display: block;
-
-    padding: 15px 12px;
-
-    color: var(--cream);
-
-    text-decoration: none;
-    text-align: left;
-
-    font-size: 17px;
-
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.side-menu a:hover {
-    background: #6b5b5b;
-
-    border-radius: 7px;
-}
-
-.menu-close {
-    position: absolute;
-
-    top: 18px;
-    right: 18px;
-
-    border: none;
-    background: transparent;
-
-    color: var(--cream);
-
-    font-size: 32px;
-
-    cursor: pointer;
-}
-
-/* 5. MAIN PAGE LAYOUT */
+/* 3. MAIN PAGE LAYOUT */
 main {
     display: flex;
-
     width: 100%;
-
     min-height: calc(100vh - 108px);
-
     background: var(--cream);
 }
 
-/* 6. NAVIGATION SIDEBAR */
+/* 4. NAVIGATION SIDEBAR */
 .sidebar {
     flex: 0 0 320px;
-
     width: 320px;
-
     padding: 25px 22px;
-
     background: var(--cream);
-
     color: var(--text-brown);
-
     box-shadow: 2px 0 6px rgba(0, 0, 0, 0.10);
 }
 
 .sidebar h2,
 .sidebar h3 {
     font-family: "Times New Roman", serif;
-
     color: var(--text-brown);
 }
 
 .sidebar h2 {
     margin-bottom: 28px;
-
     font-size: 28px;
 }
 
@@ -182,24 +90,19 @@ main {
     margin-bottom: 8px;
 }
 
-/* 7. SIDEBAR FORM */
 .sidebar label {
     display: block;
-
     margin-bottom: 4px;
-
     color: var(--text-brown);
 }
 
+/* 5. SIDEBAR FORM */
 .sidebar select,
 .sidebar input,
 .sidebar button {
     width: 100%;
-
     padding: 11px;
-
     margin-bottom: 11px;
-
     font-family: Arial, sans-serif;
     font-size: 15px;
 }
@@ -207,12 +110,9 @@ main {
 .sidebar select,
 .sidebar input {
     border: 1px solid var(--border);
-
     border-radius: 6px;
-
     background: white;
-
-    color: #3d3029;
+    color: var(--dark-text);
 }
 
 .sidebar input:focus,
@@ -221,18 +121,13 @@ main {
     outline-offset: 1px;
 }
 
-/* 8. NAVIGATE BUTTON */
+/* 6. NAVIGATE / FEEDBACK BUTTONS */
 .sidebar .navigate-btn {
     border: none;
-
     border-radius: 7px;
-
     background: var(--orange);
-
     color: white;
-
     cursor: pointer;
-
     transition: background 0.2s ease;
 }
 
@@ -248,56 +143,47 @@ main {
     background: #a91f1f;
 }
 
-/* 9. HIDDEN SHOP SELECT */
 .feedback-btn {
     padding: 10px 24px;
     border: none;
-    border-radius: 5px;
-    cursor: pointer;
+    border-radius: 7px;
+    background: #7b5b3d;
     color: white;
-    background-color: #7b5b3d;
+    cursor: pointer;
+    transition: background 0.2s ease;
 }
 
 .feedback-btn:hover {
-    background-color: #5a3e2b;
+    background: #5a3e2b;
 }
 
 .hidden-select {
     display: none;
 }
 
-/* 10. SHOP SEARCH AUTOCOMPLETE */
+
+/* 7. SHOP SEARCH AUTOCOMPLETE */
 .shop-autocomplete {
     position: relative;
 }
 
 .shop-suggestions {
     display: none;
-
     position: absolute;
-
     top: 100%;
     left: 0;
     right: 0;
-
     z-index: 50;
 
     margin: -8px 0 10px;
-
     padding: 0;
-
     max-height: 240px;
-
     overflow-y: auto;
 
     list-style: none;
-
     background: white;
-
     border: 1px solid var(--border);
-
     border-radius: 6px;
-
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
@@ -307,9 +193,7 @@ main {
 
 .shop-suggestions li {
     padding: 10px;
-
     color: var(--text-brown);
-
     cursor: pointer;
 }
 
@@ -320,7 +204,6 @@ main {
 
 .shop-suggestions li.no-results {
     color: #888;
-
     cursor: default;
 }
 
@@ -328,7 +211,7 @@ main {
     background: white;
 }
 
-/* 11. SHOP INFORMATION */
+/* 8. SHOP INFO / LEGEND */
 .shop-info,
 .legend {
     margin-top: 25px;
@@ -339,7 +222,7 @@ main {
     margin-bottom: 8px;
 }
 
-/* 12. CATEGORY SHOP SECTION */
+/* 9. SHOPS IN CATEGORY */
 .category-shops-section {
     margin-top: 28px;
 }
@@ -351,39 +234,27 @@ main {
 #category-shop-list {
     height: 220px;
     max-height: 220px;
-
     overflow-y: auto;
-
     padding: 8px;
 
     border: 1px solid var(--border);
-
     border-radius: 7px;
-
     background: var(--cream);
 }
 
 #category-shop-list .category-shop-item {
     display: block;
-
     width: 100%;
-
     min-height: 44px;
-
     margin-bottom: 7px;
-
     padding: 10px 12px;
 
     border: 1px solid var(--border);
-
     border-radius: 8px;
-
     background: white;
-
     color: var(--text-brown);
 
     text-align: left;
-
     cursor: pointer;
 
     transition:
@@ -399,32 +270,36 @@ main {
     background: var(--peach);
 }
 
-/* 13. UTILITIES */
+
+/* 10. UTILITIES */
 .utility-section {
     margin-top: 20px;
 }
 
+.utility-category-heading {
+    margin: 14px 0 6px;
+    color: #5a4031;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.utility-category-heading:first-child {
+    margin-top: 0;
+}
+
 .utility-list-item {
     display: block;
-
     width: 100%;
-
     min-height: 44px;
-
     margin-bottom: 7px;
-
     padding: 9px 10px;
 
     border: 1px solid var(--border);
-
     border-radius: 7px;
-
     background: white;
-
     color: var(--text-brown);
 
     text-align: left;
-
     cursor: pointer;
 }
 
@@ -434,9 +309,7 @@ main {
 
 .utility-list-item.selected {
     background: var(--brown);
-
     border-color: var(--brown);
-
     color: var(--cream);
 }
 
@@ -446,94 +319,56 @@ main {
 
 .utility-list-item:disabled {
     background: #eeeeee;
-
     color: #888888;
-
     cursor: not-allowed;
 }
 
 .utility-status {
     display: block;
-
     margin-top: 3px;
-
     font-size: 0.9em;
 }
 
-/* 14. MAP SECTION */
+
+/* 11. MAP SECTION */
 .map-section {
     min-width: 0;
-
     flex: 1;
 
     display: flex;
-
     justify-content: center;
     align-items: center;
 
     overflow: auto;
-
     padding: 40px;
-
-    background: #f5f4f1;
-    
-.utility-category-heading {
-    margin: 14px 0 6px;
-    color: #5a4031;
-    font-size: 0.9rem;
+    background: var(--page-bg);
 }
 
-.utility-category-heading:first-child {
-    margin-top: 0;
-}
-
-.shop-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    display: grid;
-    place-items: center;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.45);
-}
-
-/* 15. MAP VIEWPORT */
 .map-viewport {
     position: relative;
-
     width: 100%;
     max-width: 1150px;
-
     aspect-ratio: 1038 / 553;
 
     overflow: hidden;
-
     background: white;
-
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* 16. MAP CONTAINER */
 .map-container {
     position: absolute;
-
     inset: 0;
-
     width: 100%;
     height: 100%;
 
     transform: translate(0, 0) scale(1);
-
     transform-origin: center center;
-
     transition: transform 0.25s ease;
-
     will-change: transform;
 }
 
 .map-container.map-zoomed {
     cursor: grab;
-
     touch-action: none;
 }
 
@@ -541,25 +376,22 @@ main {
     cursor: grabbing;
 }
 
-/* 17. FLOOR MAP IMAGE */
 #floor-map {
     position: absolute;
-
     top: 0;
     left: 0;
 
+    display: block;
     width: 100%;
     height: 100%;
 
     object-fit: contain;
-
-    display: block;
+    padding: 0;
+    background: transparent;
 }
 
-/* 18. SVG MAP OVERLAY */
 #map-overlay {
     position: absolute;
-
     top: 0;
     left: 0;
 
@@ -567,45 +399,33 @@ main {
     height: 100%;
 
     pointer-events: auto;
-
     z-index: 10;
 }
 
-/* 19. MAP ZOOM CONTROLS */
+/* 12. MAP ZOOM CONTROLS */
 .map-controls {
     position: absolute;
-
     top: 12px;
     right: 12px;
-
     z-index: 20;
 
     display: grid;
-
     gap: 6px;
-
     width: 42px;
 }
 
 .map-controls button {
     min-height: 36px;
-
     margin: 0;
-
     padding: 4px;
 
     border: 1px solid var(--brown);
-
     border-radius: 6px;
-
     background: var(--cream);
-
     color: var(--brown);
 
-    font-family: Arial, sans-serif;
-
+    font: inherit;
     font-size: 20px;
-
     cursor: pointer;
 }
 
@@ -617,45 +437,35 @@ main {
     font-size: 12px;
 }
 
-/* 20. USER LOCATION MARKER */
+/* 13. USER LOCATION / NAVIGATION ROUTE */
 #user-marker {
     filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
 
-/* 21. NAVIGATION ROUTE */
 #route-line {
     fill: none;
-
     stroke: red;
-
     stroke-width: 6;
-
     stroke-linecap: round;
     stroke-linejoin: round;
 }
 
-/* 22. INTERNAL NAVIGATION LINES */
+/* 14. INTERNAL NAVIGATION GRAPH */
 .navigation-line {
     stroke: #777;
-
     stroke-width: 2;
-
     stroke-dasharray: 5 5;
-
     opacity: 0.5;
 }
 
 .navigation-node {
     fill: #1976d2;
-
     stroke: white;
-
     stroke-width: 2;
 }
 
 .navigation-node-label {
     fill: #1976d2;
-
     font-size: 10px;
     font-weight: bold;
 }
@@ -665,57 +475,45 @@ main {
     display: none;
 }
 
-/* 23. POI / UTILITY MARKERS */
+/* 15. POI / UTILITY MARKERS */
 .poi-marker {
     fill: #ff9800;
-
     stroke: white;
-
     stroke-width: 3;
 
     pointer-events: all;
-
     cursor: pointer;
 }
 
 .poi-marker.utility-marker {
     fill: transparent;
-
     stroke: transparent;
 }
 
 .poi-marker.utility-marker.utility-selected {
     fill: var(--orange);
-
     stroke: white;
-
     stroke-width: 3;
 }
 
 .poi-selected {
     stroke: #e53935;
-
     stroke-width: 5;
 }
 
 .poi-label {
     fill: #222;
-
     font-size: 12px;
-
     font-weight: bold;
 }
 
-/* 24. CLICKABLE SHOP AREAS */
+/* 16. CLICKABLE SHOP AREAS */
 .shop-hotspot {
     fill: transparent;
-
     stroke: transparent;
-
     stroke-width: 2;
 
     pointer-events: all;
-
     cursor: pointer;
 
     transition:
@@ -725,30 +523,23 @@ main {
 
 .shop-hotspot:hover {
     fill: rgba(240, 153, 125, 0.25);
-
     stroke: var(--peach);
 }
 
 .shop-hotspot.selected {
     fill: rgba(236, 91, 56, 0.30);
-
     stroke: var(--orange);
-
     stroke-width: 3;
 }
 
-/* 25. SHOP MODAL BACKGROUND */
+/* 17. SHOP MODAL */
 .shop-modal {
     position: fixed;
-
     inset: 0;
-
     z-index: 3000;
 
     display: grid;
-
     place-items: center;
-
     padding: 20px;
 
     background: rgba(0, 0, 0, 0.45);
@@ -758,22 +549,16 @@ main {
     display: none;
 }
 
-/* 26. SHOP MODAL */
 .shop-modal-content {
     position: relative;
-
     width: min(520px, 100%);
-
     max-height: min(650px, 90vh);
 
     overflow-y: auto;
-
     padding: 32px 30px 28px;
 
     background: var(--cream);
-
     border-radius: 15px;
-
     color: var(--text-brown);
 
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
@@ -781,48 +566,36 @@ main {
 
 .shop-modal-content h2 {
     padding-right: 40px;
-
     color: var(--text-brown);
-
     font-size: 28px;
 }
 
-/* 27. MODAL CLOSE X */
 .shop-modal-close {
     position: absolute;
-
     top: 10px;
     right: 12px;
 
     width: 42px;
     height: 42px;
-
     margin: 0;
 
     border: none;
-
+    border-radius: 50%;
     background: transparent;
-
     color: var(--text-brown);
 
     font-size: 30px;
     line-height: 1;
-
     cursor: pointer;
-
-    border-radius: 50%;
 }
 
 .shop-modal-close:hover {
     background: var(--peach);
 }
 
-/* 28. MODAL DETAILS */
 .shop-modal-details {
     margin-top: 16px;
-
     color: var(--text-brown);
-
     line-height: 1.5;
 }
 
@@ -834,293 +607,7 @@ main {
     display: none;
 }
 
-/* 29. UTILITY POPUP */
-.utility-modal {
-.shop-info h3, .legend h3 {
-    margin-bottom: 10px;
-}
-
-.map-section {
-    min-width: 0;
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: auto;
-    padding: 20px;
-}
-
-.map-viewport {
-    position: relative;
-    width: 100%;
-    max-width: 1038px;
-    aspect-ratio: 1038 / 553;
-    overflow: hidden;
-    background: #e6ded2;
-}
-
-.map-container {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    transform: translate(0, 0) scale(1);
-    transform-origin: center center;
-    transition: transform 0.25s ease;
-    will-change: transform;
-}
-
-.map-container.map-zoomed {
-    cursor: grab;
-    touch-action: none;
-}
-
-.map-container.map-zoomed.dragging {
-    cursor: grabbing;
-}
-
-.map-controls {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    z-index: 20;
-    display: grid;
-    gap: 6px;
-    width: 42px;
-}
-
-.map-controls button {
-    min-height: 36px;
-    margin: 0;
-    padding: 4px;
-    border: 1px solid #6d5748;
-    border-radius: 4px;
-    background: white;
-    color: #3d3029;
-    font: inherit;
-    font-size: 20px;
-    cursor: pointer;
-}
-
-.map-controls button:hover {
-    background: #f8dfc8;
-}
-
-.map-controls #zoom-reset-btn {
-    font-size: 12px;
-}
-
-#floor-map {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-
-    padding: 0;
-
-    background: transparent;
-
-    pointer-events: none;
-}
-
-.utility-modal-content {
-    position: fixed;
-
-    width: min(210px, calc(100vw - 20px));
-
-    max-height: 145px;
-
-    padding: 12px 12px 10px;
-
-    background: var(--cream);
-
-    pointer-events: auto;
-
-    transform: none;
-}
-
-.utility-modal-content::before {
-    position: absolute;
-
-    top: 50%;
-    left: -10px;
-
-    width: 0;
-    height: 0;
-
-    border-top: 10px solid transparent;
-    border-bottom: 10px solid transparent;
-    border-right: 10px solid var(--cream);
-
-    content: "";
-
-    transform: translateY(-50%);
-}
-
-.utility-modal-content.left::before {
-    right: -10px;
-    left: auto;
-
-    border-right: 0;
-
-    border-left: 10px solid var(--cream);
-}
-
-.utility-modal-content h2 {
-    padding-right: 24px;
-
-    font-size: 1rem;
-}
-
-.utility-modal-content .shop-modal-details {
-    margin-top: 5px;
-
-    font-size: 0.85rem;
-
-    line-height: 1.25;
-}
-
-.utility-modal-content .shop-modal-details p {
-    margin-top: 4px;
-}
-
-.utility-modal-content .shop-modal-close {
-    top: 3px;
-    right: 3px;
-
-    width: 30px;
-    height: 30px;
-
-    font-size: 20px;
-}
-
-/* 30. FOOTER */
-.site-footer {
-    display: flex;
-
-    justify-content: center;
-
-    padding: 10px;
-
-    background: var(--cream);
-}
-
-/* 31. PHONE / TABLET */
-@media screen and (max-width: 700px) {
-
-    body {
-        background: var(--cream);
-    }
-
-    /* HEADER */
-.poi-marker.utility-marker.utility-selected {
-    fill: #d96b32;
-    stroke: white;
-    stroke-width: 3;
-}
-
-.poi-label {
-    fill: #222;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.shop-hotspot {
-    fill: transparent;
-    stroke: transparent;
-    stroke-width: 2;
-
-    pointer-events: all;
-    cursor: pointer;
-
-    transition:
-        fill 0.2s ease,
-        stroke 0.2s ease;
-}
-
-.shop-hotspot:hover {
-    fill: rgba(255, 152, 0, 0.18);
-    stroke: rgba(255, 152, 0, 0.60);
-}
-
-.shop-hotspot.selected {
-    fill: rgba(255, 152, 0, 0.30);
-    stroke: #ff9800;
-    stroke-width: 3;
-}
-
-.shop-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    display: grid;
-    place-items: center;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.45);
-}
-
-.shop-modal[hidden] {
-    display: none;
-}
-
-.shop-modal-content {
-    position: relative;
-    width: min(420px, 100%);
-    max-height: min(560px, 90vh);
-    overflow-y: auto;
-    padding: 28px 24px 24px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-}
-
-.utility-section {
-    margin-top: 20px;
-}
-
-.utility-list-item {
-    display: block;
-    width: 100%;
-    min-height: 44px;
-    margin-bottom: 6px;
-    padding: 8px 10px;
-    border: 1px solid #d8c5b0;
-    border-radius: 4px;
-    background: #fffaf4;
-    color: #3d3029;
-    text-align: left;
-    cursor: pointer;
-}
-
-.utility-list-item:hover {
-    background: #f8dfc8;
-}
-
-.utility-list-item.selected {
-    background: #8a6952;
-    border-color: #694b38;
-    color: white;
-}
-
-.utility-list-item.selected:hover {
-    background: #76553f;
-}
-
-.utility-list-item:disabled {
-    background: #eee;
-    color: #888;
-    cursor: not-allowed;
-}
-
-.utility-status {
-    display: block;
-    margin-top: 3px;
-    font-size: 0.9em;
-}
-
+/* 18. UTILITY POPUP */
 .utility-modal {
     display: block;
     padding: 0;
@@ -1133,6 +620,8 @@ main {
     width: min(250px, calc(100vw - 24px));
     max-height: 180px;
     padding: 18px 16px 14px;
+
+    background: var(--cream);
     pointer-events: auto;
     transform: none;
 }
@@ -1141,11 +630,14 @@ main {
     position: absolute;
     top: 50%;
     left: -10px;
+
     width: 0;
     height: 0;
+
     border-top: 10px solid transparent;
     border-bottom: 10px solid transparent;
-    border-right: 10px solid white;
+    border-right: 10px solid var(--cream);
+
     content: "";
     transform: translateY(-50%);
 }
@@ -1153,275 +645,95 @@ main {
 .utility-modal-content.left::before {
     right: -10px;
     left: auto;
+
     border-right: 0;
-    border-left: 10px solid white;
+    border-left: 10px solid var(--cream);
 }
 
 .utility-modal-content h2 {
-    font-size: 1.15rem;
+    padding-right: 28px;
+    font-size: 1.05rem;
 }
 
 .utility-modal-content .shop-modal-details {
-    margin-top: 8px;
+    margin-top: 7px;
+    font-size: 0.85rem;
+    line-height: 1.3;
 }
 
-.shop-modal-content h2 {
-    padding-right: 32px;
-    color: #3d3029;
+.utility-modal-content .shop-modal-details p {
+    margin-top: 4px;
 }
 
-.shop-modal-close {
-    position: absolute;
-    top: 8px;
-    right: 10px;
-    width: 44px;
-    height: 44px;
-    margin: 0;
-    border: 0;
-    background: transparent;
-    color: #3d3029;
-    font-size: 28px;
-    line-height: 1;
-    cursor: pointer;
+.utility-modal-content .shop-modal-close {
+    top: 3px;
+    right: 3px;
+
+    width: 30px;
+    height: 30px;
+    font-size: 20px;
 }
 
-.shop-modal-close:hover {
-    background: #f4e6d8;
+/* 19. FOOTER */
+.site-footer {
+    display: flex;
+    justify-content: center;
+
+    padding: 16px 10px;
+
+    background: var(--cream);
+    border-top: 1px solid #e0d2ba;
 }
 
-.shop-modal-details {
-    margin-top: 16px;
-    color: #524646;
-    line-height: 1.5;
-}
+/* 20. PHONE / TABLET RESPONSIVE LAYOUT */
+@media screen and (max-width: 900px) {
 
-.shop-modal-details p {
-    margin-top: 8px;
-}
+    body {
+        background: var(--cream);
+    }
 
-.shop-modal-details p:empty {
-    display: none;
-}
-
-.poi-selected {
-    stroke: #e53935;
-    stroke-width: 5;
-}
-
-@media (max-width: 700px) {
+    /* HEADER */
     header {
         min-height: 95px;
-
         padding: 20px 55px;
     }
 
     header h1 {
         font-size: 27px;
-
         line-height: 1;
     }
 
-    /* MENU BUTTON */
-    .menu-toggle {
-        top: 24px;
-        left: 18px;
-
-        font-size: 29px;
+    .scanned-location {
+        font-size: 12px;
     }
 
-    /* SIDE MENU */
-    .side-menu {
-        left: -270px;
-
-        width: 270px;
-    }
-
-    .side-menu.open {
-        left: 0;
-    }
-
-    /* MAIN */
+    /* MAIN: stack map and controls */
     main {
-        display: flex;
-
-        flex-direction: column;
-
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100%;
         min-height: 0;
-
         background: var(--cream);
     }
 
     /* MAP FIRST */
     .map-section {
-        order: -1;
-
-        width: 100%;
+        order: 1 !important;
+        width: 100% !important;
+        flex: none !important;
 
         padding: 10px;
-
         overflow: visible;
-
+        align-items: flex-start;
         background: white;
     }
 
     .map-viewport {
-        width: 100%;
+        width: 100% !important;
+        max-width: none !important;
+        aspect-ratio: 1038 / 553;
 
-        max-width: none;
-
-        box-shadow: none;
-    }
-
-    /* SIDEBAR BELOW MAP */
-    .sidebar {
-        flex: none;
-
-        width: 100%;
-
-        padding: 20px 16px;
-
-        background: var(--cream);
-
-        box-shadow: none;
-    }
-
-    .sidebar h2 {
-        margin-bottom: 18px;
-
-        font-size: 25px;
-    }
-
-    /* FORM */
-    .sidebar select,
-    .sidebar input,
-    .sidebar button {
-        width: 100%;
-
-        min-height: 44px;
-    }
-
-    /* SHOP INFORMATION */
-    .shop-info,
-    .legend {
-        margin-top: 20px;
-    }
-
-    /* CATEGORY */
-    .category-shops-section {
-        margin-top: 22px;
-    }
-
-    #category-shop-list {
-        height: 200px;
-
-        max-height: 200px;
-
-        font-size: 14px;
-    }
-
-    #category-shop-list .category-shop-item {
-        min-height: 44px;
-
-        padding: 11px;
-    }
-
-    /* SEARCH SUGGESTIONS */
-    .shop-suggestions li {
-        min-height: 44px;
-
-        padding: 12px 10px;
-    }
-
-    /* MODAL */
-    .shop-modal {
-        padding: 15px;
-    }
-
-    .shop-modal-content {
-        width: 100%;
-
-        max-height: 85vh;
-
-        padding: 28px 22px 24px;
-    }
-
-    .shop-modal-content h2 {
-        font-size: 24px;
-    }
-
-    /* UTILITY POPUP */
-    .utility-modal-content {
-        width: min(175px, calc(100vw - 16px));
-
-        max-height: 120px;
-
-        padding: 10px 10px 8px;
-    }
-
-    .utility-modal-content h2 {
-        font-size: 0.9rem;
-    }
-
-    .utility-modal-content .shop-modal-details {
-        font-size: 0.75rem;
-    }
-}
-
-}
-
-.site-footer {
-    display: flex;
-    justify-content: center;
-    padding: 16px 10px;
-    background: #FCF2E5;
-    border-top: 1px solid #e0d2ba;
-}
-
-.login-button {
-        display: inline-block;
-        padding: 5px 10px;
-        font-size: 12px;
-        background-color: #7b5b3d;
-        color: white;
-        text-decoration: none;
-        border-radius: 4px;
-        margin-top: 0px;
-        position: absolute;
-        top: 58px;
-        right: 10px;
-}
-
-.login-button:hover {
-    background-color: #5a3e2b;
-}
-
-@media (max-width: 700px) {
-    .login-button {
-        /* Side-by-side with "You scanned" only works when both fit on
-           one line; shop names vary too much in length for that on
-           narrow screens, so stack it in-flow above that line instead. */
-        position: static;
-        display: inline-block;
-        padding: 4px 8px;
-        font-size: 11px;
-        margin-top: 8px;
-    }
-}
-
-/* Mobile map layout: keep the map usable first, then show the controls below. */
-@media (max-width: 700px) {
-    header {
-        min-height: 0;
-    }
-
-    .map-section {
-        padding: 10px;
-        align-items: flex-start;
-    }
-
-    .map-viewport {
-        width: 100%;
-        border: 1px solid #d8c5b0;
+        border: 1px solid var(--border);
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     }
@@ -1442,44 +754,99 @@ main {
         font-size: 11px;
     }
 
+    /* SIDEBAR BELOW MAP */
     .sidebar {
-        padding: 14px 12px 20px;
+        order: 2 !important;
+        flex: none !important;
+        width: 100% !important;
+
+        padding: 16px 14px 22px;
+        background: var(--cream);
+        box-shadow: none;
     }
 
     .sidebar h2 {
-        margin-bottom: 12px;
-        font-size: 1.2rem;
+        margin-bottom: 14px;
+        font-size: 25px;
     }
 
     .sidebar label {
         display: block;
         margin-top: 10px;
-        font-size: 0.9rem;
-        font-weight: bold;
+        margin-bottom: 4px;
+        font-size: 0.95rem;
+        font-weight: 600;
     }
 
     .sidebar select,
     .sidebar input,
     .sidebar button {
+        width: 100%;
         min-height: 44px;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
         font-size: 16px;
+    }
+
+    .shop-info,
+    .legend {
+        margin-top: 20px;
     }
 
     .category-shops-section,
     .utility-section {
-        margin-top: 16px;
+        margin-top: 18px;
     }
 
     #category-shop-list,
     #utility-list {
-        max-height: 160px;
+        width: 100%;
+        max-height: 180px;
         overflow-y: auto;
     }
 
+    #category-shop-list {
+        height: 180px;
+        font-size: 14px;
+    }
+
+    #category-shop-list .category-shop-item,
+    .utility-list-item {
+        min-height: 44px;
+        padding: 10px;
+    }
+
+    .shop-suggestions li {
+        min-height: 44px;
+        padding: 12px 10px;
+    }
+
+    /* MODAL */
+    .shop-modal {
+        padding: 15px;
+    }
+
+    .shop-modal-content {
+        width: 100%;
+        max-height: 85vh;
+        padding: 28px 22px 24px;
+    }
+
+    .shop-modal-content h2 {
+        font-size: 24px;
+    }
+
+    /* UTILITY POPUP */
     .utility-modal-content {
         width: min(220px, calc(100vw - 20px));
         max-height: 180px;
         padding: 12px 12px 10px;
     }
-}}}
+
+    .utility-modal-content h2 {
+        font-size: 0.95rem;
+    }
+
+    .utility-modal-content .shop-modal-details {
+        font-size: 0.78rem;
+    }
+}
