@@ -4,14 +4,12 @@ from db import get_db_connection
 from simulate_occupancy import run_simulator
 from locations import LOCATIONS, MAP_WIDTH, MAP_HEIGHT, SHOPS, NODE_MAP
 from scan_log import read_scans, record_scan
-from simulate_occupancy import run_simulator
 
 import json
 import os
 import secrets
 import threading
 import uuid
-import threading
 import urllib.request
 import urllib.parse
 
@@ -36,7 +34,7 @@ start_occupancy_simulator()
 # only makes sense with a single app worker - gunicorn's default (see
 # Procfile) - since multiple workers would each run their own simulation
 # and fight over the same cubicles.
-threading.Thread(target=run_simulator, daemon=True).start()
+# threading.Thread(target=run_simulator, daemon=True).start()
 
 GENERAL_VOUCHER_TYPES = {
     "parking": "Parking Voucher",
@@ -997,7 +995,7 @@ def get_dpulze_shop_overview(limit=None):
     cursor = connection.cursor(dictionary=True)
     if limit is None:
         cursor.execute("""
-                SELECT s.shop_code, s.shop_name, s.operating_hours, s.category, s.description,
+                SELECT s.shop_code, s.shop_name, s.operating_hours, s.category, s.unit, s.description,
                      s.full_description, s.products_services, f.floor_name
             FROM shops s
             LEFT JOIN floors f ON f.id = s.floor_id
@@ -1005,7 +1003,7 @@ def get_dpulze_shop_overview(limit=None):
         """)
     else:
         cursor.execute("""
-                SELECT s.shop_code, s.shop_name, s.operating_hours, s.category, s.description,
+                SELECT s.shop_code, s.shop_name, s.operating_hours, s.category, s.unit, s.description,
                      s.full_description, s.products_services, f.floor_name
             FROM shops s
             LEFT JOIN floors f ON f.id = s.floor_id
@@ -1128,9 +1126,9 @@ def build_recommendation_guidance(message):
     )
 
 
-def ask_ollama_chat(prompt):
+def ask_ollama_chat(prompt, mall_context=None):
     model_name = os.environ.get("OLLAMA_MODEL", "llama3.2")
-    mall_context = build_mall_context()
+    mall_context = mall_context or build_mall_context()
 
     payload = {
         "model": model_name,
@@ -1175,6 +1173,7 @@ def ask_openai_chat(prompt):
                 "role": "system",
                 "content": (
                     "You are a helpful mall concierge for Dpulze Mall. Use the mall database as the source of truth. "
+                    "The current mall database context is included with each user request. "
                     "When someone asks which stores sell an item, search across the full shops catalogue and list all matching stores with their selling details. "
                     "Do not rely on a few famous brands or generic recommendations if the database contains more specific matches. "
                     "Answer user questions about stores, mall navigation, shopping recommendations, and general mall services. "
@@ -1261,6 +1260,35 @@ def find_shop_from_message(message):
     return max(matches, key=lambda shop: len(shop["shop_name"])) if matches else None
 
 
+def build_shop_navigation_reply(shop):
+    """Create a consistent shop-details reply before offering map navigation."""
+    detail = (
+        shop.get("full_description")
+        or shop.get("description")
+        or shop.get("products_services")
+    )
+    details = []
+    if shop.get("category"):
+        details.append(f"Category: {shop['category']}")
+    if shop.get("floor_name"):
+        details.append(f"Floor: {shop['floor_name']}")
+    if shop.get("unit"):
+        details.append(f"Unit: {shop['unit']}")
+    if shop.get("operating_hours"):
+        details.append(f"Hours: {shop['operating_hours']}")
+    if detail:
+        details.append(str(detail).strip())
+
+    detail_text = "\n".join(f"• {item}" for item in details)
+    if not detail_text:
+        detail_text = "• Store details are available on the mall map."
+
+    return (
+        f"Here are the details for {shop['shop_name']}:\n{detail_text}\n\n"
+        f"Would you like me to show navigation to {shop['shop_name']} on the map?"
+    )
+
+
 def is_confirmation_message(message):
     """Return True for a short affirmative reply to a pending store action.
 
@@ -1306,12 +1334,17 @@ def generate_chatbot_reply(message):
     recommendation_guidance = build_recommendation_guidance(message)
     prompt = message if not context else f"{context}\n\nCurrent user message: {message}"
     prompt = f"{db_guidance}\n{recommendation_guidance}\n\n{prompt}"
+    # Build live context from the database for every AI request.  This gives
+    # both providers the store names, categories, descriptions, products, and
+    # floors they need to make grounded recommendations.
+    mall_context = build_mall_context()
 
-    ollama_reply = ask_ollama_chat(prompt)
+    ollama_reply = ask_ollama_chat(prompt, mall_context=mall_context)
     if ollama_reply:
         return ollama_reply
 
-    openai_reply = ask_openai_chat(prompt)
+    openai_prompt = f"{mall_context}\n\n{prompt}"
+    openai_reply = ask_openai_chat(openai_prompt)
     if openai_reply:
         return openai_reply
 
@@ -1388,10 +1421,12 @@ def chat_api():
         memory = memory[-12:]
     session["chat_memory"] = memory
 
-    reply = generate_chatbot_reply(message)
     if selected_shop and not confirmation:
-        if "navigation" not in reply.casefold() and "directions" not in reply.casefold():
-            reply = f"{reply}\n\nWould you like navigation to {selected_shop['shop_name']}?"
+        # Keep the destination in the session and offer navigation in a
+        # predictable format, regardless of which AI provider is available.
+        reply = build_shop_navigation_reply(selected_shop)
+    else:
+        reply = generate_chatbot_reply(message)
     memory.append({"role": "assistant", "content": reply})
     if len(memory) > 12:
         memory = memory[-12:]
