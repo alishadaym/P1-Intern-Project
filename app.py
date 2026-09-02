@@ -697,8 +697,6 @@ def get_session_id() -> str:
     return session["session_id"]
 
 
-<<<<<<< Updated upstream
-=======
 def get_shop_categories():
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
@@ -799,7 +797,6 @@ def generate_chatbot_reply(message):
     return generate_local_chat_reply(message)
 
 # main menu
->>>>>>> Stashed changes
 @app.route("/")
 def index():
     current = session.get("current_location")
@@ -843,8 +840,8 @@ def chat_api():
     reply = generate_chatbot_reply(message)
     return jsonify({"reply": reply})
 
-if __name__ == "__main__":
-    app.run(debug=True)
-
 # if __name__ == "__main__":
-#     app.run(host="0.0.0.0", port=5000, debug=True)
+#     app.run(debug=True)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
