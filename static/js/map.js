@@ -273,8 +273,6 @@ document.addEventListener("DOMContentLoaded", async function()
     document.getElementById("zoom-reset-btn").addEventListener("click", closeUtilityDetails);
 });
 
-let lastShopTrigger = null;
-
 function closeShopDetails()
 {
     const shopModal = document.getElementById("shop-modal");
@@ -1795,7 +1793,7 @@ function endUtilityMapPan(event)
 
 function getUtilityStatusLabel(utility)
 {
-    if (utility.type === "restroom")
+    if (utility.type === "restroom" || utility.type === "baby_diaper")
     {
         return `Available: ${utility.available_cubicles} | Occupied: ${utility.occupied_cubicles}`;
     }
@@ -1817,12 +1815,23 @@ function renderUtilityLocations()
 
     if (!utilityType)
     {
-        utilityList.textContent = "Choose a utility to see locations";
         return;
     }
 
     const matchingUtilities = Object.entries(mapData.facilities || {})
-        .filter(([, utility]) => utility.type === utilityType);
+        .filter(([, utility]) => utilityType === "all" || utility.type === utilityType)
+        .sort(([, firstUtility], [, secondUtility]) => {
+            const typeOrder = {
+                restroom: 1,
+                baby_diaper: 2,
+                oku: 3,
+                lift: 4,
+            };
+            const typeDifference =
+                (typeOrder[firstUtility.type] || 99) - (typeOrder[secondUtility.type] || 99);
+
+            return typeDifference || (firstUtility.name || "").localeCompare(secondUtility.name || "");
+        });
 
     if (matchingUtilities.length === 0)
     {
@@ -1830,25 +1839,48 @@ function renderUtilityLocations()
         return;
     }
 
+    const typeLabels = {
+        restroom: "Restrooms",
+        baby_diaper: "Baby Diaper Rooms",
+        oku: "OKU Accessible Toilets",
+        lift: "Lifts",
+    };
+    let previousType = null;
+
     matchingUtilities.forEach(([utilityId, utility]) =>
     {
+        if (utilityType === "all" && utility.type !== previousType)
+        {
+            const heading = document.createElement("h4");
+            heading.className = "utility-category-heading";
+            heading.textContent = typeLabels[utility.type] || utility.type;
+            utilityList.appendChild(heading);
+            previousType = utility.type;
+        }
+
         const utilityButton = document.createElement("button");
         const statusLabel = getUtilityStatusLabel(utility);
+        const locationLabel = statusLabel
+            ? `${utility.floor} - ${statusLabel}`
+            : utility.floor;
 
         utilityButton.type = "button";
         utilityButton.className = "utility-list-item";
         utilityButton.dataset.utilityId = utilityId;
+        utilityButton.textContent = utility.name;
         if (utilityId === selectedUtilityId)
         {
             utilityButton.classList.add("selected");
         }
-        const locationLabel = statusLabel
-            ? `${utility.floor} - ${statusLabel}`
-            : utility.floor;
-        utilityButton.innerHTML = `${utility.name}<span class="utility-status">${locationLabel}</span>`;
+
+        const status = document.createElement("span");
+        status.className = "utility-status";
+        status.textContent = locationLabel;
+        utilityButton.appendChild(status);
         utilityButton.addEventListener("click", function()
         {
             selectUtility(utilityId);
+            showUtilityDetails(utility);
         });
 
         utilityList.appendChild(utilityButton);
@@ -2078,7 +2110,7 @@ async function loadShopDatabase()
         );
     }
 
-    }
+}
 
 async function loadCategories() {
     try {

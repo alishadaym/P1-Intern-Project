@@ -1339,11 +1339,6 @@ def map_page():
 def directory_page():
     return render_template("directory.html")
 
-# feedback
-@app.route("/feedback")
-def feedback_page():
-    return render_template("feedback.html")
-
 # QR location
 @app.route("/location/<name>")
 def location(name):
