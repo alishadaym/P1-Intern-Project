@@ -211,11 +211,6 @@ document.addEventListener("DOMContentLoaded", async function()
         console.error("Navigate button not found.");
     }
 
-    document.getElementById("nearest-restroom-btn").addEventListener(
-        "click",
-        findNearestRestroom
-    );
-
     // SHOP DROPDOWN (kept in the DOM, hidden - still the source of truth
     // that selectShop() and startNavigation() read/write)
     const shopSelect = document.getElementById("shop-select");
@@ -1944,6 +1939,7 @@ function renderUtilityLocations()
         return;
     }
 
+    const startNodeId = getStartNodeId();
     const matchingUtilities = Object.entries(mapData.facilities || {})
         .filter(([, utility]) => utilityType === "all" || utility.type === utilityType)
         .sort(([, firstUtility], [, secondUtility]) => {
@@ -1955,6 +1951,23 @@ function renderUtilityLocations()
             };
             const typeDifference =
                 (typeOrder[firstUtility.type] || 99) - (typeOrder[secondUtility.type] || 99);
+
+            if (typeDifference === 0 && firstUtility.type === "restroom")
+            {
+                const firstPath = mapData.nodes[startNodeId] && mapData.nodes[firstUtility.node_id]
+                    ? findShortestPath(startNodeId, firstUtility.node_id)
+                    : null;
+                const secondPath = mapData.nodes[startNodeId] && mapData.nodes[secondUtility.node_id]
+                    ? findShortestPath(startNodeId, secondUtility.node_id)
+                    : null;
+                const firstDistance = firstPath ? getPathDistance(firstPath) : Infinity;
+                const secondDistance = secondPath ? getPathDistance(secondPath) : Infinity;
+
+                if (firstDistance !== secondDistance)
+                {
+                    return firstDistance - secondDistance;
+                }
+            }
 
             return typeDifference || (firstUtility.name || "").localeCompare(secondUtility.name || "");
         });
