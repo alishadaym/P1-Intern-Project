@@ -1,6 +1,6 @@
 let mapData = null;
 // Temporary default while the 2F navigation nodes are being positioned.
-const DEFAULT_FLOOR_ID = "2f";
+const DEFAULT_FLOOR_ID = "upper-ground";
 // const DEFAULT_FLOOR_ID = "ground";
 const DEFAULT_START_NODES = {
     ground: "node_01",
