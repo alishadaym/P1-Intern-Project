@@ -563,8 +563,8 @@ main {
 } */
 
 .poi-marker.utility-marker {
-    fill: rgba(255, 152, 0, 0.01) !important;
-    stroke: rgba(255, 152, 0, 0.01) !important;
+    fill: rgba(255, 152, 0, 0.01) ;
+    stroke: rgba(255, 152, 0, 0.01);
 
     pointer-events: all !important;
     cursor: pointer !important;
