@@ -382,7 +382,7 @@ function showShopDetails(shop)
     document.getElementById("modal-shop-floor").textContent = shop.floor || "";
     document.getElementById("modal-shop-hours").textContent = shop.operatingHours ? `Hours: ${shop.operatingHours}` : "";
     document.getElementById("modal-shop-description").textContent = shop.description || "";
-    utilityMapZoom = 2;
+    utilityMapZoom = Math.max(1, utilityMapZoom);
     utilityMapPanX = 0;
     utilityMapPanY = 0;
     centerMapOnUtility(mapPoint);
@@ -428,7 +428,7 @@ function showUtilityDetails(utility)
     activeUtilityId = utility.utility_code;
     setSelectedUtilityMarker(activeUtilityId);
     updateUtilityModal(utility);
-    utilityMapZoom = 2;
+    utilityMapZoom = currentZoom > 1 ? currentZoom : 2;
     utilityMapPanX = 0;
     utilityMapPanY = 0;
     centerMapOnUtility(utility);
@@ -680,147 +680,6 @@ function getShopLabel(shopId)
     );
 }
 
-async function loadUtilities()
-{
-    const response = await fetch(`/api/utilities?floor=${encodeURIComponent(currentFloorId)}`);
-
-    if (!response.ok)
-    {
-        throw new Error("Failed to load utilities.");
-    }
-
-    utilityRecords = await response.json();
-    mapData.facilities = Object.fromEntries(
-        utilityRecords.map(utility => [utility.utility_code, utility])
-    );
-}
-
-async function refreshUtilityData()
-{
-    if (utilityRefreshInProgress)
-    {
-        return;
-    }
-
-    utilityRefreshInProgress = true;
-
-    try
-    {
-        await loadUtilities();
-        drawPOIMarkers();
-
-        const categorySelect = document.getElementById("category-select");
-        if (categorySelect.value === "utilities")
-        {
-            renderUtilityLocations();
-        }
-
-        if (activeUtilityId)
-        {
-            const utility = mapData.facilities[activeUtilityId];
-            if (utility)
-            {
-                updateUtilityModal(utility);
-                positionUtilityModal(activeUtilityId);
-            }
-            else
-            {
-                closeUtilityDetails();
-            }
-        }
-    }
-    catch (error)
-    {
-        console.error("Error refreshing utilities:", error);
-    }
-    finally
-    {
-        utilityRefreshInProgress = false;
-    }
-}
-
-function getUtilityStatusLabel(utility)
-{
-    if (utility.type === "restroom" || utility.type === "baby_diaper")
-    {
-        return `Available: ${utility.available_cubicles} | Occupied: ${utility.occupied_cubicles}`;
-    }
-
-    if (utility.type === "oku")
-    {
-        return utility.is_occupied ? "Occupied" : "Available";
-    }
-
-    return "";
-}
-
-function renderUtilityLocations()
-{
-    if (document.getElementById("category-select").value !== "utilities")
-    {
-        return;
-    }
-
-    const utilityType = "all";
-    const utilityList = document.getElementById("category-shop-list");
-
-    utilityList.innerHTML = "";
-
-    if (!utilityType)
-    {
-        return;
-    }
-
-    const matchingUtilities = Object.entries(mapData.facilities || {})
-        .filter(([, utility]) => utilityType === "all" || utility.type === utilityType)
-        .sort(([, a], [, b]) => {
-            const typeOrder = {
-                restroom: 1,
-                baby_diaper: 2,
-                oku: 3,
-                lift: 4,
-            };
-
-            const typeDifference = (typeOrder[a.type] || 99) - (typeOrder[b.type] || 99);
-            if (typeDifference !== 0)
-            {
-                return typeDifference;
-            }
-
-            return (a.name || "").localeCompare(b.name || "");
-        });
-
-    if (matchingUtilities.length === 0)
-    {
-        utilityList.textContent = "No locations found";
-        return;
-    }
-
-    matchingUtilities.forEach(([utilityId, utility]) =>
-    {
-        const utilityButton = document.createElement("button");
-        const statusLabel = getUtilityStatusLabel(utility);
-
-        utilityButton.type = "button";
-        utilityButton.className = "utility-list-item";
-        utilityButton.dataset.utilityId = utilityId;
-        if (utilityId === selectedUtilityId)
-        {
-            utilityButton.classList.add("selected");
-        }
-        const locationLabel = statusLabel
-            ? `${utility.floor} - ${statusLabel}`
-            : utility.floor;
-        utilityButton.innerHTML = `${utility.name}<span class="utility-status">${locationLabel}</span>`;
-        utilityButton.addEventListener("click", function()
-        {
-            selectUtility(utilityId);
-        });
-
-        utilityList.appendChild(utilityButton);
-    });
-}
-
 // SHOP DROPDOWN (hidden - always holds every shop, kept in sync with
 // whichever shop is currently selected)
 function populateShopDropdown()
@@ -902,15 +761,13 @@ function renderCategoryShops() {
 
         shopButton.type = "button";
         shopButton.className = "category-shop-item";
+        shopButton.classList.toggle(
+            "selected",
+            shop.shop_code === selectedShopId
+        );
         shopButton.textContent = shop.shop_name || "Unnamed Shop";
 
-        if (mapData.shop_locations[shop.shop_code]) {
-            shopButton.addEventListener("click", () => selectShop(shop.shop_code));
-        }
-        else {
-            shopButton.disabled = true;
-            shopButton.title = "This shop has no map location yet";
-        }
+        shopButton.addEventListener("click", () => selectShop(shop.shop_code));
 
         shopList.appendChild(shopButton);
     });
@@ -1766,10 +1623,38 @@ function drawShopHotspots()
 }
 
 // SELECT SHOP
-function selectShop(shopId)
+function getFloorIdFromShop(shop)
 {
-    const mapShop =
-        mapData.shop_locations[shopId];
+    const floorCodes = {
+        G: "ground",
+        UG: "upper-ground",
+        "2F": "2f"
+    };
+
+    const floorCode = shop && shop.floor_code
+        ? shop.floor_code.trim().toUpperCase()
+        : "";
+
+    return floorCode
+        ? floorCodes[floorCode] || currentFloorId
+        : currentFloorId;
+}
+
+async function selectShop(shopId)
+{
+    const dbShop = shopDatabase[shopId];
+    const targetFloorId = getFloorIdFromShop(dbShop);
+
+    if (targetFloorId !== currentFloorId)
+    {
+        await loadMapData(targetFloorId);
+        populateShopDropdown();
+        renderCategoryShops();
+    }
+
+    document.getElementById("floor-select").value = targetFloorId;
+
+    const mapShop = mapData.shop_locations[shopId];
 
     if (!mapShop)
     {
@@ -1784,17 +1669,7 @@ function selectShop(shopId)
     const shouldUpdateActiveRoute = Boolean(
         document.getElementById("route-line").getAttribute("points")
     );
-    const shopModal = document.getElementById("shop-modal");
-    if (!shopModal.hidden)
-    {
-        shopModal.hidden = true;
-        activeShopId = null;
-        highlightSelectedShop(null);
-    }
-
-    closeUtilityDetails();
-
-    const dbShop = shopDatabase[shopId];
+    closeUtilityDetails(false);
 
     // Prefer live database details (category, hours, description) once
     // connected; fall back to the map's own data so this still works
@@ -1833,7 +1708,7 @@ function selectShop(shopId)
 
     hideShopSuggestions();
 
-    renderUtilityLocations();
+    renderCategoryShops();
     highlightSelectedShop(shopId);
     showShopDetails(shop);
 
@@ -1872,7 +1747,7 @@ function showShopDetails(shop)
     document.getElementById("modal-shop-floor").textContent = shop.floor || "";
     document.getElementById("modal-shop-hours").textContent = shop.operatingHours ? `Hours: ${shop.operatingHours}` : "";
     document.getElementById("modal-shop-description").textContent = shop.description || "";
-    utilityMapZoom = 2;
+    utilityMapZoom = Math.max(1, utilityMapZoom);
     utilityMapPanX = 0;
     utilityMapPanY = 0;
     centerMapOnUtility(mapPoint);
@@ -1904,12 +1779,15 @@ function getShopMapPoint(shopId)
 }
 
 // UTILITY DETAILS MODAL (toilets/lifts/baby care rooms)
-function closeUtilityDetails()
+function closeUtilityDetails(resetZoom = true)
 {
     document.getElementById("utility-modal").hidden = true;
     activeUtilityId = null;
     clearSelectedUtilityMarker();
-    resetUtilityMapZoom();
+    if (resetZoom)
+    {
+        resetUtilityMapZoom();
+    }
 }
 
 function showUtilityDetails(utility)

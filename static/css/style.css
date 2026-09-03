@@ -190,6 +190,12 @@ main {
     background: #f8dfc8;
 }
 
+#category-shop-list .category-shop-item.selected {
+    background: #8a6952;
+    border-color: #694b38;
+    color: white;
+}
+
 .utility-section {
     margin-top: 20px;
 }
@@ -283,6 +289,14 @@ main {
     padding: 12px 12px 10px;
     pointer-events: auto;
     transform: none;
+}
+
+.shop-popover-content {
+    pointer-events: none;
+}
+
+.shop-popover-content .shop-modal-close {
+    pointer-events: auto;
 }
 
 .utility-modal-content::before {
@@ -525,15 +539,15 @@ main {
     font-weight: bold;
 }
 
-/* #navigation-lines,
-#navigation-nodes {
-    display: none;
-} */
-
 #navigation-lines,
 #navigation-nodes {
-    display: show;
+    display: none;
 }
+
+/* #navigation-lines,
+#navigation-nodes {
+    display: show;
+} */
 
 .poi-marker {
     fill: #ff9800;
@@ -543,15 +557,15 @@ main {
     cursor: pointer;
 }
 
-.poi-marker.utility-marker {
+/* .poi-marker.utility-marker {
     fill: #ff9800;
     stroke: white;
-}
+} */
 
-/* .poi-marker.utility-marker {
+.poi-marker.utility-marker {
     fill: transparent;
     stroke: transparent;
-} */
+}
 
 .poi-marker.utility-marker.utility-selected {
     fill: #d96b32;
@@ -702,6 +716,14 @@ main {
     margin-top: 8px;
 }
 
+.shop-modal .shop-popover-content {
+    pointer-events: none;
+}
+
+.shop-modal .shop-popover-content .shop-modal-close {
+    pointer-events: auto;
+}
+
 .shop-modal-content h2 {
     padding-right: 32px;
     color: #3d3029;
@@ -762,6 +784,7 @@ main {
     }
 
     .sidebar {
+        flex: 1 1 auto;
         width: 100%;
         padding: 16px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -818,6 +841,7 @@ main {
 
     .map-section {
         order: -1;
+        flex: 0 0 auto;
         width: 100%;
         padding: 12px;
         overflow: visible;
@@ -967,4 +991,25 @@ main {
         max-height: 180px;
         padding: 12px 12px 10px;
     }
+}
+
+#shop-modal .shop-popover-content {
+    pointer-events: none;
+}
+
+#shop-modal {
+    pointer-events: none;
+}
+
+#shop-modal .shop-popover-content .shop-modal-close {
+    pointer-events: auto;
+}
+
+#utility-modal,
+#utility-modal .utility-modal-content {
+    pointer-events: none;
+}
+
+#utility-modal .shop-modal-close {
+    pointer-events: auto;
 }
