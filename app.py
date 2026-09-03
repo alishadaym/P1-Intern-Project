@@ -1440,7 +1440,8 @@ def is_confirmation_message(message):
 
 
 def is_navigation_request(message):
-    text = message.casefold().strip()
+    text = (message or "").casefold().strip()
+
     navigation_phrases = (
         "navigate",
         "navigation",
@@ -1453,17 +1454,25 @@ def is_navigation_request(message):
         "directions to",
         "take me there",
         "take me to",
+        "bring me there",
+        "bring me to",
+        "i want to go to",
+        "i want to go there",
+        "i would like to go to",
+        "i'd like to go to",
         "how do i get there",
         "how can i get there",
         "how to get there",
         "how do i go there",
-        "bring me there",
         "go there",
         "route there",
         "show me how to get there",
     )
-    return any(phrase in text for phrase in navigation_phrases)
 
+    return any(
+        phrase in text
+        for phrase in navigation_phrases
+    )
 
 def is_follow_up_message(message):
     text = message.casefold().strip()
@@ -1518,6 +1527,302 @@ def build_chat_context():
     recent = memory[-6:]
     lines = [f"{item['role']}: {item['content']}" for item in recent]
     return "Conversation memory:\n" + "\n".join(lines)
+
+
+
+PRODUCT_REQUEST_STOPWORDS = {
+    "where", "what", "which", "when", "who", "can", "could", "would",
+    "please", "i", "me", "my", "the", "a", "an", "is", "are", "do",
+    "does", "have", "has", "find", "buy", "get", "shop", "shops",
+    "store", "stores", "mall", "dpulze", "want", "need", "looking",
+    "for", "give", "show", "tell", "other", "than", "that", "another",
+    "anything", "else", "option", "options", "there", "them", "with",
+    "under", "below", "less", "budget", "sell", "sells", "selling",
+    "sold", "available", "recommend", "recommendation",
+}
+
+
+def extract_product_query(message):
+    """
+    Extract the useful product wording from a shopping question.
+
+    Examples:
+        "I want to buy running shoes" -> "running shoes"
+        "Which shop sells shirts?" -> "shirts"
+    """
+    text = (message or "").casefold()
+
+    # Remove common intent phrases first so the remaining words describe
+    # the actual product the customer wants.
+    intent_phrases = (
+        "which stores sell",
+        "which store sells",
+        "which shops sell",
+        "which shop sells",
+        "what stores sell",
+        "what store sells",
+        "what shops sell",
+        "what shop sells",
+        "where can i buy",
+        "where can i get",
+        "who sells",
+        "i want to buy",
+        "i would like to buy",
+        "i'd like to buy",
+        "i need",
+        "i am looking for",
+        "i'm looking for",
+        "looking for",
+        "find me",
+    )
+
+    for phrase in intent_phrases:
+        text = text.replace(phrase, " ")
+
+    words = re.findall(r"[a-z0-9]+", text)
+
+    useful = [
+        word
+        for word in words
+        if len(word) >= 2
+        and word not in PRODUCT_REQUEST_STOPWORDS
+    ]
+
+    # Keep order while removing duplicates.
+    useful = list(dict.fromkeys(useful))
+
+    return " ".join(useful).strip()
+
+
+def search_product_matches(message, limit=8):
+    """
+    Search product/service information with stricter matching.
+
+    For multi-word products such as:
+        "ice cream"
+        "running shoes"
+        "face mask"
+
+    a shop must match the full phrase OR all meaningful words.
+    This prevents false matches such as "ice facial" for "ice cream".
+    """
+
+    product_query = extract_product_query(
+        message
+    )
+
+    if not product_query:
+        return []
+
+    query_terms = _chat_terms(
+        product_query
+    )
+
+    if not query_terms:
+        return []
+
+    shops = get_dpulze_shop_overview()
+
+    ranked = []
+
+    exact_phrase = (
+        product_query
+        .casefold()
+        .strip()
+    )
+
+    # Original words only, before singular/plural expansion
+    original_words = re.findall(
+        r"[a-z0-9]+",
+        exact_phrase
+    )
+
+    original_words = [
+        word
+        for word in original_words
+        if len(word) >= 2
+    ]
+
+    multi_word_product = (
+        len(original_words) >= 2
+    )
+
+    for shop in shops:
+
+        product_text = " ".join([
+            str(
+                shop.get(
+                    "products_services"
+                ) or ""
+            ),
+            str(
+                shop.get(
+                    "full_description"
+                ) or ""
+            ),
+            str(
+                shop.get(
+                    "description"
+                ) or ""
+            ),
+        ]).casefold()
+
+        shop_name = str(
+            shop.get(
+                "shop_name"
+            ) or ""
+        ).casefold()
+
+        category = str(
+            shop.get(
+                "category"
+            ) or ""
+        ).casefold()
+
+        product_terms = _chat_terms(
+            product_text
+        )
+
+        shop_name_terms = _chat_terms(
+            shop_name
+        )
+
+        category_terms = _chat_terms(
+            category
+        )
+
+        score = 0
+
+        # ---------------------------------
+        # 1. EXACT PRODUCT PHRASE
+        # ---------------------------------
+
+        exact_match = (
+            exact_phrase
+            and exact_phrase
+            in product_text
+        )
+
+        if exact_match:
+            score += 30
+
+
+        # ---------------------------------
+        # 2. WORD MATCHING
+        # ---------------------------------
+
+        matched_product_terms = (
+            query_terms
+            & product_terms
+        )
+
+        matched_name_terms = (
+            query_terms
+            & shop_name_terms
+        )
+
+        matched_category_terms = (
+            query_terms
+            & category_terms
+        )
+
+
+        # ---------------------------------
+        # 3. STRICT MULTI-WORD RULE
+        # ---------------------------------
+
+        if multi_word_product:
+
+            original_matches = sum(
+                1
+                for word
+                in original_words
+                if word
+                in product_terms
+            )
+
+            # For "ice cream":
+            # both "ice" AND "cream"
+            # must be present unless exact phrase matched.
+            if (
+                not exact_match
+                and original_matches
+                < len(original_words)
+            ):
+                continue
+
+
+        # ---------------------------------
+        # 4. SINGLE-WORD PRODUCTS
+        # ---------------------------------
+
+        else:
+
+            if (
+                not matched_product_terms
+                and not matched_name_terms
+            ):
+                continue
+
+
+        # ---------------------------------
+        # 5. SCORE RESULTS
+        # ---------------------------------
+
+        score += (
+            len(
+                matched_product_terms
+            )
+            * 6
+        )
+
+        score += (
+            len(
+                matched_name_terms
+            )
+            * 4
+        )
+
+        # Category is supporting evidence only.
+        if (
+            matched_product_terms
+            or matched_name_terms
+        ):
+            score += (
+                len(
+                    matched_category_terms
+                )
+                * 2
+            )
+
+
+        if score > 0:
+
+            ranked.append(
+                (
+                    score,
+                    shop
+                )
+            )
+
+
+    ranked.sort(
+        key=lambda item: (
+            -item[0],
+            (
+                item[1].get(
+                    "shop_name"
+                ) or ""
+            ).casefold(),
+        )
+    )
+
+
+    return [
+        shop
+        for _, shop
+        in ranked[:limit]
+    ]
 
 
 def search_relevant_shops(message, limit=8):
@@ -1966,9 +2271,7 @@ def is_specific_product_request(message):
 
 
 def build_product_match_reply(message, shops):
-    """
-    Build a database-backed product/shop answer.
-    """
+    """Build a database-backed product/shop answer."""
     if not shops:
         return (
             "I couldn't find a matching shop for that item "
@@ -1995,11 +2298,12 @@ def build_product_match_reply(message, shops):
 
     if len(shops) == 1:
         heading = "I found this matching shop:"
+        ending = "\n\nWould you like navigation to this shop?"
     else:
         heading = "I found these matching shops:"
+        ending = "\n\nTell me which shop you would like to navigate to."
 
-    return heading + "\n\n" + "\n".join(lines)
-
+    return heading + "\n\n" + "\n".join(lines) + ending
 
 def generate_chatbot_reply(message):
     if not message or not message.strip():
@@ -2121,12 +2425,20 @@ def generate_chatbot_reply(message):
 
     if is_specific_product_request(message):
 
-        product_matches = search_relevant_shops(
+        product_matches = search_product_matches(
             message,
             limit=8
         )
 
         if product_matches:
+            # If only one shop is a strong match, remember it for a
+            # follow-up "yes" / "take me there".
+            if len(product_matches) == 1:
+                session["navigation_shop"] = {
+                    "shop_code": product_matches[0]["shop_code"],
+                    "shop_name": product_matches[0]["shop_name"],
+                }
+
             return build_product_match_reply(
                 message,
                 product_matches
