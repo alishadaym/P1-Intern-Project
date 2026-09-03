@@ -1,14 +1,19 @@
 let mapData = null;
 // Temporary default while the 2F navigation nodes are being positioned.
-const DEFAULT_FLOOR_ID = "upper-ground";
-// const DEFAULT_FLOOR_ID = "ground";
-const DEFAULT_START_NODES = {
-    ground: "node_01",
-    "upper-ground": "ug_node_lift_north",
-    "2f": "2f_node_lift_north"
-};
+const DEFAULT_FLOOR_ID = "2f";
+// const DEFAULT_START_NODES = {
+//     ground: "node_01",
+//     "upper-ground": "ug_node_lift_north",
+//     "2f": "2f_node_lift_north"
+// };
+const DEFAULT_START_NODE = "2f_node_lift_east";
 const FLOOR_IDS = ["ground", "upper-ground", "2f"];
 const FLOOR_TRANSFER_DISTANCE = 100;
+const LIFT_LANES = [
+    ["ground_lift_centre", "ug_lift_centre", "2f_lift_north"],
+    ["ground_lift_south", "ug_lift_north", "2f_lift_west"],
+    ["ground_lift_east", "ug_lift_south", "2f_lift_east"]
+];
 let currentFloorId = DEFAULT_FLOOR_ID;
 let routeStartNodeOverride = null;
 let selectedShopId = null;
@@ -48,7 +53,7 @@ function getStartNodeId()
         return scannedStartNodeId;
     }
 
-    return DEFAULT_START_NODES[currentFloorId] || "node_01";
+    return DEFAULT_START_NODE;
 }
 
 // LOAD MAP DATA FROM FLASK
@@ -1322,6 +1327,21 @@ function getLiftUtilities(floorData)
     );
 }
 
+function getMatchingDestinationLift(startLift, destinationFloorId, floorData)
+{
+    const liftLane = LIFT_LANES.find(lane => lane.includes(startLift.utility_code));
+    if (!liftLane)
+    {
+        return null;
+    }
+
+    const destinationIndex = FLOOR_IDS.indexOf(destinationFloorId);
+    const destinationUtilityCode = liftLane[destinationIndex];
+    return getLiftUtilities(floorData).find(utility =>
+        utility.utility_code === destinationUtilityCode
+    ) || null;
+}
+
 async function findNearestRestroom()
 {
 
@@ -1375,9 +1395,13 @@ async function findNearestRestroom()
                         startNodeId,
                         startLift.node_id
                     );
-                    const destinationLifts = getLiftUtilities(destinationFloor);
+                    const destinationLift = getMatchingDestinationLift(
+                        startLift,
+                        floorId,
+                        destinationFloor
+                    );
 
-                    destinationLifts.forEach(destinationLift =>
+                    if (destinationLift)
                     {
                         const fromLiftPath = findShortestPathInMap(
                             destinationFloor.map,
@@ -1404,7 +1428,7 @@ async function findNearestRestroom()
                                 destinationLift
                             };
                         }
-                    });
+                    }
                 });
             });
         });
