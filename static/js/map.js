@@ -1,7 +1,6 @@
 let mapData = null;
-// Temporary default while the 2F navigation nodes are being positioned.
-const DEFAULT_FLOOR_ID = "2f";
-const DEFAULT_START_NODE = "2f_node_lift_east";
+const DEFAULT_FLOOR_ID = "ground";
+// const DEFAULT_START_NODE = "2f_node_lift_east";
 const FLOOR_IDS = ["ground", "upper-ground", "2f"];
 const FLOOR_TRANSFER_DISTANCE = 100;
 const LIFT_LANES = [
