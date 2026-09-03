@@ -1,0 +1,103 @@
+{
+    "map_id": "dpulze_2f",
+    "floor": "2f",
+    "database_floor": "2F",
+    "name": "Dpulze Shopping Mall - 2nd Floor",
+    "image": {
+        "filename": "dpulze 2f floorplan.png",
+        "width": 1015,
+        "height": 561
+    },
+    "entrances": [],
+    "shop_locations": {},
+    "facilities": {
+        "2f_baby_diaper": {
+            "name": "Baby Diaper Room - 2F",
+            "type": "baby_diaper",
+            "x": 211,
+            "y": 445,
+            "node_id": "2f_node_baby_diaper"
+        },
+        "2f_oku": {
+            "name": "OKU Restroom - 2F",
+            "type": "oku",
+            "x": 638,
+            "y": 486,
+            "node_id": "2f_node_oku"
+        },
+        "2f_restroom_west": {
+            "name": "Restroom - 2F West",
+            "type": "restroom",
+            "x": 250,
+            "y": 445,
+            "node_id": "2f_node_restroom_west"
+        },
+        "2f_restroom_south": {
+            "name": "Restroom - 2F South",
+            "type": "restroom",
+            "x": 605,
+            "y": 486,
+            "node_id": "2f_node_restroom_south"
+        },
+        "2f_lift_east": {
+            "name": "Lift - 2F East",
+            "type": "lift",
+            "x": 910,
+            "y": 385,
+            "node_id": "2f_node_lift_east"
+        },
+        "2f_lift_north": {
+            "name": "Lift - 2F North",
+            "type": "lift",
+            "x": 625,
+            "y": 200,
+            "node_id": "2f_node_lift_north"
+        },
+        "2f_lift_west": {
+            "name": "Lift - 2F West",
+            "type": "lift",
+            "x": 243,
+            "y": 397,
+            "node_id": "2f_node_lift_west"
+        }
+    },
+    "nodes": {
+        "2f_node_baby_diaper": {"x": 225, "y": 425},
+        "2f_node_oku": {"x": 642, "y": 470},
+        "2f_node_restroom_west": {"x": 250, "y": 420},
+        "2f_node_restroom_south": {"x": 628, "y": 473},
+        "2f_node_lift_east": {"x": 910, "y": 405},
+        "2f_node_lift_north": {"x": 625, "y": 220},
+        "2f_node_lift_west": {"x": 243, "y": 375},
+        "node_1": {"x": 265,"y": 420},
+        "node_2": {"x": 265,"y": 375},
+        "node_3": {"x": 295,"y": 380},
+        "node_4": {"x": 400,"y": 380}, 
+        "node_5": {"x": 640,"y": 240},
+        "node_6": {"x": 650,"y": 300},
+        "node_7": {"x": 650,"y": 450},
+        "node_8": {"x": 720,"y": 350},
+        "node_9": {"x": 790,"y": 400},
+        "node_10": {"x": 430,"y": 360},
+        "node_11": {"x": 650,"y": 360}
+    },
+    "connections": [
+        ["2f_node_baby_diaper", "2f_node_restroom_west"],
+        ["2f_node_restroom_west", "node_1"],
+        ["node_1", "node_2"],
+        ["node_2", "2f_node_lift_west"],
+        ["node_2", "node_3"],
+        ["node_3", "node_4"],
+        ["2f_node_lift_north", "node_5"],
+        ["node_5", "node_6"],
+        ["node_7", "2f_node_oku"],
+        ["2f_node_oku", "2f_node_restroom_south"],
+        ["node_6", "node_8"],
+        ["node_8", "node_9"],
+        ["node_9", "2f_node_lift_east"],
+        ["node_4", "node_10"],
+        ["node_10", "node_11"],
+        ["node_6", "node_11"],
+        ["node_11", "node_7"]
+    ]
+}

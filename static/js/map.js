@@ -7,7 +7,10 @@ const DEFAULT_START_NODES = {
     "upper-ground": "ug_node_lift_north",
     "2f": "2f_node_lift_north"
 };
+const FLOOR_IDS = ["ground", "upper-ground", "2f"];
+const FLOOR_TRANSFER_DISTANCE = 100;
 let currentFloorId = DEFAULT_FLOOR_ID;
+let routeStartNodeOverride = null;
 let selectedShopId = null;
 let shopDatabase = {};
 let shopRecords = [];
@@ -34,6 +37,11 @@ function getStartNodeId()
     const scannedStartNodeId = startNodeData
         ? JSON.parse(startNodeData.textContent)
         : null;
+
+    if (routeStartNodeOverride && mapData && mapData.nodes[routeStartNodeOverride])
+    {
+        return routeStartNodeOverride;
+    }
 
     if (scannedStartNodeId && mapData && mapData.nodes[scannedStartNodeId])
     {
@@ -188,6 +196,7 @@ document.addEventListener("DOMContentLoaded", async function()
 
     document.getElementById("floor-select").addEventListener("change", async function(event)
     {
+        routeStartNodeOverride = null;
         stopNavigation();
         closeShopDetails();
         closeUtilityDetails();
@@ -1182,47 +1191,247 @@ function getPathDistance(path)
     return distance;
 }
 
-function findNearestRestroom()
+function findShortestPathInMap(floorMap, startNodeId, endNodeId)
 {
+    if (!floorMap.nodes[startNodeId] || !floorMap.nodes[endNodeId])
+    {
+        return null;
+    }
+
+    const distances = {};
+    const previous = {};
+    const unvisited = new Set(Object.keys(floorMap.nodes));
+
+    Object.keys(floorMap.nodes).forEach(nodeId =>
+    {
+        distances[nodeId] = Infinity;
+        previous[nodeId] = null;
+    });
+    distances[startNodeId] = 0;
+
+    while (unvisited.size > 0)
+    {
+        let currentNode = null;
+        let smallestDistance = Infinity;
+
+        unvisited.forEach(nodeId =>
+        {
+            if (distances[nodeId] < smallestDistance)
+            {
+                smallestDistance = distances[nodeId];
+                currentNode = nodeId;
+            }
+        });
+
+        if (currentNode === null)
+        {
+            break;
+        }
+
+        unvisited.delete(currentNode);
+        if (currentNode === endNodeId)
+        {
+            break;
+        }
+
+        floorMap.connections.forEach(connection =>
+        {
+            const [nodeA, nodeB] = connection;
+            const neighbour = nodeA === currentNode
+                ? nodeB
+                : nodeB === currentNode ? nodeA : null;
+
+            if (!neighbour || !unvisited.has(neighbour))
+            {
+                return;
+            }
+
+            const currentPosition = floorMap.nodes[currentNode];
+            const neighbourPosition = floorMap.nodes[neighbour];
+            const dx = neighbourPosition.x - currentPosition.x;
+            const dy = neighbourPosition.y - currentPosition.y;
+            const newDistance = distances[currentNode] + Math.sqrt((dx * dx) + (dy * dy));
+
+            if (newDistance < distances[neighbour])
+            {
+                distances[neighbour] = newDistance;
+                previous[neighbour] = currentNode;
+            }
+        });
+    }
+
+    if (distances[endNodeId] === Infinity)
+    {
+        return null;
+    }
+
+    const path = [];
+    let currentNode = endNodeId;
+    while (currentNode !== null)
+    {
+        path.unshift(currentNode);
+        currentNode = previous[currentNode];
+    }
+
+    return path[0] === startNodeId ? path : null;
+}
+
+function getPathDistanceInMap(floorMap, path)
+{
+    let distance = 0;
+
+    for (let index = 1; index < path.length; index += 1)
+    {
+        const previousNode = floorMap.nodes[path[index - 1]];
+        const currentNode = floorMap.nodes[path[index]];
+        distance += Math.hypot(
+            currentNode.x - previousNode.x,
+            currentNode.y - previousNode.y
+        );
+    }
+
+    return distance;
+}
+
+async function loadFloorRoutingData()
+{
+    const floorData = await Promise.all(FLOOR_IDS.map(async floorId =>
+    {
+        const mapResponse = await fetch(`/api/map?floor=${encodeURIComponent(floorId)}`);
+        const utilityResponse = await fetch(`/api/utilities?floor=${encodeURIComponent(floorId)}`);
+
+        if (!mapResponse.ok || !utilityResponse.ok)
+        {
+            throw new Error(`Failed to load routing data for ${floorId}.`);
+        }
+
+        return {
+            floorId,
+            map: await mapResponse.json(),
+            utilities: await utilityResponse.json()
+        };
+    }));
+
+    return Object.fromEntries(floorData.map(item => [item.floorId, item]));
+}
+
+function getLiftUtilities(floorData)
+{
+    return floorData.utilities.filter(utility =>
+        utility.type === "lift" && floorData.map.nodes[utility.node_id]
+    );
+}
+
+async function findNearestRestroom()
+{
+
+    const startFloorId = currentFloorId;
     const startNodeId = getStartNodeId();
 
     if (!mapData.nodes[startNodeId])
     {
-        alert("Your current location is on another floor. Select that floor to find a restroom.");
+        alert("Your current location is not available on this floor.");
         return;
     }
 
-    const candidates = Object.entries(mapData.facilities || {})
-        .filter(([, utility]) =>
-            utility.type === "restroom" &&
-            mapData.nodes[utility.node_id]
-        );
-
-    let nearest = null;
-
-    candidates.forEach(([utilityId, utility]) =>
+    try
     {
-        const path = findShortestPath(startNodeId, utility.node_id);
+        const floors = await loadFloorRoutingData();
+        const startFloor = floors[startFloorId];
+        const startLifts = getLiftUtilities(startFloor);
+        let nearest = null;
 
-        if (path && (!nearest || getPathDistance(path) < nearest.distance))
+        FLOOR_IDS.forEach(floorId =>
         {
-            nearest = {
-                utilityId,
-                utility,
-                distance: getPathDistance(path)
-            };
+            const destinationFloor = floors[floorId];
+            const restrooms = destinationFloor.utilities.filter(utility =>
+                utility.type === "restroom" && destinationFloor.map.nodes[utility.node_id]
+            );
+
+            restrooms.forEach(restroom =>
+            {
+                if (floorId === startFloorId)
+                {
+                    const path = findShortestPathInMap(
+                        startFloor.map,
+                        startNodeId,
+                        restroom.node_id
+                    );
+                    if (path)
+                    {
+                        const distance = getPathDistanceInMap(startFloor.map, path);
+                        if (!nearest || distance < nearest.distance)
+                        {
+                            nearest = {floorId, restroom, path, distance};
+                        }
+                    }
+                    return;
+                }
+
+                startLifts.forEach(startLift =>
+                {
+                    const toLiftPath = findShortestPathInMap(
+                        startFloor.map,
+                        startNodeId,
+                        startLift.node_id
+                    );
+                    const destinationLifts = getLiftUtilities(destinationFloor);
+
+                    destinationLifts.forEach(destinationLift =>
+                    {
+                        const fromLiftPath = findShortestPathInMap(
+                            destinationFloor.map,
+                            destinationLift.node_id,
+                            restroom.node_id
+                        );
+                        if (!toLiftPath || !fromLiftPath)
+                        {
+                            return;
+                        }
+
+                        const distance =
+                            getPathDistanceInMap(startFloor.map, toLiftPath) +
+                            FLOOR_TRANSFER_DISTANCE +
+                            getPathDistanceInMap(destinationFloor.map, fromLiftPath);
+                        if (!nearest || distance < nearest.distance)
+                        {
+                            nearest = {
+                                floorId,
+                                restroom,
+                                path: fromLiftPath,
+                                distance,
+                                transferLift: startLift,
+                                destinationLift
+                            };
+                        }
+                    });
+                });
+            });
+        });
+
+        if (!nearest)
+        {
+            alert("No reachable restroom was found on any floor.");
+            return;
         }
-    });
 
-    if (!nearest)
-    {
-        alert("No reachable restroom was found on this floor.");
-        return;
+        if (nearest.floorId !== startFloorId)
+        {
+            routeStartNodeOverride = nearest.destinationLift.node_id;
+            document.getElementById("floor-select").value = nearest.floorId;
+            await loadMapData(nearest.floorId);
+            populateShopDropdown();
+        }
+
+        selectUtility(nearest.restroom.utility_code);
+        showUtilityDetails(nearest.restroom);
+        startNavigation();
     }
-
-    selectUtility(nearest.utilityId);
-    showUtilityDetails(nearest.utility);
-    startNavigation();
+    catch (error)
+    {
+        console.error("Error finding nearest restroom:", error);
+        alert("The nearest restroom could not be calculated right now.");
+    }
 }
 
 // DRAW ROUTE ON MAP

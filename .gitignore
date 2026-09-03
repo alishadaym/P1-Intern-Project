@@ -3,4 +3,7 @@ __pycache__/
 *.log
 .venv/
 venv/
-data/
+data/*
+!data/map.json
+!data/map_upper_ground.json
+!data/map_2f.json
