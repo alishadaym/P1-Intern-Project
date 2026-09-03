@@ -1,67 +1,55 @@
 let selectedDirectoryShop = null;
+let directoryShops = [];
+let selectedCategory = "";
+let selectedFloor = "";
 
 document.addEventListener(
     "DOMContentLoaded",
-    async function () {
+    async function ()
+    {
         await loadDirectoryShops();
 
         setupModal();
         setupMenu();
+        setupDirectoryDropdowns();
+
+        document
+            .getElementById("directory-search")
+            .addEventListener(
+                "input",
+                renderDirectoryShops
+            );
     }
 );
 
 // LOAD SHOPS FROM DATABASE
-async function loadDirectoryShops() {
-    try {
-        const response = await fetch("/api/shops");
+async function loadDirectoryShops()
+{
+    try
+    {
+        const response =
+            await fetch("/api/shops");
 
-        if (!response.ok) {
-            throw new Error(
-                "Unable to load shops."
-            );
+        if (!response.ok)
+        {
+            throw new Error("Unable to load shops.");
         }
 
-        const shops = await response.json();
+        const shops =await response.json();
 
-        const shopList =
-            document.getElementById(
-                "shop-list"
-            );
+        // Keep only shops that have a shop_code
+        directoryShops =
+            shops.filter(shop => shop.shop_code);
 
-        shopList.innerHTML = "";
+        // Create category + floor dropdown options
+        populateDirectoryFilters();
 
-        shops.forEach(shop => {
-            // Ignore shops without shop_code
-            if (!shop.shop_code) {
-                return;
-            }
-
-            const button =
-                document.createElement(
-                    "button"
-                );
-
-            button.classList.add(
-                "shop-button"
-            );
-
-            button.textContent =
-                shop.shop_name;
-
-            button.addEventListener(
-                "click",
-                function () {
-                    openShopModal(shop);
-                }
-            );
-
-            shopList.appendChild(
-                button
-            );
-        });
+        // Display all shops initially
+        renderDirectoryShops();
     }
 
-    catch (error) {
+    catch (error)
+    {
         console.error(
             "Directory error:",
             error
@@ -205,4 +193,280 @@ function setupMenu() {
             );
         }
     );
+}
+
+function populateDirectoryFilters()
+{
+    const categoryMenu = document.getElementById("category-menu");
+
+    const floorMenu = document.getElementById("floor-menu");
+
+    categoryMenu.innerHTML = "";
+    floorMenu.innerHTML = "";
+
+    /* ALL CATEGORIES */
+    const allCategoryButton = document.createElement("button");
+
+    allCategoryButton.type = "button";
+
+    allCategoryButton.textContent = "All Categories";
+
+    allCategoryButton.addEventListener(
+        "click", function()
+        {
+            selectedCategory = "";
+
+            document.getElementById(
+                "category-label"
+            ).textContent = "Filter Category";
+
+            closeDropdowns();
+            renderDirectoryShops();
+        }
+    );
+
+    categoryMenu.appendChild(allCategoryButton);
+
+    /* CATEGORY OPTIONS */
+    const categories =
+        [...new Set(directoryShops.map(shop => shop.category).filter(Boolean))].sort();
+
+    categories.forEach(category =>
+    {
+        const button = document.createElement("button");
+
+        button.type = "button";
+        button.textContent = category;
+
+        button.addEventListener(
+            "click", function()
+            {
+                selectedCategory = category;
+
+                document.getElementById("category-label").textContent = category;
+
+                closeDropdowns();
+                renderDirectoryShops();
+            }
+        );
+
+        categoryMenu.appendChild(button);
+    });
+
+    /* ALL FLOORS */
+    const allFloorButton = document.createElement("button");
+
+    allFloorButton.type = "button";
+
+    allFloorButton.textContent = "All Floors";
+
+    allFloorButton.addEventListener(
+        "click", function()
+        {
+            selectedFloor = "";
+
+            document.getElementById("floor-label").textContent = "Choose Floor";
+
+            closeDropdowns();
+            renderDirectoryShops();
+        }
+    );
+
+    floorMenu.appendChild(allFloorButton);
+
+    /* FLOOR OPTIONS */
+    const floors =
+        [...new Set(directoryShops.map(shop => shop.floor_name).filter(Boolean))].sort();
+
+    floors.forEach(floor =>
+    {
+        const button = document.createElement("button");
+
+        button.type = "button";
+        button.textContent = floor;
+
+        button.addEventListener(
+            "click", function()
+            {
+                selectedFloor =floor;
+
+                document.getElementById("floor-label").textContent = floor;
+
+                closeDropdowns();
+                renderDirectoryShops();
+            }
+        );
+
+        floorMenu.appendChild(
+            button
+        );
+    });
+}
+
+function renderDirectoryShops()
+{
+    const searchText =
+        document.getElementById("directory-search").value.trim().toLowerCase();
+
+    const filteredShops =
+        directoryShops.filter(shop =>
+        {
+            const name =
+                (shop.shop_name || "").toLowerCase();
+
+            const matchesSearch =
+                !searchText || name.includes(searchText);
+
+            const matchesCategory =
+                !selectedCategory || shop.category === selectedCategory;
+
+            const matchesFloor =
+                !selectedFloor || shop.floor_name === selectedFloor;
+
+            return (
+                matchesSearch && matchesCategory && matchesFloor
+            );
+        });
+
+    displayDirectoryShopButtons(filteredShops);
+}
+
+function displayDirectoryShopButtons(shops)
+{
+    const shopList =
+        document.getElementById(
+            "shop-list"
+        );
+
+    shopList.innerHTML = "";
+
+
+    if (shops.length === 0)
+    {
+        shopList.innerHTML =
+            `<p class="no-shops">
+                No shops found.
+            </p>`;
+
+        return;
+    }
+
+
+    shops.forEach(shop =>
+    {
+        const button =
+            document.createElement(
+                "button"
+            );
+
+        button.type = "button";
+
+        button.className =
+            "shop-button";
+
+        button.textContent =
+            shop.shop_name ||
+            "Unnamed Shop";
+
+
+        button.addEventListener(
+            "click",
+            function()
+            {
+                openShopModal(shop);
+            }
+        );
+
+
+        shopList.appendChild(button);
+    });
+}
+
+function setupDirectoryDropdowns()
+{
+    const categoryToggle =
+        document.getElementById(
+            "category-toggle"
+        );
+
+    const categoryDropdown =
+        document.getElementById(
+            "category-dropdown"
+        );
+
+
+    const floorToggle =
+        document.getElementById(
+            "floor-toggle"
+        );
+
+    const floorDropdown =
+        document.getElementById(
+            "floor-dropdown"
+        );
+
+
+    categoryToggle.addEventListener(
+        "click",
+        function(event)
+        {
+            event.stopPropagation();
+
+            floorDropdown.classList.remove(
+                "open"
+            );
+
+            categoryDropdown.classList.toggle(
+                "open"
+            );
+        }
+    );
+
+
+    floorToggle.addEventListener(
+        "click",
+        function(event)
+        {
+            event.stopPropagation();
+
+            categoryDropdown.classList.remove(
+                "open"
+            );
+
+            floorDropdown.classList.toggle(
+                "open"
+            );
+        }
+    );
+
+
+    document.addEventListener(
+        "click",
+        function(event)
+        {
+            if (
+                !event.target.closest(
+                    ".custom-dropdown"
+                )
+            )
+            {
+                closeDropdowns();
+            }
+        }
+    );
+}
+
+
+function closeDropdowns()
+{
+    document
+        .querySelectorAll(
+            ".custom-dropdown"
+        )
+        .forEach(dropdown =>
+        {
+            dropdown.classList.remove(
+                "open"
+            );
+        });
 }

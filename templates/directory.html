@@ -23,7 +23,46 @@
         <main class="directory-content">
             <h2>Mall Directory</h2>
 
+            <!-- SEARCH & FILTERS  TAB -->
             <p class="subtitle">FIND ALL THE AVAILABLE STORES HERE</p>
+            
+            <div class="directory-controls">
+            
+                <div class="search-wrapper">
+                    <span class="search-icon">⌕</span>
+            
+                    <input type="text" id="directory-search" class="directory-search" placeholder="Search shops..."
+                        autocomplete="off">
+                </div>
+            
+                <div class="directory-filter-row">
+            
+                    <!-- CATEGORY FILTER -->
+                    <div class="custom-dropdown" id="category-dropdown">
+            
+                        <button type="button" class="custom-dropdown-toggle" id="category-toggle">
+                            <span id="category-label">Filter Category</span>
+                            <span>⌄</span>
+                        </button>
+            
+                        <div class="custom-dropdown-menu" id="category-menu">
+                        </div>
+            
+                    </div>
+            
+                    <!-- FLOOR FILTER -->
+                    <div class="custom-dropdown" id="floor-dropdown">
+            
+                        <button type="button" class="custom-dropdown-toggle" id="floor-toggle">
+                            <span id="floor-label">Choose Floor</span>
+                            <span>⌄</span>
+                        </button>
+            
+                        <div class="custom-dropdown-menu" id="floor-menu">
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div id="shop-list" class="shop-list">
                 <!-- Generated from database -->
