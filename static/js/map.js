@@ -1,5 +1,13 @@
 let mapData = null;
-let currentFloorId = "ground";
+// Temporary default while the 2F navigation nodes are being positioned.
+const DEFAULT_FLOOR_ID = "2f";
+// const DEFAULT_FLOOR_ID = "ground";
+const DEFAULT_START_NODES = {
+    ground: "node_01",
+    "upper-ground": "ug_node_lift_north",
+    "2f": "2f_node_lift_north"
+};
+let currentFloorId = DEFAULT_FLOOR_ID;
 let selectedShopId = null;
 let shopDatabase = {};
 let shopRecords = [];
@@ -23,10 +31,16 @@ let utilityMapDragging = false;
 function getStartNodeId()
 {
     const startNodeData = document.getElementById("start-node-data");
-
-    return startNodeData
+    const scannedStartNodeId = startNodeData
         ? JSON.parse(startNodeData.textContent)
-        : "node_01";
+        : null;
+
+    if (scannedStartNodeId && mapData && mapData.nodes[scannedStartNodeId])
+    {
+        return scannedStartNodeId;
+    }
+
+    return DEFAULT_START_NODES[currentFloorId] || "node_01";
 }
 
 // LOAD MAP DATA FROM FLASK
@@ -162,6 +176,7 @@ document.addEventListener("DOMContentLoaded", async function()
 {
     console.log("Dpulze navigation applicaiton started.");
 
+    document.getElementById("floor-select").value = DEFAULT_FLOOR_ID;
     await loadMapData();
     await loadUtilities();
     drawPOIMarkers();
