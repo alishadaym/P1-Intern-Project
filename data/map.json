@@ -1,6 +1,7 @@
 {
     "map_id": "dpulze_ground_floor",
     "floor": "ground",
+    "database_floor": "G",
     "name": "Dpulze Shopping Mall - Ground Floor",
     "image": {
         "filename": "dpulze_ground_floor.png",

@@ -2034,7 +2034,7 @@ function highlightSelectedShop(shopId)
 // LOAD UTILITIES (toilets/lifts/baby care rooms) FROM THE DB
 async function loadUtilities()
 {
-    const response = await fetch("/api/utilities");
+    const response = await fetch(`/api/utilities?floor=${encodeURIComponent(currentFloorId)}`);
 
     if (!response.ok)
     {

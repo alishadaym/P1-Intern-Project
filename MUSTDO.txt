@@ -445,3 +445,15 @@ SET
     products_services = 'Face product, hair product, body product, fragrance, makeup, gifts',
     website_url = 'https://www.thebodyshop.com.my/'
 WHERE id = '17';
+
+//UG utilities
+INSERT INTO utilities
+    (utility_type, name, map_code, floor)
+VALUES
+    ('surau', 'Surau - Upper Ground', 'ug_surau', 'UG'),
+    ('restroom', 'Restroom - Upper Ground', 'ug_restroom', 'UG'),
+    ('oku', 'OKU Restroom - Upper Ground', 'ug_oku', 'UG'),
+    ('baby_diaper', 'Baby Diaper Room - Upper Ground', 'ug_baby_diaper', 'UG'),
+    ('lift', 'Lift - Upper Ground North', 'ug_lift_north', 'UG'),
+    ('lift', 'Lift - Upper Ground Centre', 'ug_lift_centre', 'UG'),
+    ('lift', 'Lift - Upper Ground South', 'ug_lift_south', 'UG');
