@@ -22,13 +22,6 @@
         <aside class="sidebar">
             <h2>Navigation</h2>
 
-            <label for="floor">Floor</label>
-
-            <select id="floor">
-                <option value="ground">Ground Floor</option>
-                <!-- <option value="first">First Floor</option> -->
-            </select>
-
             <label for="shop-search">Find Shop</label>
             <div class="shop-autocomplete">
                 <input type="text" id="shop-search" placeholder="Search shops..." autocomplete="off">
@@ -54,6 +47,13 @@
 
         <section class="map-section">
             <div class="map-viewport" id="map-viewport">
+                <div class="floor-switcher">
+                    <label for="floor-select">Floor</label>
+                    <select id="floor-select">
+                        <option value="ground">Ground Floor</option>
+                        <option value="upper-ground">Upper Ground Floor</option>
+                    </select>
+                </div>
                 <div class="map-container">
                     <img src="{{ url_for('static', filename='img/dpulze_ground_floor.png') }}"
                         id="floor-map" alt="Dpulze Ground Floor Map">

@@ -40,14 +40,25 @@ GENERAL_VOUCHER_TYPES = {
     "parking": "Parking Voucher",
 }
 
-def load_map():
-    map_path = os.path.join("data", "map.json")
+MAP_FILES = {
+    "ground": "map.json",
+    "upper-ground": "map_upper_ground.json",
+}
+
+
+def load_map(floor_id="ground"):
+    map_filename = MAP_FILES.get(floor_id)
+    if not map_filename:
+        abort(404)
+
+    map_path = os.path.join("data", map_filename)
     with open(map_path, "r", encoding="utf-8") as file:
         return json.load(file)
 
 @app.route("/api/map")
 def get_map():
-    map_data = load_map()
+    floor_id = request.args.get("floor", "ground")
+    map_data = load_map(floor_id)
     return jsonify(map_data)
 
 @app.route("/api/shops")
@@ -104,10 +115,13 @@ def get_categories():
 
 @app.route("/api/utilities")
 def get_utilities():
+    floor_id = request.args.get("floor", "ground")
+    map_data = load_map(floor_id)
+    database_floor = map_data.get("database_floor")
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
 
-    cursor.execute("""
+    utility_query = """
         SELECT
             u.id AS utility_id,
             u.name,
@@ -121,15 +135,23 @@ def get_utilities():
             COALESCE(SUM(LOWER(c.status) = 'occupied'), 0) AS occupied_cubicles
         FROM utilities u
         LEFT JOIN cubicles c ON c.utility_id = u.id
+    """
+    query_params = ()
+    if database_floor:
+        utility_query += " WHERE u.floor = %s"
+        query_params = (database_floor,)
+
+    utility_query += """
         GROUP BY u.id, u.name, u.utility_type, u.floor
         ORDER BY u.utility_type, u.name
-    """)
+    """
+    cursor.execute(utility_query, query_params)
     utilities = cursor.fetchall()
 
     cursor.close()
     connection.close()
 
-    map_facilities = load_map().get("facilities", {})
+    map_facilities = map_data.get("facilities", {})
     used_map_facilities = set()
 
     for utility in utilities:

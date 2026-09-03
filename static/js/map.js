@@ -1,4 +1,5 @@
 let mapData = null;
+let currentFloorId = "ground";
 let selectedShopId = null;
 let shopDatabase = {};
 let shopRecords = [];
@@ -20,11 +21,11 @@ let utilityMapDragStartPanY = 0;
 let utilityMapDragging = false;
 
 // LOAD MAP DATA FROM FLASK
-async function loadMapData()
+async function loadMapData(floorId = currentFloorId)
 {
     try
     {
-        const response = await fetch("/api/map");
+        const response = await fetch(`/api/map?floor=${encodeURIComponent(floorId)}`);
 
         if (!response.ok)
         {
@@ -32,6 +33,11 @@ async function loadMapData()
         }
 
         mapData = await response.json();
+        currentFloorId = floorId;
+
+        const floorMap = document.getElementById("floor-map");
+        floorMap.src = `/static/img/${mapData.image.filename}`;
+        floorMap.alt = mapData.name;
 
         console.log("Map data loaded:");
         console.log(mapData);
@@ -155,6 +161,18 @@ document.addEventListener("DOMContentLoaded", async function()
     populateShopDropdown();
     populateCategoryDropdown();
     checkShopFromURL();
+
+    document.getElementById("floor-select").addEventListener("change", async function(event)
+    {
+        stopNavigation();
+        closeShopDetails();
+        closeUtilityDetails();
+        selectedShopId = null;
+        selectedDestination = null;
+        await loadMapData(event.target.value);
+        populateShopDropdown();
+        renderCategoryShops();
+    });
 
     // NAVIGATE BUTTON
     const navigateButton = document.getElementById("navigate-btn");
@@ -626,7 +644,7 @@ function getShopLabel(shopId)
 
 async function loadUtilities()
 {
-    const response = await fetch("/api/utilities");
+    const response = await fetch(`/api/utilities?floor=${encodeURIComponent(currentFloorId)}`);
 
     if (!response.ok)
     {
