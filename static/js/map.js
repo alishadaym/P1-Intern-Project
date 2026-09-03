@@ -1184,7 +1184,7 @@ function findNearestRestroom()
 
     const candidates = Object.entries(mapData.facilities || {})
         .filter(([, utility]) =>
-            (utility.type === "restroom" || utility.type === "oku") &&
+            utility.type === "restroom" &&
             mapData.nodes[utility.node_id]
         );
 
