@@ -20,6 +20,15 @@ let utilityMapDragStartPanX = 0;
 let utilityMapDragStartPanY = 0;
 let utilityMapDragging = false;
 
+function getStartNodeId()
+{
+    const startNodeData = document.getElementById("start-node-data");
+
+    return startNodeData
+        ? JSON.parse(startNodeData.textContent)
+        : "node_01";
+}
+
 // LOAD MAP DATA FROM FLASK
 async function loadMapData(floorId = currentFloorId)
 {
@@ -186,6 +195,11 @@ document.addEventListener("DOMContentLoaded", async function()
     {
         console.error("Navigate button not found.");
     }
+
+    document.getElementById("nearest-restroom-btn").addEventListener(
+        "click",
+        findNearestRestroom
+    );
 
     // SHOP DROPDOWN (kept in the DOM, hidden - still the source of truth
     // that selectShop() and startNavigation() read/write)
@@ -610,7 +624,7 @@ function drawUserMarker()
     const userMarker = document.getElementById("user-marker");
 
     // Set by the last scanned QR code; falls back to Main Entrance for guests
-    const startNodeId = window.START_NODE_ID || "node_01";
+    const startNodeId = getStartNodeId();
     const startNode = mapData.nodes[startNodeId];
 
     if (!startNode)
@@ -1142,6 +1156,65 @@ function findShortestPath(startNodeId, endNodeId)
     return path;
 }
 
+function getPathDistance(path)
+{
+    let distance = 0;
+
+    for (let index = 1; index < path.length; index += 1)
+    {
+        const previousNode = mapData.nodes[path[index - 1]];
+        const currentNode = mapData.nodes[path[index]];
+        const dx = currentNode.x - previousNode.x;
+        const dy = currentNode.y - previousNode.y;
+        distance += Math.sqrt((dx * dx) + (dy * dy));
+    }
+
+    return distance;
+}
+
+function findNearestRestroom()
+{
+    const startNodeId = getStartNodeId();
+
+    if (!mapData.nodes[startNodeId])
+    {
+        alert("Your current location is on another floor. Select that floor to find a restroom.");
+        return;
+    }
+
+    const candidates = Object.entries(mapData.facilities || {})
+        .filter(([, utility]) =>
+            (utility.type === "restroom" || utility.type === "oku") &&
+            mapData.nodes[utility.node_id]
+        );
+
+    let nearest = null;
+
+    candidates.forEach(([utilityId, utility]) =>
+    {
+        const path = findShortestPath(startNodeId, utility.node_id);
+
+        if (path && (!nearest || getPathDistance(path) < nearest.distance))
+        {
+            nearest = {
+                utilityId,
+                utility,
+                distance: getPathDistance(path)
+            };
+        }
+    });
+
+    if (!nearest)
+    {
+        alert("No reachable restroom was found on this floor.");
+        return;
+    }
+
+    selectUtility(nearest.utilityId);
+    showUtilityDetails(nearest.utility);
+    startNavigation();
+}
+
 // DRAW ROUTE ON MAP
 function drawRoute(path)
 {
@@ -1194,7 +1267,7 @@ function startNavigation()
     }
 
 
-    const startNodeId = window.START_NODE_ID || "node_01";
+    const startNodeId = getStartNodeId();
 
     const destinationNodeId = selectedDestination.nodeId;
 
@@ -2185,6 +2258,11 @@ function checkShopFromURL() {
 
     const shouldNavigate =
         params.get("navigate");
+
+    if (params.get("nearest") === "1") {
+        findNearestRestroom();
+        return;
+    }
 
 
     if (!shopId) {

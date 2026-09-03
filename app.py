@@ -1236,6 +1236,12 @@ def generate_local_chat_reply(message):
     categories = get_shop_categories()
     category_hint = ", ".join(categories[:6]) if categories else "fashion, food, electronics, services"
 
+    if is_nearest_restroom_request(message):
+        return (
+            "I can help you find the nearest restroom from your current scanned location. "
+            "Open Map Navigation and use the nearest restroom route."
+        )
+
     if any(keyword in lowered for keyword in ["hi", "hello", "hey", "good morning", "good afternoon"]):
         return "Hi! I can help with mall information, store suggestions, categories, and shopping recommendations."
 
@@ -1281,6 +1287,19 @@ def find_shop_from_message(message):
         and shop["shop_name"].casefold() in normalized_message
     ]
     return max(matches, key=lambda shop: len(shop["shop_name"])) if matches else None
+
+
+def is_nearest_restroom_request(message):
+    lowered = message.casefold()
+    asks_for_restroom = any(
+        keyword in lowered
+        for keyword in ("restroom", "toilet", "bathroom", "washroom", "lavatory")
+    )
+    asks_for_nearest = any(
+        keyword in lowered
+        for keyword in ("nearest", "closest", "near me", "from my location")
+    )
+    return asks_for_restroom and asks_for_nearest
 
 
 def build_shop_navigation_reply(shop):
@@ -1431,7 +1450,12 @@ def chat_api():
     # Treat a natural affirmative reply as confirmation for the most recently
     # mentioned store.  The user does not need to repeat "map navigation".
     confirmation = is_confirmation_message(message)
-    selected_shop = find_shop_from_message(message)
+    nearest_restroom_request = is_nearest_restroom_request(message)
+    selected_shop = (
+        None
+        if nearest_restroom_request
+        else find_shop_from_message(message)
+    )
     if selected_shop:
         session["navigation_shop"] = {
             "shop_code": selected_shop["shop_code"],
@@ -1444,7 +1468,12 @@ def chat_api():
         memory = memory[-12:]
     session["chat_memory"] = memory
 
-    if selected_shop and not confirmation:
+    if nearest_restroom_request:
+        reply = (
+            "I’ll find the nearest restroom from your current scanned location. "
+            "Open Map Navigation to see the route."
+        )
+    elif selected_shop and not confirmation:
         # Keep the destination in the session and offer navigation in a
         # predictable format, regardless of which AI provider is available.
         reply = build_shop_navigation_reply(selected_shop)
@@ -1457,7 +1486,9 @@ def chat_api():
 
     navigation_shop = session.get("navigation_shop")
     navigation_url = None
-    if navigation_shop and confirmation:
+    if nearest_restroom_request:
+        navigation_url = url_for("map_page", nearest="1")
+    elif navigation_shop and confirmation:
         navigation_url = url_for(
             "map_page",
             shop=navigation_shop["shop_code"],

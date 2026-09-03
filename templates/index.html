@@ -37,6 +37,7 @@
             </select>
 
             <button id="navigate-btn" class="navigate-btn">Navigate</button>
+            <button id="nearest-restroom-btn" type="button">Nearest Restroom</button>
 
             <div class="category-shops-section">
                 <h3 id="category-results-title">Category Results</h3>
@@ -113,8 +114,8 @@
     <script>
         // Set by scanning a location QR code (see app.py's index route);
         // falls back to the main entrance when nothing has been scanned yet.
-        // window.START_NODE_ID = {{ (start_node or "node_01") | tojson }};
     </script>
+    <script id="start-node-data" type="application/json">{{ (start_node or "node_01") | tojson }}</script>
     <script src="{{ url_for('static', filename='js/map.js' )}}"></script>
 </body>
 </html>
