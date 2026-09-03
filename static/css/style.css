@@ -563,8 +563,11 @@ main {
 } */
 
 .poi-marker.utility-marker {
-    fill: transparent;
-    stroke: transparent;
+    fill: rgba(255, 152, 0, 0.01) !important;
+    stroke: rgba(255, 152, 0, 0.01) !important;
+
+    pointer-events: all !important;
+    cursor: pointer !important;
 }
 
 .poi-marker.utility-marker.utility-selected {
@@ -892,6 +895,20 @@ main {
     background-color: #5a3e2b;
 }
 
+/* Allow map shops/utilities to remain clickable
+   while information popup is open */
+
+#shop-modal,
+#utility-modal {
+    pointer-events: none;
+}
+
+/* But the actual popup card remains clickable */
+#shop-modal .utility-modal-content,
+#utility-modal .utility-modal-content {
+    pointer-events: auto;
+}
+
 @media (max-width: 700px) {
     .login-button {
         /* Side-by-side with "You scanned" only works when both fit on
@@ -1005,11 +1022,17 @@ main {
     pointer-events: auto;
 }
 
-#utility-modal,
-#utility-modal .utility-modal-content {
+/* Modal wrapper does not block the map */
+#utility-modal {
     pointer-events: none;
 }
 
+/* Actual utility popup remains usable */
+#utility-modal .utility-modal-content {
+    pointer-events: auto;
+}
+
+/* Close button remains clickable */
 #utility-modal .shop-modal-close {
     pointer-events: auto;
 }
