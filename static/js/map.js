@@ -1,6 +1,6 @@
 let mapData = null;
-const DEFAULT_FLOOR_ID = "ground";
-// const DEFAULT_START_NODE = "2f_node_lift_east";
+const DEFAULT_FLOOR_ID = "2f";
+const DEFAULT_START_NODE = "2f_node_lift_east";
 const FLOOR_IDS = ["ground", "upper-ground", "2f"];
 const FLOOR_TRANSFER_DISTANCE = 100;
 const LIFT_LANES = [
@@ -47,12 +47,31 @@ function getStartNodeId()
         return scannedStartNodeId;
     }
 
-    return DEFAULT_START_NODE;
+    const entranceNode = mapData.entrances
+        .map(entrance => entrance.node_id)
+        .find(nodeId => mapData.nodes[nodeId]);
+    if (entranceNode)
+    {
+        return entranceNode;
+    }
+
+    const facilityNode = Object.values(mapData.facilities || {})
+        .map(facility => facility.node_id)
+        .find(nodeId => mapData.nodes[nodeId]);
+    if (facilityNode)
+    {
+        return facilityNode;
+    }
+
+    return Object.keys(mapData.nodes)[0] || null;
 }
 
 // LOAD MAP DATA FROM FLASK
 async function loadMapData(floorId = currentFloorId)
 {
+    document.getElementById("shop-hotspots").innerHTML = "";
+    document.getElementById("poi-markers").innerHTML = "";
+
     try
     {
         const response = await fetch(`/api/map?floor=${encodeURIComponent(floorId)}`);
