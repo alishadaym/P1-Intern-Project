@@ -43,6 +43,7 @@ GENERAL_VOUCHER_TYPES = {
 MAP_FILES = {
     "ground": "map.json",
     "upper-ground": "map_upper_ground.json",
+    "2f": "map_2f.json",
 }
 
 
