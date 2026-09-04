@@ -543,6 +543,11 @@ font-weight: bold;
 display: none;
 }
 
+/* #navigation-lines,
+#navigation-nodes {
+display: block;
+} */
+
 .poi-marker {
 fill: #ff9800;
 stroke: white;

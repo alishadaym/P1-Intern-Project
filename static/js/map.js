@@ -1,5 +1,5 @@
 let mapData = null;
-const DEFAULT_FLOOR_ID = "ground";
+const DEFAULT_FLOOR_ID = "2f";
 const DEFAULT_START_NODES = {
     ground: "node_01",
     "upper-ground": "ug_node_lift_south",
@@ -8,9 +8,9 @@ const DEFAULT_START_NODES = {
 const FLOOR_IDS = ["ground", "upper-ground", "2f"];
 const FLOOR_TRANSFER_DISTANCE = 100;
 const LIFT_LANES = [
-    ["ground_lift_centre", "ug_lift_centre", "2f_lift_north"],
-    ["ground_lift_south", "ug_lift_north", "2f_lift_west"],
-    ["ground_lift_east", "ug_lift_south", "2f_lift_east"]
+    ["ground_lift_centre", "ug_lift_centre", "2f_lift_centre"],
+    ["ground_lift_south", "ug_lift_south", "2f_lift_south"],
+    ["ground_lift_east", "ug_lift_east", "2f_lift_east"]
 ];
 let currentFloorId = DEFAULT_FLOOR_ID;
 let routeStartNodeOverride = null;

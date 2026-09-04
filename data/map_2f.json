@@ -68,7 +68,7 @@
         "2f_node_restroom_south": {"x": 630, "y": 460},
         "2f_node_lift_east": {"x": 857, "y": 415},
         "2f_node_lift_centre": {"x": 627, "y": 268},
-        "2f_node_lift_south": {"x": 320, "y": 402},
+        "2f_node_lift_south": {"x": 320, "y": 380},
         "node_1": {"x": 340,"y": 415},
         "node_2": {"x": 340,"y": 385},
         "node_3": {"x": 380,"y": 395},
