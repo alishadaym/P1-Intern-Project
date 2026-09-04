@@ -525,11 +525,6 @@ font-weight: bold;
 display: none;
 }
 
-/* #navigation-lines,
-#navigation-nodes {
-display: block;
-} */
-
 .poi-marker {
 fill: #ff9800;
 stroke: white;
@@ -544,20 +539,6 @@ stroke: rgba(255, 152, 0, 0.01);
 pointer-events: all !important;
 cursor: pointer !important;
 }
-
-/* .poi-marker {
-fill: #ff9800;
-stroke: white;
-stroke-width: 3;
-}
-
-.poi-marker.utility-marker {
-fill: #ff9800;
-stroke: white;
-stroke-width: 3;
-pointer-events: all;
-cursor: pointer;
-} */
 
 .poi-marker.utility-marker.utility-selected {
 fill: #d96b32;
@@ -753,7 +734,11 @@ main {
 .sidebar {
     flex: 1 1 auto;
     width: 100%;
-    padding: 14px 12px 20px;
+    /* Pushed down from the map with extra top spacing (was 14px) so the
+       map above has clearer breathing room instead of feeling cramped
+       right against the nav controls. */
+    margin-top: 50px;
+    padding: 26px 12px 20px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
@@ -829,7 +814,10 @@ main {
     order: -1;
     flex: 0 0 auto;
     width: 100%;
-    padding: 10px;
+    /* Less padding around the map viewport (was 10px all round) so the
+       map itself renders larger and feels less boxed-in on narrow
+       screens. */
+    padding: 6px 6px 2px;
     overflow: visible;
     align-items: flex-start;
 }

@@ -603,3 +603,63 @@ SET
     products_services = 'Coffee, handcrafted beverages, foods, merchandise, ',
     website_url = 'https://www.starbucks.com.my/'
 WHERE id = '39';
+
+//insert floor 2f
+INSERT INTO floors (floor_name, floor_code)
+VALUES
+(2nd Floor, 2F);
+
+//insert into utilities for UG and 2f
+INSERT INTO utilities (utility_type, name, map_code, floor)
+VALUES
+(surau, Surau - Upper Ground, ug_surau, UG),
+(restroom, Restroom - Upper Ground, ug_restroom, UG),
+(oku, OKU Restroom - Upper Ground, ug_oku, UG),
+(baby_diaper, Baby Diaper Room - Upper Ground, ug_baby_diaper, UG),
+(lift, Lift - Upper Ground North, ug_lift_north, UG),
+(lift, Lift - Upper Ground Centre, ug_lift_centre, UG),
+(lift, Lift - Upper Ground South, ug_lift_south, UG),
+(baby_diaper, Baby Diaper Room - 2F, 2f_baby_diaper, 2F),
+(oku, OKU Restroom - 2F, 2f_oku, 2F),
+(restroom, Restroom - 2F West, 2f_restroom_west, 2F),
+(restroom, Restroom - 2F South, 2f_restroom_south, 2F),
+(lift, Lift - 2F East, 2f_lift_east, 2F),
+(lift, Lift - 2F North, 2f_lift_north, 2F),
+(lift, Lift - 2F West, 2f_lift_west, 2F);
+
+//insert into cubicles for UG and 2F
+INSERT INTO cubicles (utility_id, cubicle_number, status)
+VALUES
+//toilet ug
+(ur utility id, 1, Available),
+(ur utility id, 2, Available),
+(ur utility id, 3, Available),
+(ur utility id, 4, Available),
+(ur utility id, 5, Available),
+//oku ug
+(ur utility id, 1, Available),
+//baby ug
+(ur utility id, 1, Available),
+(ur utility id, 2, Available),
+(ur utility id, 3, Available),
+//toilet west 2f
+(ur utility id, 1, Available),
+(ur utility id, 2, Available),
+(ur utility id, 3, Available),
+(ur utility id, 4, Available),
+(ur utility id, 5, Available),
+//toilet east 2F
+(ur utility id, 1, Available),
+(ur utility id, 2, Available),
+(ur utility id, 3, Available),
+(ur utility id, 4, Available),
+(ur utility id, 5, Available),
+//oku 2F
+(ur utility id, 1, Available),
+//baby 2F
+(ur utility id, 1, Available),
+(ur utility id, 2, Available),
+(ur utility id, 3, Available),
+
+
+
