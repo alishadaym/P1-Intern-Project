@@ -36,7 +36,6 @@ start_occupancy_simulator()
 # only makes sense with a single app worker - gunicorn's default (see
 # Procfile) - since multiple workers would each run their own simulation
 # and fight over the same cubicles.
-# threading.Thread(target=run_simulator, daemon=True).start()
 
 GENERAL_VOUCHER_TYPES = {
     "parking": "Parking Voucher",
@@ -1383,25 +1382,9 @@ def get_dpulze_shop_overview(limit=None):
     """
 
     if limit is None:
-        cursor.execute("""
-                SELECT s.shop_code, s.shop_name, s.operating_hours, s.category, s.unit, s.description,
-                     s.full_description, s.products_services, f.floor_name
-            FROM shops s
-            LEFT JOIN floors f ON f.id = s.floor_id
-            ORDER BY f.id, s.shop_name
-        """)
+        cursor.execute(base_query)
     else:
-        cursor.execute("""
-                SELECT s.shop_code, s.shop_name, s.operating_hours, s.category, s.unit, s.description,
-                     s.full_description, s.products_services, f.floor_name
-            FROM shops s
-            LEFT JOIN floors f ON f.id = s.floor_id
-            ORDER BY f.id, s.shop_name
-            LIMIT %s
-        """, (limit,))
-    #     cursor.execute(base_query)
-    # else:
-    #     cursor.execute(base_query + " LIMIT %s", (limit,))
+        cursor.execute(base_query + " LIMIT %s", (limit,))
 
     shops = cursor.fetchall()
     cursor.close()
@@ -1437,215 +1420,10 @@ def get_dpulze_map_locations():
     return locations
 
 
-def build_mall_context():
-    categories = get_shop_categories()
-    shops = get_dpulze_shop_overview()
-    facilities = get_dpulze_facility_overview()
-    locations = get_dpulze_map_locations()
-
-    def shop_detail(shop):
-        detail = (
-            shop.get("products_services")
-            or shop.get("full_description")
-            or shop.get("description")
-            or shop.get("category")
-            or "general mall offerings"
-        )
-        return str(detail).strip()
-
-    category_text = ", ".join(categories) if categories else "general shopping"
-    facility_text = ", ".join(
-        f"{item['utility_type']} ({item['name']}, floor {item['floor'] or 'unknown'})" for item in facilities[:12]
-    ) if facilities else "restroom, OKU restroom, baby diaper room, lift"
-
-    shop_text = "; ".join(
-        f"{shop['shop_name']} ({shop['category'] or 'General'} on {shop['floor_name'] or 'ground floor'}): {shop_detail(shop)}"
-        for shop in shops
-    ) if shops else "No store list available"
-
-    location_text = "; ".join(
-        f"{item['location_name']} ({item['location_code']})" for item in locations[:12]
-    ) if locations else "main entrance and common zones"
-
-    return (
-        "You are the AI concierge for Dpulze Mall. "
-        "Answer questions only using the Dpulze Mall data in this app. "
-        "Use the full shops catalogue in the database, especially the store names, categories, descriptions, full_description, and products_services fields. "
-        "When a user asks for stores that sell a product or item, review the complete shops table and list every matching store based on its product/services description. "
-        "Do not invent stores, facilities, sections, or food courts that are not present in the mall data. "
-        "If a location or store is not listed in the Dpulze database or map, say it is not available in Dpulze Mall. "
-        "The available Dpulze map locations include: "
-        f"{location_text}. "
-        "This mall includes the following utility/facility entries: "
-        f"{facility_text}. "
-        "The mall store categories currently in the database are: "
-        f"{category_text}. "
-        "Sample Dpulze shops currently in the database: "
-        f"{shop_text}. "
-        "Keep replies concise, friendly, and specific to Dpulze Mall."
-    )
-
-
-def build_recommendation_guidance(message):
-    lowered = message.lower()
-    if not any(keyword in lowered for keyword in ("shoe", "shoes", "footwear", "sneaker", "sneakers")):
-        return ""
-
-    shops = get_dpulze_shop_overview()
-    shoe_terms = (
-        "shoe", "footwear", "sneaker", "sandal", "boot", "sportswear", "sporting", "running", "slipper"
-    )
-    matching_shops = []
-    for shop in shops:
-        if "permanently closed" in str(shop.get("operating_hours") or "").lower():
-            continue
-        searchable_text = " ".join(
-            str(shop.get(field) or "")
-            for field in ("shop_name", "category", "description", "full_description", "products_services")
-        ).lower()
-        if any(term in searchable_text for term in shoe_terms):
-            matching_shops.append(
-                f"{shop['shop_name']} ({shop['category'] or 'General'}): "
-                f"{shop.get('products_services') or shop.get('full_description') or shop.get('description') or shop.get('category') or 'No selling details'}"
-            )
-
-    matching_text = "; ".join(matching_shops) if matching_shops else "No shoe-related store was found"
-    return (
-        "This is a shoe/footwear request. Only recommend stores whose category or selling details "
-        "match shoes, footwear, sneakers, sandals, boots, sportswear, sporting goods, running shoes, or slippers. "
-        "Do not include electronics, telecommunications, food, beauty, furniture, banking, or other unrelated stores. "
-        "The database-matched shoe stores are: "
-        f"{matching_text}."
-    )
-
-
-def ask_ollama_chat(prompt, mall_context=None):
-    model_name = os.environ.get("OLLAMA_MODEL", "llama3.2")
-    mall_context = mall_context or build_mall_context()
-
-    payload = {
-        "model": model_name,
-        "prompt": (
-            f"{mall_context}\n\nUser question: {prompt}"
-        ),
-        "stream": False,
-        "options": {
-            "temperature": 0.7,
-            "num_predict": 250,
-        },
-    }
-
-    request = urllib.request.Request(
-        "http://localhost:11434/api/generate",
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-
-    try:
-        with urllib.request.urlopen(request, timeout=60) as response:
-            result = json.loads(response.read().decode("utf-8"))
-            text = result.get("response", "").strip()
-            if text:
-                return text
-    except Exception:
-        return None
-
-    return None
-
-
-def ask_openai_chat(prompt):
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        return None
-
-    payload = {
-        "model": "gpt-4o-mini",
-        "messages": [
-            {
-                "role": "system",
-                "content": (
-                    "You are a helpful mall concierge for Dpulze Mall. Use the mall database as the source of truth. "
-                    "The current mall database context is included with each user request. "
-                    "When someone asks which stores sell an item, search across the full shops catalogue and list all matching stores with their selling details. "
-                    "Do not rely on a few famous brands or generic recommendations if the database contains more specific matches. "
-                    "Answer user questions about stores, mall navigation, shopping recommendations, and general mall services. "
-                    "Keep replies concise, friendly, and practical."
-                ),
-            },
-            {"role": "user", "content": prompt},
-        ],
-        "temperature": 0.7,
-        "max_tokens": 250,
-    }
-
-    request = urllib.request.Request(
-        "https://api.openai.com/v1/chat/completions",
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
-
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            result = json.loads(response.read().decode("utf-8"))
-            return result["choices"][0]["message"]["content"].strip()
-    except Exception:
-        return None
-
-
-def generate_local_chat_reply(message):
-    if not message or not message.strip():
-        return "Please send a question or shopping request."
-
-    text = message.strip()
-    lowered = text.lower()
-    categories = get_shop_categories()
-    category_hint = ", ".join(categories[:6]) if categories else "fashion, food, electronics, services"
-
-    if is_nearest_restroom_request(message):
-        return (
-            "I can help you find the nearest restroom from your current scanned location. "
-            "Open Map Navigation and use the nearest restroom route."
-        )
-
-    if any(keyword in lowered for keyword in ["hi", "hello", "hey", "good morning", "good afternoon"]):
-        return "Hi! I can help with mall information, store suggestions, categories, and shopping recommendations."
-
-    if any(keyword in lowered for keyword in ["where", "locate", "direction", "map", "find"]):
-        return "You can use the mall map in the navigation page to find stores and facilities. I can also suggest nearby categories or relevant shops."
-
-    if any(keyword in lowered for keyword in ["recommend", "suggest", "shop", "buy", "looking for", "need"]):
-        if any(keyword in lowered for keyword in ["food", "eat", "restaurant", "cafe"]):
-            return "For food and dining, try the food and dining sections in the mall directory. If you want, I can narrow it down by budget or vibe."
-        if any(keyword in lowered for keyword in ["clothes", "fashion", "apparel", "outfit", "dress"]):
-            return "For fashion and apparel, look for the clothing and lifestyle categories in the mall. I can also suggest a quick shopping route for a casual or premium look."
-        if any(keyword in lowered for keyword in ["kids", "baby", "diaper", "family"]):
-            return "For family needs, check the baby care and family-friendly facilities on the map. You can also look for kid-friendly or family-oriented stores in the directory."
-        return (
-            f"I can help with shopping suggestions. Popular categories in this mall include: {category_hint}. "
-            "Tell me your preference, such as fashion, food, family needs, or budget, and I’ll narrow it down."
-        )
-
-    if any(keyword in lowered for keyword in ["bathroom", "toilet", "restroom", "baby diaper", "oku"]):
-        return "You can check the map for restroom, OKU restroom, and baby diaper room locations. The app also shows live availability for these facilities."
-
-    if any(keyword in lowered for keyword in ["opening", "hours", "close", "time"]):
-        return "Store hours are usually listed in the shop details on the map and directory. I can help you find the right store based on availability or shopping type."
-
-    return (
-        "I can help with mall navigation, store recommendations, categories, and shopping preferences. "
-        "Ask me for nearby stores, family-friendly spots, food options, or general mall help."
-    )
-
 def normalize_chat_text(value):
     """Normalize names so Nando's, nandos, F.O.S and similar forms can match."""
     value = (value or "").casefold()
     return re.sub(r"[^a-z0-9]+", "", value)
-# >>>>>>> farah-test
 
 
 def get_chat_memory():
@@ -1671,49 +1449,13 @@ def find_shop_from_message(message):
     return max(matches, key=lambda shop: len(shop["shop_name"])) if matches else None
 
 
-def is_nearest_restroom_request(message):
-    lowered = message.casefold()
-    asks_for_restroom = any(
-        keyword in lowered
-        for keyword in ("restroom", "toilet", "bathroom", "washroom", "lavatory")
-    )
-    asks_for_nearest = any(
-        keyword in lowered
-        for keyword in ("nearest", "closest", "near me", "from my location")
-    )
-    return asks_for_restroom and asks_for_nearest
-
-
-def build_shop_navigation_reply(shop):
-    """Create a consistent shop-details reply before offering map navigation."""
-    detail = (
-        shop.get("full_description")
-        or shop.get("description")
-        or shop.get("products_services")
-    )
-    details = []
-    if shop.get("category"):
-        details.append(f"Category: {shop['category']}")
-    if shop.get("floor_name"):
-        details.append(f"Floor: {shop['floor_name']}")
-    if shop.get("unit"):
-        details.append(f"Unit: {shop['unit']}")
-    if shop.get("operating_hours"):
-        details.append(f"Hours: {shop['operating_hours']}")
-    if detail:
-        details.append(str(detail).strip())
-
-    detail_text = "\n".join(f"• {item}" for item in details)
-    if not detail_text:
-        detail_text = "• Store details are available on the mall map."
-
-    return (
-        f"Here are the details for {shop['shop_name']}:\n{detail_text}\n\n"
-        f"Would you like me to show navigation to {shop['shop_name']} on the map?"
-    )
-
-
 def is_confirmation_message(message):
+    """Return True for a short affirmative reply to a pending store action.
+
+    Users often reply with phrases such as "yes, please" or "sure, take me
+    there" instead of repeating "map navigation".  A pending store in the
+    session makes those replies unambiguous enough to show its map link.
+    """
     normalized = message.casefold().strip().lstrip("!,. ")
     affirmative_starts = (
         "yes", "yeah", "yep", "sure", "okay", "ok", "please", "go ahead"
@@ -1727,7 +1469,8 @@ def is_confirmation_message(message):
 
 
 def is_navigation_request(message):
-    text = message.casefold().strip()
+    text = (message or "").casefold().strip()
+
     navigation_phrases = (
         "navigate",
         "navigation",
@@ -1740,17 +1483,25 @@ def is_navigation_request(message):
         "directions to",
         "take me there",
         "take me to",
+        "bring me there",
+        "bring me to",
+        "i want to go to",
+        "i want to go there",
+        "i would like to go to",
+        "i'd like to go to",
         "how do i get there",
         "how can i get there",
         "how to get there",
         "how do i go there",
-        "bring me there",
         "go there",
         "route there",
         "show me how to get there",
     )
-    return any(phrase in text for phrase in navigation_phrases)
 
+    return any(
+        phrase in text
+        for phrase in navigation_phrases
+    )
 
 def is_follow_up_message(message):
     text = message.casefold().strip()
@@ -1805,6 +1556,302 @@ def build_chat_context():
     recent = memory[-6:]
     lines = [f"{item['role']}: {item['content']}" for item in recent]
     return "Conversation memory:\n" + "\n".join(lines)
+
+
+
+PRODUCT_REQUEST_STOPWORDS = {
+    "where", "what", "which", "when", "who", "can", "could", "would",
+    "please", "i", "me", "my", "the", "a", "an", "is", "are", "do",
+    "does", "have", "has", "find", "buy", "get", "shop", "shops",
+    "store", "stores", "mall", "dpulze", "want", "need", "looking",
+    "for", "give", "show", "tell", "other", "than", "that", "another",
+    "anything", "else", "option", "options", "there", "them", "with",
+    "under", "below", "less", "budget", "sell", "sells", "selling",
+    "sold", "available", "recommend", "recommendation",
+}
+
+
+def extract_product_query(message):
+    """
+    Extract the useful product wording from a shopping question.
+
+    Examples:
+        "I want to buy running shoes" -> "running shoes"
+        "Which shop sells shirts?" -> "shirts"
+    """
+    text = (message or "").casefold()
+
+    # Remove common intent phrases first so the remaining words describe
+    # the actual product the customer wants.
+    intent_phrases = (
+        "which stores sell",
+        "which store sells",
+        "which shops sell",
+        "which shop sells",
+        "what stores sell",
+        "what store sells",
+        "what shops sell",
+        "what shop sells",
+        "where can i buy",
+        "where can i get",
+        "who sells",
+        "i want to buy",
+        "i would like to buy",
+        "i'd like to buy",
+        "i need",
+        "i am looking for",
+        "i'm looking for",
+        "looking for",
+        "find me",
+    )
+
+    for phrase in intent_phrases:
+        text = text.replace(phrase, " ")
+
+    words = re.findall(r"[a-z0-9]+", text)
+
+    useful = [
+        word
+        for word in words
+        if len(word) >= 2
+        and word not in PRODUCT_REQUEST_STOPWORDS
+    ]
+
+    # Keep order while removing duplicates.
+    useful = list(dict.fromkeys(useful))
+
+    return " ".join(useful).strip()
+
+
+def search_product_matches(message, limit=8):
+    """
+    Search product/service information with stricter matching.
+
+    For multi-word products such as:
+        "ice cream"
+        "running shoes"
+        "face mask"
+
+    a shop must match the full phrase OR all meaningful words.
+    This prevents false matches such as "ice facial" for "ice cream".
+    """
+
+    product_query = extract_product_query(
+        message
+    )
+
+    if not product_query:
+        return []
+
+    query_terms = _chat_terms(
+        product_query
+    )
+
+    if not query_terms:
+        return []
+
+    shops = get_dpulze_shop_overview()
+
+    ranked = []
+
+    exact_phrase = (
+        product_query
+        .casefold()
+        .strip()
+    )
+
+    # Original words only, before singular/plural expansion
+    original_words = re.findall(
+        r"[a-z0-9]+",
+        exact_phrase
+    )
+
+    original_words = [
+        word
+        for word in original_words
+        if len(word) >= 2
+    ]
+
+    multi_word_product = (
+        len(original_words) >= 2
+    )
+
+    for shop in shops:
+
+        product_text = " ".join([
+            str(
+                shop.get(
+                    "products_services"
+                ) or ""
+            ),
+            str(
+                shop.get(
+                    "full_description"
+                ) or ""
+            ),
+            str(
+                shop.get(
+                    "description"
+                ) or ""
+            ),
+        ]).casefold()
+
+        shop_name = str(
+            shop.get(
+                "shop_name"
+            ) or ""
+        ).casefold()
+
+        category = str(
+            shop.get(
+                "category"
+            ) or ""
+        ).casefold()
+
+        product_terms = _chat_terms(
+            product_text
+        )
+
+        shop_name_terms = _chat_terms(
+            shop_name
+        )
+
+        category_terms = _chat_terms(
+            category
+        )
+
+        score = 0
+
+        # ---------------------------------
+        # 1. EXACT PRODUCT PHRASE
+        # ---------------------------------
+
+        exact_match = (
+            exact_phrase
+            and exact_phrase
+            in product_text
+        )
+
+        if exact_match:
+            score += 30
+
+
+        # ---------------------------------
+        # 2. WORD MATCHING
+        # ---------------------------------
+
+        matched_product_terms = (
+            query_terms
+            & product_terms
+        )
+
+        matched_name_terms = (
+            query_terms
+            & shop_name_terms
+        )
+
+        matched_category_terms = (
+            query_terms
+            & category_terms
+        )
+
+
+        # ---------------------------------
+        # 3. STRICT MULTI-WORD RULE
+        # ---------------------------------
+
+        if multi_word_product:
+
+            original_matches = sum(
+                1
+                for word
+                in original_words
+                if word
+                in product_terms
+            )
+
+            # For "ice cream":
+            # both "ice" AND "cream"
+            # must be present unless exact phrase matched.
+            if (
+                not exact_match
+                and original_matches
+                < len(original_words)
+            ):
+                continue
+
+
+        # ---------------------------------
+        # 4. SINGLE-WORD PRODUCTS
+        # ---------------------------------
+
+        else:
+
+            if (
+                not matched_product_terms
+                and not matched_name_terms
+            ):
+                continue
+
+
+        # ---------------------------------
+        # 5. SCORE RESULTS
+        # ---------------------------------
+
+        score += (
+            len(
+                matched_product_terms
+            )
+            * 6
+        )
+
+        score += (
+            len(
+                matched_name_terms
+            )
+            * 4
+        )
+
+        # Category is supporting evidence only.
+        if (
+            matched_product_terms
+            or matched_name_terms
+        ):
+            score += (
+                len(
+                    matched_category_terms
+                )
+                * 2
+            )
+
+
+        if score > 0:
+
+            ranked.append(
+                (
+                    score,
+                    shop
+                )
+            )
+
+
+    ranked.sort(
+        key=lambda item: (
+            -item[0],
+            (
+                item[1].get(
+                    "shop_name"
+                ) or ""
+            ).casefold(),
+        )
+    )
+
+
+    return [
+        shop
+        for _, shop
+        in ranked[:limit]
+    ]
 
 
 def search_relevant_shops(message, limit=8):
@@ -1990,7 +2037,6 @@ def fetch_shop_website(url):
 
         parser = WebsiteTextParser()
         parser.feed(html)
-        parser.close()
         text = parser.get_text()
 
         # Keep Ollama context small for faster responses.
@@ -2017,13 +2063,26 @@ def build_budget_website_context(shops, budget):
             continue
 
         sections.append(
-            f"Shop: {shop.get('shop_name', 'Unknown shop')}\n"
+            f"Shop: {shop['shop_name']}\n"
             f"Customer budget: RM{budget:.2f}\n"
             f"Official website: {website_url}\n"
             f"Visible website text: {website_text}"
         )
 
     return "\n\n".join(sections)
+
+
+def is_nearest_restroom_request(message):
+    lowered = (message or "").casefold()
+    asks_for_restroom = any(
+        keyword in lowered
+        for keyword in ("restroom", "toilet", "bathroom", "washroom", "lavatory")
+    )
+    asks_for_nearest = any(
+        keyword in lowered
+        for keyword in ("nearest", "closest", "near me", "from my location")
+    )
+    return asks_for_restroom and asks_for_nearest
 
 
 def ask_ollama_chat(prompt, context=""):
@@ -2096,6 +2155,49 @@ Answer using only the provided context.
         return None
 
 
+def ask_openai_chat(prompt):
+    """Fallback provider used only when Ollama is unavailable/unreachable."""
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        return None
+
+    payload = {
+        "model": "gpt-4o-mini",
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "You are the Dpulze Mall Assistant. Use only the database "
+                    "context supplied with each user message as the source of "
+                    "truth. Never invent shops, prices, locations, hours, or "
+                    "facilities. Keep replies concise, friendly, and practical."
+                ),
+            },
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.3,
+        "max_tokens": 250,
+    }
+
+    req = urllib.request.Request(
+        "https://api.openai.com/v1/chat/completions",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=30) as response:
+            result = json.loads(response.read().decode("utf-8"))
+            return result["choices"][0]["message"]["content"].strip()
+    except Exception as error:
+        print("OpenAI error:", error)
+        return None
+
+
 def generate_local_chat_reply(message):
     if not message or not message.strip():
         return "Please send a question or shopping request."
@@ -2103,6 +2205,12 @@ def generate_local_chat_reply(message):
     lowered = message.strip().lower()
     categories = get_shop_categories()
     category_hint = ", ".join(categories[:6]) if categories else "fashion, food, electronics, services"
+
+    if is_nearest_restroom_request(message):
+        return (
+            "I can help you find the nearest restroom from your current scanned location. "
+            "Open Map Navigation and use the nearest restroom route."
+        )
 
     if any(keyword in lowered for keyword in ["hi", "hello", "hey", "good morning", "good afternoon"]):
         return "Hi! I can help with mall information, store suggestions, categories, navigation and shopping recommendations."
@@ -2254,9 +2362,7 @@ def is_specific_product_request(message):
 
 
 def build_product_match_reply(message, shops):
-    """
-    Build a database-backed product/shop answer.
-    """
+    """Build a database-backed product/shop answer."""
     if not shops:
         return (
             "I couldn't find a matching shop for that item "
@@ -2283,15 +2389,26 @@ def build_product_match_reply(message, shops):
 
     if len(shops) == 1:
         heading = "I found this matching shop:"
+        ending = "\n\nWould you like navigation to this shop?"
     else:
         heading = "I found these matching shops:"
+        ending = "\n\nTell me which shop you would like to navigate to."
 
-    return heading + "\n\n" + "\n".join(lines)
-
+    return heading + "\n\n" + "\n".join(lines) + ending
 
 def generate_chatbot_reply(message):
     if not message or not message.strip():
         return "Please send a question."
+
+    # Nearest-restroom questions are handled by the map's own pathfinding
+    # (see /api/chat), so they never reach this function in normal use.
+    # Kept here too as a defensive fallback in case this function is ever
+    # called directly.
+    if is_nearest_restroom_request(message):
+        return (
+            "I can help you find the nearest restroom from your current scanned location. "
+            "Open Map Navigation and use the nearest restroom route."
+        )
 
 
     # =====================================================
@@ -2409,12 +2526,20 @@ def generate_chatbot_reply(message):
 
     if is_specific_product_request(message):
 
-        product_matches = search_relevant_shops(
+        product_matches = search_product_matches(
             message,
             limit=8
         )
 
         if product_matches:
+            # If only one shop is a strong match, remember it for a
+            # follow-up "yes" / "take me there".
+            if len(product_matches) == 1:
+                session["navigation_shop"] = {
+                    "shop_code": product_matches[0]["shop_code"],
+                    "shop_name": product_matches[0]["shop_name"],
+                }
+
             return build_product_match_reply(
                 message,
                 product_matches
@@ -2629,7 +2754,7 @@ def generate_chatbot_reply(message):
 
 
     # =====================================================
-    # 9. ASK OLLAMA
+    # 9. ASK OLLAMA (fall back to OpenAI, then a local reply)
     # =====================================================
 
     ollama_reply = ask_ollama_chat(
@@ -2637,7 +2762,7 @@ def generate_chatbot_reply(message):
         context=relevant_context
     )
 
-# //farah-test
+
     if ollama_reply:
 
         # Remember a single recommended shop
@@ -2677,10 +2802,18 @@ def generate_chatbot_reply(message):
 
         return ollama_reply
 
-    openai_prompt = f"{mall_context}\n\n{prompt}"
-    openai_reply = ask_openai_chat(openai_prompt)
+
+    fallback_prompt = (
+        f"{relevant_context}\n\n{prompt}"
+        if relevant_context
+        else prompt
+    )
+
+    openai_reply = ask_openai_chat(fallback_prompt)
+
     if openai_reply:
         return openai_reply
+
 
     return generate_local_chat_reply(
         message
@@ -2743,13 +2876,26 @@ def chat_api():
         return jsonify({"reply": "Please type a message first."}), 400
 
     confirmation = is_confirmation_message(message)
-    nearest_restroom_request = is_nearest_restroom_request(message)
-    selected_shop = (
-        None
-        if nearest_restroom_request
-        else find_shop_from_message(message)
-    )
     navigation_request = is_navigation_request(message)
+    nearest_restroom_request = is_nearest_restroom_request(message)
+
+    # Nearest-restroom requests go straight to the map's own pathfinding -
+    # no need to touch the shop database or call Ollama for this.
+    if nearest_restroom_request:
+        reply = (
+            "I'll find the nearest restroom from your current scanned location. "
+            "Open Map Navigation to see the route."
+        )
+
+        memory = get_chat_memory()
+        memory.append({"role": "user", "content": message})
+        memory.append({"role": "assistant", "content": reply})
+        session["chat_memory"] = memory[-6:]
+
+        return jsonify({
+            "reply": reply,
+            "navigation_url": url_for("map_page", nearest="1"),
+        })
 
     # If the customer names a shop, remember it as the current navigation target.
     selected_shop = find_shop_from_message(message)
@@ -2784,21 +2930,6 @@ def chat_api():
             "navigation_url": navigation_url,
         })
 
-    if nearest_restroom_request:
-        reply = (
-            "I’ll find the nearest restroom from your current scanned location. "
-            "Open Map Navigation to see the route."
-        )
-    elif selected_shop and not confirmation:
-        # Keep the destination in the session and offer navigation in a
-        # predictable format, regardless of which AI provider is available.
-        reply = build_shop_navigation_reply(selected_shop)
-    else:
-        reply = generate_chatbot_reply(message)
-    memory.append({"role": "assistant", "content": reply})
-    if len(memory) > 12:
-        memory = memory[-12:]
-    session["chat_memory"] = memory
     reply = generate_chatbot_reply(message)
 
     # generate_chatbot_reply may have remembered a single recommended shop.
@@ -2813,9 +2944,7 @@ def chat_api():
     session["chat_memory"] = memory[-6:]
 
     navigation_url = None
-    if nearest_restroom_request:
-        navigation_url = url_for("map_page", nearest="1")
-    elif navigation_shop and confirmation:
+    if navigation_shop and confirmation:
         navigation_url = url_for(
             "map_page",
             shop=navigation_shop["shop_code"],
