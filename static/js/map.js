@@ -1,6 +1,10 @@
 let mapData = null;
-const DEFAULT_FLOOR_ID = "ground";
-// const DEFAULT_START_NODE = "2f_node_lift_east";
+const DEFAULT_FLOOR_ID = "2f";
+const DEFAULT_START_NODES = {
+    ground: "node_01",
+    "upper-ground": "ug_node_lift_north",
+    "2f": "2f_node_lift_east"
+};
 const FLOOR_IDS = ["ground", "upper-ground", "2f"];
 const FLOOR_TRANSFER_DISTANCE = 100;
 const LIFT_LANES = [
@@ -33,39 +37,87 @@ let utilityMapDragging = false;
 
 function getStartNodeId()
 {
-    const startNodeData = document.getElementById("start-node-data");
-    const scannedStartNodeId = startNodeData
-        ? JSON.parse(startNodeData.textContent)
-        : null;
-
-    if (routeStartNodeOverride && mapData && mapData.nodes[routeStartNodeOverride])
+    // Use temporary override first
+    if (
+        routeStartNodeOverride &&
+        mapData &&
+        mapData.nodes[routeStartNodeOverride]
+    )
     {
         return routeStartNodeOverride;
     }
 
-    if (scannedStartNodeId && mapData && mapData.nodes[scannedStartNodeId])
+    // Use the default node for the currently selected floor
+    const defaultStartNodeId = DEFAULT_START_NODES[currentFloorId];
+
+    if (
+        defaultStartNodeId &&
+        mapData &&
+        mapData.nodes[defaultStartNodeId]
+    )
     {
-        return scannedStartNodeId;
+        return defaultStartNodeId;
     }
 
+    // Fallback: first entrance node
     const entranceNode = mapData.entrances
         .map(entrance => entrance.node_id)
         .find(nodeId => mapData.nodes[nodeId]);
+
     if (entranceNode)
     {
         return entranceNode;
     }
 
+    // Fallback: first facility node
     const facilityNode = Object.values(mapData.facilities || {})
         .map(facility => facility.node_id)
         .find(nodeId => mapData.nodes[nodeId]);
+
     if (facilityNode)
     {
         return facilityNode;
     }
 
+    // Final fallback
     return Object.keys(mapData.nodes)[0] || null;
 }
+
+// function getStartNodeId()
+// {
+//     const startNodeData = document.getElementById("start-node-data");
+//     const scannedStartNodeId = startNodeData
+//         ? JSON.parse(startNodeData.textContent)
+//         : null;
+
+//     if (routeStartNodeOverride && mapData && mapData.nodes[routeStartNodeOverride])
+//     {
+//         return routeStartNodeOverride;
+//     }
+
+//     if (scannedStartNodeId && mapData && mapData.nodes[scannedStartNodeId])
+//     {
+//         return scannedStartNodeId;
+//     }
+
+//     const entranceNode = mapData.entrances
+//         .map(entrance => entrance.node_id)
+//         .find(nodeId => mapData.nodes[nodeId]);
+//     if (entranceNode)
+//     {
+//         return entranceNode;
+//     }
+
+//     const facilityNode = Object.values(mapData.facilities || {})
+//         .map(facility => facility.node_id)
+//         .find(nodeId => mapData.nodes[nodeId]);
+//     if (facilityNode)
+//     {
+//         return facilityNode;
+//     }
+
+//     return Object.keys(mapData.nodes)[0] || null;
+// }
 
 // LOAD MAP DATA FROM FLASK
 async function loadMapData(floorId = currentFloorId)
