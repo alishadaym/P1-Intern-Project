@@ -13,7 +13,7 @@ body {
 min-width: 0;
 min-height: 100dvh;
 font-family: 'Times New Roman', Times, serif;
-background: #f4f4f4;
+background: #ffffff;
 overflow-x: hidden;
 display: flex;
 flex-direction: column;
@@ -371,6 +371,21 @@ font-size: 20px;
 /* SHOP POPOVER */
 .shop-popover-content {
 pointer-events: auto;
+/* Smaller than the default utility popup size (250px) - the popup is a
+   fixed on-screen size, so when the map is zoomed out it visually eats
+   up a much bigger share of the (now smaller-looking) map. Shrinking it
+   keeps more of the map/navigation visible regardless of zoom level. */
+width: min(190px, calc(100vw - 20px));
+max-height: 140px;
+padding: 12px 12px 10px;
+}
+
+.shop-popover-content h2 {
+font-size: 0.95rem;
+}
+
+.shop-popover-content .shop-modal-details {
+font-size: 0.78rem;
 }
 
 /* MAP */
@@ -399,7 +414,10 @@ width: 100%;
 max-width: 1038px;
 aspect-ratio: 1038 / 553;
 overflow: hidden;
-background: #e6ded2;
+/* Matches the page background so the map blends straight into the
+   page instead of sitting in a visibly boxed card - makes it read as
+   bigger even though the pixel size is the same. */
+background: #ffffff;
 }
 
 .map-container {
@@ -582,13 +600,13 @@ stroke-width: 5;
 /* MORE DETAILS BUTTON */
 .more-details-btn {
 width: 100%;
-margin-top: 14px;
-padding: 9px 12px;
+margin-top: 5px;
+padding: 5px 5px;
 border: none;
 border-radius: 7px;
 background: #EC5B38;
 color: white;
-font-size: 14px;
+font-size: 12px;
 font-weight: 600;
 cursor: pointer;
 pointer-events: auto;
@@ -734,11 +752,12 @@ main {
 .sidebar {
     flex: 1 1 auto;
     width: 100%;
-    /* Pushed down from the map with extra top spacing (was 14px) so the
-       map above has clearer breathing room instead of feeling cramped
-       right against the nav controls. */
+    /* margin-top (not just padding) shifts the whole container down,
+       not just its contents, opening a visible gap above the sidebar's
+       own background/shadow so the map above it has clear breathing
+       room. */
     margin-top: 50px;
-    padding: 26px 12px 20px;
+    padding: 20px 12px 20px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
@@ -823,10 +842,9 @@ main {
 }
 
 .map-viewport {
+    /* No border/shadow/card background here anymore - the map now sits
+       directly on the white page instead of inside a boxed container. */
     width: 100%;
-    border: 1px solid #d8c5b0;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 .map-container {
@@ -873,6 +891,21 @@ main {
 
 .utility-modal-content .shop-modal-details {
     font-size: 0.75rem;
+}
+
+.shop-popover-content {
+    /* Keep the store popup smaller than the utility popup on mobile too. */
+    width: min(120px, calc(100vw - 16px));
+    max-height: 120px;
+    padding: 10px 10px 8px;
+}
+
+.shop-popover-content h2 {
+    font-size: 0.85rem;
+}
+
+.shop-popover-content .shop-modal-details {
+    font-size: 0.7rem;
 }
 
 .login-button {

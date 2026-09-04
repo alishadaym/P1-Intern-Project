@@ -3,7 +3,7 @@ const DEFAULT_FLOOR_ID = "ground";
 const DEFAULT_START_NODES = {
     ground: "node_01",
     "upper-ground": "ug_node_lift_south",
-    "2f": "2f_node_lift_west"
+    "2f": "2f_node_lift_north"
 };
 const FLOOR_IDS = ["ground", "upper-ground", "2f"];
 const FLOOR_TRANSFER_DISTANCE = 100;
