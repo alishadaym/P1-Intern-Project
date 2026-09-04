@@ -1627,9 +1627,6 @@ def is_navigation_request(message):
         "how can i get there",
         "how to get there",
         "how do i go there",
-        "go there",
-        "route there",
-        "show me how to get there",
         "where is it",
         "where?",
     )
@@ -1663,6 +1660,7 @@ def is_follow_up_message(message):
         "how about them",
     )
     return any(phrase in text for phrase in follow_up_phrases)
+
 
 
 def get_previous_user_message(current_message):
@@ -2086,14 +2084,14 @@ def exclude_recently_recommended_shops(shops):
         not in recommended_codes
     ]
 
-def _trim_context_text(value, max_length=280):
-    """Keep long description/product fields from bloating the LLM prompt -
-    a shorter, focused context both processes faster and keeps the model's
-    answer on-topic instead of drifting through unrelated shop details."""
-    text = str(value or "").strip()
-    if len(text) <= max_length:
-        return text
-    return text[:max_length].rstrip() + "..."
+# def _trim_context_text(value, max_length=280):
+#     """Keep long description/product fields from bloating the LLM prompt -
+#     a shorter, focused context both processes faster and keeps the model's
+#     answer on-topic instead of drifting through unrelated shop details."""
+#     text = str(value or "").strip()
+#     if len(text) <= max_length:
+#         return text
+#     return text[:max_length].rstrip() + "..."
 
 
 def build_relevant_shop_context(shops):
@@ -2109,8 +2107,8 @@ def build_relevant_shop_context(shops):
             f"Unit: {shop.get('unit') or 'Unknown'}",
             f"Floor: {shop.get('floor_name') or 'Unknown'}",
             f"Hours: {shop.get('operating_hours') or 'Unknown'}",
-            f"Products/Services: {_trim_context_text(shop.get('products_services')) or 'Not provided'}",
-            f"Description: {_trim_context_text(shop.get('full_description') or shop.get('description')) or 'Not provided'}",
+            f"Products/Services: {shop.get('products_services') or 'Not provided'}",
+            f"Description: {shop.get('full_description') or shop.get('description') or 'Not provided'}",
             f"Official website: {shop.get('website_url') or 'Not provided'}",
         ]))
 
