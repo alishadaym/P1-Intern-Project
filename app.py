@@ -1981,20 +1981,6 @@ def fetch_shop_website(url):
             },
         )
 
-    context = build_chat_context()
-    db_guidance = (
-        "Use the full shops table and all product/service descriptions in the database before recommending or listing stores. "
-        "Do not default to a few well-known shops unless they are the only matching stores in the database."
-    )
-    recommendation_guidance = build_recommendation_guidance(message)
-    prompt = message if not context else f"{context}\n\nCurrent user message: {message}"
-    prompt = f"{db_guidance}\n{recommendation_guidance}\n\n{prompt}"
-    # Build live context from the database for every AI request.  This gives
-    # both providers the store names, categories, descriptions, products, and
-    # floors they need to make grounded recommendations.
-    mall_context = build_mall_context()
-
-    ollama_reply = ask_ollama_chat(prompt, mall_context=mall_context)
         with urllib.request.urlopen(req, timeout=6) as response:
             content_type = response.headers.get("Content-Type", "")
             if "text/html" not in content_type:
@@ -2004,6 +1990,7 @@ def fetch_shop_website(url):
 
         parser = WebsiteTextParser()
         parser.feed(html)
+        parser.close()
         text = parser.get_text()
 
         # Keep Ollama context small for faster responses.
@@ -2030,7 +2017,7 @@ def build_budget_website_context(shops, budget):
             continue
 
         sections.append(
-            f"Shop: {shop['shop_name']}\n"
+            f"Shop: {shop.get('shop_name', 'Unknown shop')}\n"
             f"Customer budget: RM{budget:.2f}\n"
             f"Official website: {website_url}\n"
             f"Visible website text: {website_text}"
