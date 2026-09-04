@@ -995,45 +995,163 @@ def get_shop_categories():
 # =========================================================
 
 CATEGORY_ALIASES = {
+
     "Fashion": (
         "fashion", "clothing", "clothes", "apparel",
         "shirt", "shirts", "t-shirt", "t-shirts",
         "pants", "dress", "dresses",
+        "skirt", "skirts", "jeans", "jacket",
+        "jackets", "suit", "suits",
     ),
+
     "Food & Beverages": (
-        "food", "foods", "restaurant", "restaurants",
-        "cafe", "cafes", "coffee", "drink", "drinks",
-        "beverage", "beverages", "eat", "eating", "dining",
+        "food", "foods",
+        "restaurant", "restaurants",
+        "cafe", "cafes",
+        "coffee",
+        "drink", "drinks",
+        "beverage", "beverages",
+        "eat", "eating", "dining",
+        "meal", "meals",
+        "breakfast", "lunch", "dinner", "brunch",
+        "dessert", "desserts",
+        "ice cream",
+        "snack", "snacks",
     ),
+
     "Sports & Outdoor": (
-        "sport", "sports", "sportswear", "sporting",
-        "outdoor", "running shoes", "sports shoes",
+        "sport", "sports",
+        "sportswear", "sporting",
+        "outdoor",
+        "running shoes",
+        "sports shoes",
         "sporting goods",
     ),
+
     "Cosmetics & Beauty": (
-        "beauty", "cosmetic", "cosmetics", "makeup", "skincare",
+        "beauty", "cosmetic", "cosmetics",
+        "makeup", "skincare", "skin care",
+        "perfume", "fragrance",
     ),
+
     "Electronics": (
-        "electronics", "electronic", "gadget", "gadgets",
-        "phone", "phones", "mobile phone", "computer", "computers",
+        "electronics", "electronic",
+        "gadget", "gadgets",
+        "phone", "phones",
+        "mobile phone", "smartphone",
+        "computer", "computers",
+        "laptop", "tablet",
     ),
+
     "Banking & Finance": (
-        "bank", "banks", "banking", "finance", "financial", "atm",
+        "bank", "banks", "banking",
+        "finance", "financial", "atm",
     ),
+
     "Home & Living": (
-        "home", "living", "furniture", "household", "homeware",
+        "home", "living",
+        "furniture", "household",
+        "homeware",
     ),
+
     "Health & Wellness": (
-        "health", "wellness", "pharmacy", "medical",
+        "health", "wellness",
+        "pharmacy", "medical",
     ),
+
     "Convenience Store": (
-        "convenience", "convenience store", "grocery", "groceries",
+        "convenience",
+        "convenience store",
+        "grocery", "groceries",
     ),
+
     "Retail": (
-        "retail", "general retail",
+        "retail",
+        "general retail",
     ),
 }
 
+def detect_category_from_aliases(message):
+    """
+    Detect any supported mall category from the user's message.
+    """
+
+    text = normalize_chat_text(message)
+
+    # Check longer aliases first.
+    # This helps "running shoes" match before a shorter phrase.
+    matches = []
+
+    for category, aliases in CATEGORY_ALIASES.items():
+        for alias in aliases:
+            normalized_alias = normalize_chat_text(alias)
+
+            if normalized_alias and normalized_alias in text:
+                matches.append(
+                    (
+                        len(normalized_alias),
+                        category
+                    )
+                )
+
+    if not matches:
+        return None
+
+    matches.sort(
+        key=lambda item: item[0],
+        reverse=True
+    )
+
+    return matches[0][1]
+
+def get_budget_candidate_shops(message, product_query, limit=8):
+    """
+    Find candidate shops for ANY budget request.
+
+    Priority:
+    1. If product_query itself is a real category, use it.
+    2. Otherwise detect a category from the current message.
+    3. Otherwise fall back to product/service matching.
+    """
+
+    # -------------------------------------------------
+    # 1. PRODUCT_QUERY IS ALREADY A CATEGORY
+    # -------------------------------------------------
+    categories = get_shop_categories()
+
+    category_lookup = {
+        category.casefold(): category
+        for category in categories
+    }
+
+    product_category = category_lookup.get(
+        (product_query or "").casefold()
+    )
+
+    if product_category:
+        return get_shops_by_category(
+            product_category
+        )
+
+    # -------------------------------------------------
+    # 2. DETECT CATEGORY FROM CURRENT MESSAGE
+    # -------------------------------------------------
+    category = detect_category_from_aliases(
+        message
+    )
+
+    if category:
+        return get_shops_by_category(
+            category
+        )
+
+    # -------------------------------------------------
+    # 3. SPECIFIC PRODUCT SEARCH
+    # -------------------------------------------------
+    return search_product_matches(
+        product_query,
+        limit=limit
+    )
 
 def _chat_terms(value):
     """Return normalized searchable words and basic singular forms."""
@@ -1449,24 +1567,39 @@ def is_navigation_request(message):
         "show route",
         "give me the route",
         "give me directions",
-        "give me direction",
         "direction to",
         "directions to",
+
         "take me there",
         "take me to",
         "bring me there",
         "bring me to",
+
         "i want to go to",
+        "i want to go",
         "i want to go there",
         "i would like to go to",
         "i'd like to go to",
+
+        "im going to",
+        "i am going to",
+        "i'm going to",
+
+        "i will go to",
+        "i'll go to",
+        "i choose",
+        "i'll choose",        
+        "let's go to",
+        "lets go to",
+        "take me to",
+        "bring me to",
+
         "how do i get there",
         "how can i get there",
         "how to get there",
         "how do i go there",
-        "go there",
-        "route there",
-        "show me how to get there",
+        "where is it",
+        "where?",
     )
 
     return any(
@@ -1896,20 +2029,30 @@ def search_relevant_shops(message, limit=8):
 
 
 def exclude_recently_recommended_shops(shops):
-    """For 'other than that?' follow-ups, avoid repeating the previous recommendation."""
-    last_reply = normalize_chat_text(get_last_assistant_message())
-    if not last_reply:
+    """
+    Exclude shops already recommended in the previous answer.
+    """
+
+    recommended = session.get(
+        "recommended_shops",
+        []
+    )
+
+    recommended_codes = {
+        shop.get("shop_code")
+        for shop in recommended
+        if shop.get("shop_code")
+    }
+
+    if not recommended_codes:
         return shops
 
-    filtered = []
-    for shop in shops:
-        shop_name = normalize_chat_text(shop.get("shop_name"))
-        if shop_name and shop_name in last_reply:
-            continue
-        filtered.append(shop)
-
-    return filtered
-
+    return [
+        shop
+        for shop in shops
+        if shop.get("shop_code")
+        not in recommended_codes
+    ]
 
 def build_relevant_shop_context(shops):
     if not shops:
@@ -2090,10 +2233,11 @@ Answer using only the provided context.
         "stream": False,
         "keep_alive": "30m",
         "options": {
-            "temperature": 0.1,
-            "top_p": 0.8,
-            "num_predict": 140,
-        },
+        "temperature": 0.1,
+        "top_p": 0.8,
+        "num_predict": 600,
+        "num_ctx": 8192,
+    },
     }
 
     req = urllib.request.Request(
@@ -2104,7 +2248,7 @@ Answer using only the provided context.
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=40) as response:
+        with urllib.request.urlopen(req, timeout=90) as response:
             result = json.loads(response.read().decode("utf-8"))
             text = result.get("response", "").strip()
             return text or None
@@ -2296,6 +2440,14 @@ def build_product_match_reply(message, shops):
         else:
             lines.append(f"• {shop['shop_name']}")
 
+    session["recommended_shops"] = [
+        {
+            "shop_code": shop["shop_code"],
+            "shop_name": shop["shop_name"],
+        }
+        for shop in shops
+    ]
+
     if len(shops) == 1:
         heading = "I found this matching shop:"
         ending = "\n\nWould you like navigation to this shop?"
@@ -2305,10 +2457,440 @@ def build_product_match_reply(message, shops):
 
     return heading + "\n\n" + "\n".join(lines) + ending
 
+def extract_budget_product_query(message):
+    """
+    Extract the user's intended product/category from a budget request.
+
+    Examples:
+        "I have RM25 to eat"
+            -> "Food & Beverages"
+
+        "I have RM100 for clothes"
+            -> "Fashion"
+
+        "I have RM300 for running shoes"
+            -> "Sports & Outdoor"
+
+        "I have RM80 for skincare"
+            -> "Cosmetics & Beauty"
+
+        "I have RM300 to buy shoes"
+            -> "shoes"
+
+    It first checks CATEGORY_ALIASES.
+    If no category matches, it extracts the remaining product words.
+    """
+
+    if not message:
+        return ""
+
+    # -------------------------------------------------
+    # 1. TRY CATEGORY ALIASES FIRST
+    # -------------------------------------------------
+    category = detect_category_from_aliases(
+        message
+    )
+
+    if category:
+        return category
+
+    # -------------------------------------------------
+    # 2. OTHERWISE EXTRACT SPECIFIC PRODUCT WORDS
+    # -------------------------------------------------
+    text = message.casefold()
+
+    # Remove RM amount
+    text = re.sub(
+        r"\brm\s*[0-9]+(?:\.[0-9]+)?\b",
+        " ",
+        text,
+        flags=re.IGNORECASE
+    )
+
+    # Remove plain numbers
+    text = re.sub(
+        r"\b[0-9]+(?:\.[0-9]+)?\b",
+        " ",
+        text
+    )
+
+    # Remove common budget/request wording
+    phrases = (
+        "i have a budget of",
+        "i have budget of",
+        "my budget is",
+        "my budget",
+        "budget of",
+        "budget",
+        "i have",
+        "i want to buy",
+        "i would like to buy",
+        "i'd like to buy",
+        "to buy",
+        "for buying",
+        "i want",
+        "i need",
+        "looking for",
+        "i am looking for",
+        "i'm looking for",
+    )
+
+    for phrase in phrases:
+        text = text.replace(
+            phrase,
+            " "
+        )
+
+    words = re.findall(
+        r"[a-z0-9]+",
+        text
+    )
+
+    ignored = {
+        "i", "me", "my", "a", "an",
+        "the", "for", "to", "buy", "get",
+        "want", "need", "with", "under", "below",
+        "less", "than", "around", "about", "within",
+        "spend", "spending", "please", "can", "could","would",
+    }
+
+    useful_words = [
+        word
+        for word in words
+        if (
+            word not in ignored
+            and len(word) >= 2
+        )
+    ]
+
+    return " ".join(
+        useful_words
+    ).strip()
+
+def is_alternative_budget_request(message):
+    """
+    Detect follow-up requests asking for another
+    budget recommendation.
+
+    Examples:
+        "other than that?"
+        "are there any other options?"
+        "anything else?"
+        "what else?"
+        "another one"
+        "any other shops?"
+    """
+
+    text = (
+        message or ""
+    ).casefold().strip()
+
+    alternative_phrases = (
+        "other than that",
+        "other than those",
+        "other than this",
+        "other than these",
+
+        "any other",
+        "are there any other",
+        "is there any other",
+
+        "anything else",
+        "something else",
+        "what else",
+
+        "another option",
+        "another one",
+        "another shop",
+        "another store",
+
+        "other option",
+        "other options",
+        "other shop",
+        "other shops",
+        "other store",
+        "other stores",
+
+        "more option",
+        "more options",
+        "more recommendation",
+        "more recommendations",
+    )
+
+    return any(
+        phrase in text
+        for phrase in alternative_phrases
+    )
+
+def answer_budget_alternative_request(message):
+    """
+    Continue the most recent budget-shopping request.
+
+    Excludes the previous recommendation and checks
+    other matching shops using official website data.
+    """
+
+    budget = session.get(
+        "shopping_budget"
+    )
+
+    product = session.get(
+        "shopping_product"
+    )
+
+    if budget is None or not product:
+        return None
+
+
+    # Search for other stores selling the same product
+    product_matches = get_budget_candidate_shops(
+        message,
+        product,
+        limit=8
+    )
+
+    # Remove shops that were already recommended
+    product_matches = (
+        exclude_recently_recommended_shops(
+            product_matches
+        )
+    )
+
+    # If customer explicitly says
+    # "other than Solight",
+    # also remove that shop.
+    mentioned_shop = find_shop_from_message(
+        message
+    )
+
+    if mentioned_shop:
+
+        mentioned_code = (
+            mentioned_shop.get(
+                "shop_code"
+            )
+        )
+
+        product_matches = [
+            shop
+            for shop in product_matches
+            if shop.get(
+                "shop_code"
+            ) != mentioned_code
+        ]
+
+
+    if not product_matches:
+
+        return (
+            f"No, I couldn't find another "
+            f"Dpulze Mall shop currently listed "
+            f"as selling {product}."
+        )
+
+
+    # Database information
+    relevant_context = (
+        build_relevant_shop_context(
+            product_matches
+        )
+    )
+
+
+    # Official website information
+    website_context = (
+        build_budget_website_context(
+            product_matches,
+            budget
+        )
+    )
+
+
+    if not website_context:
+
+        return (
+            f"I found other shops selling {product}, "
+            f"but I couldn't verify from their official "
+            f"websites whether they currently have options "
+            f"within your RM{budget:.0f} budget."
+        )
+
+
+    relevant_context += (
+        "\n\n"
+        "OFFICIAL WEBSITE INFORMATION:\n"
+        + website_context
+    )
+
+
+    prompt = f"""
+The customer previously asked for {product}
+within a budget of RM{budget:.2f}.
+
+They are now asking for another option.
+
+IMPORTANT RULES:
+
+- Do NOT recommend a shop that was already recommended.
+- Use only the supplied database and official website information.
+- Look specifically for {product}.
+- A price counts ONLY when it clearly refers to the actual product.
+- Do NOT treat promotional values, voucher amounts,
+  discount values, membership rewards, minimum-spend
+  requirements or free-shipping thresholds as product prices.
+- Text such as "RM69 min spend RM399" does NOT mean
+  that the product costs RM69.
+- Text such as "spend RM399 and get RM69 off" is a promotion,
+  NOT a RM69 product.
+- Recommend a shop ONLY when the official website text clearly
+  shows a relevant {product} priced at RM{budget:.2f} or below.
+- If there is a verified product within budget,
+  begin the answer with "Yes".
+- Include the verified product price when available.
+- If every clearly verified relevant product is above
+  RM{budget:.2f}, begin the answer with "No".
+- If the website contains relevant products but their actual
+  prices cannot be verified, say:
+  "I found another shop selling {product}, but I couldn't verify
+  an option within your RM{budget:.0f} budget from the official website."
+- Never guess or infer a product price from promotional text.
+
+Keep responses concise.
+For recommendations, recommend at most 2 shops.
+Use no more than 2-3 sentences per shop.
+Always finish the response completely.
+
+Customer:
+{message}
+"""
+
+    reply = ask_ollama_chat(
+        prompt,
+        context=relevant_context
+    )
+
+
+    if not reply:
+        return (
+            f"I couldn't verify another {product} "
+            f"option within RM{budget:.0f} right now."
+        )
+
+
+    # Determine which shop the answer recommends
+    mentioned = [
+        shop
+        for shop in product_matches
+        if normalize_chat_text(
+            shop.get("shop_name")
+        )
+        in normalize_chat_text(
+            reply
+        )
+    ]
+
+
+    # If one shop was recommended,
+    # remember it for navigation + website button
+    if len(mentioned) == 1:
+
+        recommended_shop = mentioned[0]
+
+        session["navigation_shop"] = {
+            "shop_code":
+                recommended_shop[
+                    "shop_code"
+                ],
+
+            "shop_name":
+                recommended_shop[
+                    "shop_name"
+                ],
+        }
+
+
+        if recommended_shop.get(
+            "website_url"
+        ):
+
+            session[
+                "chat_website_url"
+            ] = recommended_shop[
+                "website_url"
+            ]
+
+            session[
+                "chat_website_name"
+            ] = recommended_shop[
+                "shop_name"
+            ]
+
+
+    return reply
+
+def build_budget_recommendation_prompt(message, product, budget):
+    return f"""
+The customer has a budget of RM{budget:.2f}
+and is looking for {product}.
+
+Recommend up to 2 suitable shops only.
+
+RESPONSE FORMAT:
+1. Start with one short sentence acknowledging the customer's budget.
+2. Recommend the first shop in no more than 2 sentences.
+3. Recommend the second shop, if suitable, in no more than 2 sentences.
+4. Include the unit and floor when available.
+5. Mention only relevant products/services from the supplied information.
+6. End with:
+   "Which shop would you like to go to?"
+
+IMPORTANT:
+- Keep the entire response under 150 words.
+- Always complete the final sentence.
+- Do not continue explaining after the final question.
+- Never invent products, prices, locations, or shop information.
+- Only say something is within budget if the supplied official website
+  or pricing information clearly supports it.
+- If a price cannot be verified, say that current pricing should be checked.
+- Recommend only shops present in the supplied database context.
+
+Customer question:
+{message}
+"""
+
 def generate_chatbot_reply(message):
     if not message or not message.strip():
         return "Please send a question."
 
+    # =====================================================
+    # REMEMBER BUDGET SHOPPING REQUEST
+    # =====================================================
+
+    current_budget = extract_budget(
+        message
+    )
+
+    if current_budget is not None:
+
+        session[
+            "shopping_budget"
+        ] = current_budget
+
+        current_product = (
+            extract_budget_product_query(
+                message
+            )
+        )
+
+        if current_product:
+
+            session[
+                "shopping_product"
+            ] = current_product
+
+    # Clear website link from the previous answer
+    session.pop("chat_website_url", None)
+    session.pop("chat_website_name", None)
 
     # =====================================================
     # 1. WAITING FOR CUSTOMER TO CHOOSE A FLOOR
@@ -2403,9 +2985,25 @@ def generate_chatbot_reply(message):
             f"to {shop['shop_name']}."
         )
 
+    # =====================================================
+    # 3. BUDGET FOLLOW-UP / OTHER OPTION
+    # =====================================================
+
+    if is_alternative_budget_request(
+        message
+    ):
+
+        alternative_reply = (
+            answer_budget_alternative_request(
+                message
+            )
+        )
+
+        if alternative_reply:
+            return alternative_reply
 
     # =====================================================
-    # 3. EXACT SHOP NAME
+    # 4. EXACT SHOP NAME
     # =====================================================
 
     exact_shop = find_shop_from_message(
@@ -2420,7 +3018,7 @@ def generate_chatbot_reply(message):
 
 
     # =====================================================
-    # 4. SPECIFIC PRODUCT REQUEST
+    # 5. SPECIFIC PRODUCT REQUEST
     # =====================================================
 
     if is_specific_product_request(message):
@@ -2431,13 +3029,30 @@ def generate_chatbot_reply(message):
         )
 
         if product_matches:
-            # If only one shop is a strong match, remember it for a
-            # follow-up "yes" / "take me there".
+
             if len(product_matches) == 1:
+
                 session["navigation_shop"] = {
-                    "shop_code": product_matches[0]["shop_code"],
-                    "shop_name": product_matches[0]["shop_name"],
+                    "shop_code":
+                        product_matches[0][
+                            "shop_code"
+                        ],
+
+                    "shop_name":
+                        product_matches[0][
+                            "shop_name"
+                        ],
                 }
+
+            else:
+
+                # Multiple choices:
+                # do not keep an old shop as the
+                # automatic navigation destination.
+                session.pop(
+                    "navigation_shop",
+                    None
+                )
 
             return build_product_match_reply(
                 message,
@@ -2446,7 +3061,7 @@ def generate_chatbot_reply(message):
 
 
     # =====================================================
-    # 5. CATEGORY LIST REQUEST
+    # 6. CATEGORY LIST REQUEST
     # =====================================================
 
     category = (
@@ -2516,7 +3131,7 @@ def generate_chatbot_reply(message):
 
 
     # =====================================================
-    # 6. NORMAL / FOLLOW-UP SHOPPING QUESTION
+    # 7. NORMAL / FOLLOW-UP SHOPPING QUESTION
     # =====================================================
 
     search_message = message
@@ -2567,7 +3182,7 @@ def generate_chatbot_reply(message):
 
 
     # =====================================================
-    # 7. CUSTOMER BUDGET / OFFICIAL WEBSITE
+    # 8. CUSTOMER BUDGET / OFFICIAL WEBSITE
     # =====================================================
 
     budget = extract_budget(
@@ -2624,7 +3239,7 @@ def generate_chatbot_reply(message):
 
 
     # =====================================================
-    # 8. CONVERSATION MEMORY FOR OLLAMA
+    # 9. CONVERSATION MEMORY FOR OLLAMA
     # =====================================================
 
     memory = get_chat_memory()
@@ -2638,8 +3253,26 @@ def generate_chatbot_reply(message):
         for item in recent_memory
     )
 
+    # =====================================================
+    # BUILD OLLAMA PROMPT
+    # =====================================================
 
-    prompt = message
+    remembered_product = session.get(
+        "shopping_product"
+    )
+
+    if (
+        budget is not None
+        and remembered_product
+    ):
+        prompt = build_budget_recommendation_prompt(
+            message,
+            remembered_product,
+            budget
+        )
+
+    else:
+        prompt = message
 
 
     if memory_text:
@@ -2647,13 +3280,11 @@ def generate_chatbot_reply(message):
         prompt = (
             f"Recent conversation:\n"
             f"{memory_text}\n\n"
-            f"Current customer question:\n"
-            f"{message}"
+            f"{prompt}"
         )
 
-
     # =====================================================
-    # 9. ASK OLLAMA
+    # 10. ASK OLLAMA
     # =====================================================
 
     ollama_reply = ask_ollama_chat(
@@ -2680,23 +3311,56 @@ def generate_chatbot_reply(message):
                 )
             )
         ]
+        # Remember all shops actually recommended
+        # in this response.
+        if mentioned:
 
+            session["recommended_shops"] = [
+                {
+                    "shop_code": shop["shop_code"],
+                    "shop_name": shop["shop_name"],
+                }
+                for shop in mentioned
+            ]
 
         if len(mentioned) == 1:
 
-            session[
-                "navigation_shop"
-            ] = {
+            recommended_shop = mentioned[0]
+
+            # Remember shop for navigation
+            session["navigation_shop"] = {
                 "shop_code":
-                    mentioned[0][
+                    recommended_shop[
                         "shop_code"
                     ],
 
                 "shop_name":
-                    mentioned[0][
+                    recommended_shop[
                         "shop_name"
                     ],
             }
+
+            # If this was a budget question and the
+            # official website was actually available,
+            # give the frontend a clickable link.
+            if (
+                budget is not None
+                and website_context
+                and recommended_shop.get(
+                    "website_url"
+                )
+            ):
+                session["chat_website_url"] = (
+                    recommended_shop[
+                        "website_url"
+                    ]
+                )
+
+                session["chat_website_name"] = (
+                    recommended_shop[
+                        "shop_name"
+                    ]
+                )
 
 
         return ollama_reply
@@ -2754,10 +3418,49 @@ def shops():
 def chat_page():
     return render_template("chat.html")
 
+def get_selected_recommended_shop(message):
+
+    recommended_shops = session.get(
+        "recommended_shops",
+        []
+    )
+
+    if not recommended_shops:
+        return None
+
+    text = normalize_chat_text(
+        message
+    )
+
+    for shop in recommended_shops:
+
+        shop_name = normalize_chat_text(
+            shop["shop_name"]
+        )
+
+        # Exact selection
+        if text == shop_name:
+            return shop
+
+        # Allow simple versions such as:
+        # "nandos" -> "Nando's"
+        if (
+            text
+            and text in shop_name
+            and len(text) >= 4
+        ):
+            return shop
+
+    return None
+
 @app.route("/api/chat", methods=["POST"])
 def chat_api():
     payload = request.get_json(silent=True) or {}
     message = (payload.get("message") or "").strip()
+
+    navigation_url = None
+    website_url = None
+    website_name = None
 
     if not message:
         return jsonify({"reply": "Please type a message first."}), 400
@@ -2765,15 +3468,112 @@ def chat_api():
     confirmation = is_confirmation_message(message)
     navigation_request = is_navigation_request(message)
 
-    # If the customer names a shop, remember it as the current navigation target.
-    selected_shop = find_shop_from_message(message)
-    if selected_shop:
+    recommended_selection = (
+        get_selected_recommended_shop(
+            message
+        )
+    )
+
+    if recommended_selection:
+
         session["navigation_shop"] = {
-            "shop_code": selected_shop["shop_code"],
-            "shop_name": selected_shop["shop_name"],
+            "shop_code":
+                recommended_selection[
+                    "shop_code"
+                ],
+
+            "shop_name":
+                recommended_selection[
+                    "shop_name"
+                ],
+        }
+
+        navigation_url = url_for(
+            "map_page",
+            shop=recommended_selection[
+                "shop_code"
+            ],
+            navigate="1",
+        )
+
+        reply = (
+            f"Sure. I can open the route to "
+            f"{recommended_selection['shop_name']}."
+        )
+
+        return jsonify({
+            "reply": reply,
+            "navigation_url":
+                navigation_url,
+            "website_url": None,
+            "website_name": None,
+        })
+
+    # If the customer names a shop, remember it as the current navigation target.
+    selected_shop = find_shop_from_message(
+        message
+    )
+
+    # Do not treat a shop mentioned in
+    # "other than Solight" as the new destination.
+    if (
+        selected_shop
+        and not is_alternative_budget_request(
+            message
+        )
+    ):
+        session["navigation_shop"] = {
+            "shop_code":
+                selected_shop["shop_code"],
+
+            "shop_name":
+                selected_shop["shop_name"],
         }
 
     target_shop = selected_shop or session.get("navigation_shop")
+
+    # Confirmation or short route follow-up
+    short_route_request = (
+        normalize_chat_text(message)
+        in {
+            "where",
+            "how",
+            "how to go",
+            "how do i get there",
+            "show me",
+            "show route",
+        }
+    )
+
+    if (
+        target_shop
+        and (
+            confirmation
+            or navigation_request
+            or short_route_request
+        )
+    ):
+
+        navigation_url = url_for(
+            "map_page",
+            shop=target_shop[
+                "shop_code"
+            ],
+            navigate="1",
+        )
+
+        reply = (
+            f"Sure. I can open the route to "
+            f"{target_shop['shop_name']}."
+        )
+
+        return jsonify({
+            "reply": reply,
+            "navigation_url":
+                navigation_url,
+            "website_url": None,
+            "website_name": None,
+        })
 
     memory = get_chat_memory()
     memory.append({"role": "user", "content": message})
@@ -2803,25 +3603,55 @@ def chat_api():
     # generate_chatbot_reply may have remembered a single recommended shop.
     navigation_shop = session.get("navigation_shop")
 
-    if selected_shop and not confirmation and not navigation_request:
-        if "navigation" not in reply.casefold() and "directions" not in reply.casefold():
-            reply = f"{reply}\n\nWould you like navigation to {selected_shop['shop_name']}?"
+    if (
+        selected_shop
+        and not confirmation
+        and not navigation_request
+    ):
 
-    memory = get_chat_memory()
-    memory.append({"role": "assistant", "content": reply})
-    session["chat_memory"] = memory[-6:]
+        shop_name = selected_shop[
+            "shop_name"
+        ]
 
-    navigation_url = None
-    if navigation_shop and confirmation:
-        navigation_url = url_for(
-            "map_page",
-            shop=navigation_shop["shop_code"],
-            navigate="1",
-        )
+        if (
+            "navigation"
+            not in reply.casefold()
+            and "directions"
+            not in reply.casefold()
+        ):
+
+            reply = (
+                f"{reply}\n\n"
+                f"Would you like navigation "
+                f"to {shop_name}?"
+            )
+        memory = get_chat_memory()
+        memory.append({"role": "assistant", "content": reply})
+        session["chat_memory"] = memory[-6:]
+
+        navigation_url = None
+        if navigation_shop and confirmation:
+            navigation_url = url_for(
+                "map_page",
+                shop=navigation_shop["shop_code"],
+                navigate="1",
+            )
+
+    website_url = session.pop(
+    "chat_website_url",
+    None
+)
+
+    website_name = session.pop(
+        "chat_website_name",
+        None
+    )
 
     return jsonify({
         "reply": reply,
         "navigation_url": navigation_url,
+        "website_url": website_url,
+        "website_name": website_name,
     })
 
 
@@ -2835,6 +3665,16 @@ def chat_reset_api():
     session.pop("pending_category", None)
 
     session.pop("pending_category_floors", None)
+
+    session.pop("shopping_budget", None)
+
+    session.pop("shopping_product", None)
+
+    session.pop("chat_website_url", None)
+
+    session.pop("chat_website_name", None)
+
+    session.pop("recommended_shops", None)
 
     return jsonify({
         "status": "cleared"
