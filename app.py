@@ -1450,12 +1450,12 @@ def find_shop_from_message(message):
 
 
 def is_confirmation_message(message):
-    """Return True for a short affirmative reply to a pending store action.
+    # """Return True for a short affirmative reply to a pending store action.
 
-    Users often reply with phrases such as "yes, please" or "sure, take me
-    there" instead of repeating "map navigation".  A pending store in the
-    session makes those replies unambiguous enough to show its map link.
-    """
+    # Users often reply with phrases such as "yes, please" or "sure, take me
+    # there" instead of repeating "map navigation".  A pending store in the
+    # session makes those replies unambiguous enough to show its map link.
+    # """
     normalized = message.casefold().strip().lstrip("!,. ")
     affirmative_starts = (
         "yes", "yeah", "yep", "sure", "okay", "ok", "please", "go ahead"
@@ -2155,47 +2155,47 @@ Answer using only the provided context.
         return None
 
 
-def ask_openai_chat(prompt):
-    """Fallback provider used only when Ollama is unavailable/unreachable."""
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        return None
+# def ask_openai_chat(prompt):
+#     """Fallback provider used only when Ollama is unavailable/unreachable."""
+#     api_key = os.environ.get("OPENAI_API_KEY")
+#     if not api_key:
+#         return None
 
-    payload = {
-        "model": "gpt-4o-mini",
-        "messages": [
-            {
-                "role": "system",
-                "content": (
-                    "You are the Dpulze Mall Assistant. Use only the database "
-                    "context supplied with each user message as the source of "
-                    "truth. Never invent shops, prices, locations, hours, or "
-                    "facilities. Keep replies concise, friendly, and practical."
-                ),
-            },
-            {"role": "user", "content": prompt},
-        ],
-        "temperature": 0.3,
-        "max_tokens": 250,
-    }
+#     payload = {
+#         "model": "gpt-4o-mini",
+#         "messages": [
+#             {
+#                 "role": "system",
+#                 "content": (
+#                     "You are the Dpulze Mall Assistant. Use only the database "
+#                     "context supplied with each user message as the source of "
+#                     "truth. Never invent shops, prices, locations, hours, or "
+#                     "facilities. Keep replies concise, friendly, and practical."
+#                 ),
+#             },
+#             {"role": "user", "content": prompt},
+#         ],
+#         "temperature": 0.3,
+#         "max_tokens": 250,
+#     }
 
-    req = urllib.request.Request(
-        "https://api.openai.com/v1/chat/completions",
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
+#     req = urllib.request.Request(
+#         "https://api.openai.com/v1/chat/completions",
+#         data=json.dumps(payload).encode("utf-8"),
+#         headers={
+#             "Authorization": f"Bearer {api_key}",
+#             "Content-Type": "application/json",
+#         },
+#         method="POST",
+#     )
 
-    try:
-        with urllib.request.urlopen(req, timeout=30) as response:
-            result = json.loads(response.read().decode("utf-8"))
-            return result["choices"][0]["message"]["content"].strip()
-    except Exception as error:
-        print("OpenAI error:", error)
-        return None
+#     try:
+#         with urllib.request.urlopen(req, timeout=30) as response:
+#             result = json.loads(response.read().decode("utf-8"))
+#             return result["choices"][0]["message"]["content"].strip()
+#     except Exception as error:
+#         print("OpenAI error:", error)
+#         return None
 
 
 def generate_local_chat_reply(message):
@@ -2754,7 +2754,7 @@ def generate_chatbot_reply(message):
 
 
     # =====================================================
-    # 9. ASK OLLAMA (fall back to OpenAI, then a local reply)
+    # 9. ASK OLLAMA
     # =====================================================
 
     ollama_reply = ask_ollama_chat(
@@ -2803,16 +2803,16 @@ def generate_chatbot_reply(message):
         return ollama_reply
 
 
-    fallback_prompt = (
-        f"{relevant_context}\n\n{prompt}"
-        if relevant_context
-        else prompt
-    )
+    # fallback_prompt = (
+    #     f"{relevant_context}\n\n{prompt}"
+    #     if relevant_context
+    #     else prompt
+    # )
 
-    openai_reply = ask_openai_chat(fallback_prompt)
+    # openai_reply = ask_openai_chat(fallback_prompt)
 
-    if openai_reply:
-        return openai_reply
+    # if openai_reply:
+    #     return openai_reply
 
 
     return generate_local_chat_reply(
