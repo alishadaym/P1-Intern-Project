@@ -1,5 +1,5 @@
 let mapData = null;
-const DEFAULT_FLOOR_ID = "2f";
+const DEFAULT_FLOOR_ID = "upper-ground";
 const DEFAULT_START_NODES = {
     ground: "node_01",
     "upper-ground": "ug_node_lift_south",

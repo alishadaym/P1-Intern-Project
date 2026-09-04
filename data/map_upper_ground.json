@@ -14,67 +14,67 @@
         "ug_surau": {
             "name": "Surau - Upper Ground",
             "type": "surau",
-            "x": 335,
-            "y": 90,
+            "x": 305,
+            "y": 110,
             "node_id": "ug_node_surau"
         },
         "ug_restroom": {
             "name": "Restroom - Upper Ground",
             "type": "restroom",
-            "x": 362,
-            "y": 100,
+            "x": 335,
+            "y": 120,
             "node_id": "ug_node_restroom"
         },
         "ug_oku": {
             "name": "OKU Restroom - Upper Ground",
             "type": "oku",
-            "x": 388,
-            "y": 105,
+            "x": 363,
+            "y": 128,
             "node_id": "ug_node_oku"
         },
         "ug_baby_diaper": {
             "name": "Baby Diaper Room - Upper Ground",
             "type": "baby_diaper",
-            "x": 412,
-            "y": 111,
+            "x": 388,
+            "y": 134,
             "node_id": "ug_node_baby_diaper"
         },
         "ug_lift_north": {
             "name": "Lift - Upper Ground North",
             "type": "lift",
-            "x": 240,
-            "y": 340,
+            "x": 207,
+            "y": 375,
             "node_id": "ug_node_lift_north"
         },
         "ug_lift_centre": {
             "name": "Lift - Upper Ground Centre",
             "type": "lift",
-            "x": 486,
-            "y": 175,
+            "x": 465,
+            "y": 203,
             "node_id": "ug_node_lift_centre"
         },
         "ug_lift_south": {
             "name": "Lift - Upper Ground South",
             "type": "lift",
-            "x": 679,
-            "y": 288,
+            "x": 667,
+            "y": 320,
             "node_id": "ug_node_lift_south"
         }
     },
     "nodes": {
-        "ug_node_surau": {"x": 330, "y": 110},
-        "ug_node_restroom": {"x": 355, "y": 118},
-        "ug_node_oku": {"x": 382, "y": 123},
-        "ug_node_baby_diaper": {"x": 405, "y": 129},
-        "ug_node_lift_north": {"x": 240, "y": 320},
-        "ug_node_lift_centre": {"x": 486, "y": 196},
-        "ug_node_lift_south": {"x": 660, "y": 290},
-        "node_1": {"x": 467,"y": 147},
-        "node_2": {"x": 467,"y": 196},
-        "node_3": {"x": 475,"y": 210},
-        "node_4": {"x": 475,"y": 270},
-        "node_5": {"x": 250,"y": 275},
-        "node_6": {"x": 630,"y": 270}
+        "ug_node_surau": {"x": 300, "y": 130},
+        "ug_node_restroom": {"x": 330, "y": 140},
+        "ug_node_oku": {"x": 360, "y": 148},
+        "ug_node_baby_diaper": {"x": 385, "y": 153},
+        "ug_node_lift_north": {"x": 207, "y": 355},
+        "ug_node_lift_centre": {"x": 465, "y": 220},
+        "ug_node_lift_south": {"x": 645, "y": 320},
+        "node_1": {"x": 445,"y": 170},
+        "node_2": {"x": 445,"y": 220},
+        "node_3": {"x": 455,"y": 240},
+        "node_4": {"x": 455,"y": 300},
+        "node_5": {"x": 230,"y": 300},
+        "node_6": {"x": 630,"y": 300}
     },
     "connections": [
         ["ug_node_surau", "ug_node_restroom"],
