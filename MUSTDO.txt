@@ -648,7 +648,7 @@ VALUES
 (ur utility id, 3, Available),
 (ur utility id, 4, Available),
 (ur utility id, 5, Available),
-//toilet east 2F
+//toilet south 2F
 (ur utility id, 1, Available),
 (ur utility id, 2, Available),
 (ur utility id, 3, Available),
