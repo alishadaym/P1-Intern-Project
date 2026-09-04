@@ -46,19 +46,19 @@
             "y": 393,
             "node_id": "2f_node_lift_east"
         },
-        "2f_lift_north": {
-            "name": "Lift - 2F North",
+        "2f_lift_centre": {
+            "name": "Lift - 2F Centre",
             "type": "lift",
             "x": 627,
             "y": 243,
-            "node_id": "2f_node_lift_north"
+            "node_id": "2f_node_lift_centre"
         },
-        "2f_lift_west": {
-            "name": "Lift - 2F West",
+        "2f_lift_south": {
+            "name": "Lift - 2F South",
             "type": "lift",
             "x": 320,
             "y": 402,
-            "node_id": "2f_node_lift_west"
+            "node_id": "2f_node_lift_south"
         }
     },
     "nodes": {
@@ -67,8 +67,8 @@
         "2f_node_restroom_west": {"x": 328, "y": 422},
         "2f_node_restroom_south": {"x": 630, "y": 460},
         "2f_node_lift_east": {"x": 857, "y": 415},
-        "2f_node_lift_north": {"x": 627, "y": 268},
-        "2f_node_lift_west": {"x": 320, "y": 380},
+        "2f_node_lift_centre": {"x": 627, "y": 268},
+        "2f_node_lift_south": {"x": 320, "y": 402},
         "node_1": {"x": 340,"y": 415},
         "node_2": {"x": 340,"y": 385},
         "node_3": {"x": 380,"y": 395},
@@ -85,10 +85,10 @@
         ["2f_node_baby_diaper", "2f_node_restroom_west"],
         ["2f_node_restroom_west", "node_1"],
         ["node_1", "node_2"],
-        ["node_2", "2f_node_lift_west"],
+        ["node_2", "2f_node_lift_south"],
         ["node_2", "node_3"],
         ["node_3", "node_4"],
-        ["2f_node_lift_north", "node_5"],
+        ["2f_node_lift_centre", "node_5"],
         ["node_5", "node_6"],
         ["node_7", "2f_node_oku"],
         ["2f_node_oku", "2f_node_restroom_south"],

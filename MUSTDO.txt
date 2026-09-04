@@ -660,3 +660,20 @@ VALUES
 (ur utility id, 1, Available),
 (ur utility id, 2, Available),
 (ur utility id, 3, Available),
+
+//update lift names and map code
+UPDATE utilities
+SET name = 'Lift - Upper Ground East', map_code = 'ug_lift_east' WHERE id = your ug_lift_south id;
+
+UPDATE utilities
+SET name = 'Lift - Upper Ground South', map_code = 'ug_lift_south2' WHERE id = your ug_lift_north id;
+
+UPDATE utilities
+SET name = 'Lift - 2F Centre', map_code = '2f_lift_centre' WHERE id = your 2f_lift_north id;
+
+UPDATE utilities
+SET name = 'Lift - 2F South', map_code = '2f_lift_south' WHERE id = your 2f_lift_west id;
+
+//another update 
+UPDATE utilities
+SET map_code = 'ug_lift_south' WHERE id = your ug_lift_south2 id;
