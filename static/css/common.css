@@ -15,44 +15,53 @@
 
 .side-menu {
     position: fixed;
-
     top: 0;
-    left: -280px;
+    left: 0;
 
-    width: 280px;
+    width: 290px;
     height: 100vh;
 
     background: #524646;
-
-    padding: 75px 20px 25px;
+    padding: 75px 22px 25px;
 
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
 
     z-index: 2000;
 
-    transition: left 0.3s ease;
+    /* Completely hide menu */
+    transform: translateX(-100%);
+
+    transition: transform 0.3s ease;
 
     box-shadow: 4px 0 15px rgba(0, 0, 0, 0.25);
+
+    font-family: Arial, sans-serif;
+    font-weight: normal;
 }
 
 .side-menu.open {
-    left: 0;
+    transform: translateX(0);
 }
 
 .side-menu a {
-    display: block;
-
-    padding: 15px 12px;
-
     color: #FCF2E5;
     text-decoration: none;
+
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+
     text-align: left;
 
-    font-size: 17px;
+    padding: 15px 14px;
 
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+
+    transition: background 0.2s ease;
+
+    font-weight: normal;
 }
 
 .side-menu a:hover {

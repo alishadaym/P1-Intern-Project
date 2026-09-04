@@ -135,12 +135,47 @@
         .navigation-link:hover {
             background: #593d31;
         }
+
+        .chat-header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        }
+
+        .chat-header-left .menu-toggle {
+            position: static;
+
+            background: transparent;
+            border: none;
+
+            color: #FCF2E5;
+
+            font-size: 28px;
+            line-height: 1;
+
+            cursor: pointer;
+
+            padding: 2px 4px;
+
+            z-index: 1100;
+        }
+
+        .chat-header-left .menu-toggle:hover {
+            opacity: 0.8;
+        }
     </style>
 </head>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+
 <body>
     <div class="chat-shell">
         <div class="chat-header">
-            <span>Mall Assistant</span>
+            <div class="chat-header-left">
+                {% include "includes/menu.html" %}
+            
+                <span>Mall Assistant</span>
+            </div>
             <button type="button" class="new-chat-btn" id="new-chat-btn">New Chat</button>
         </div>
 
@@ -239,5 +274,8 @@
             }
         });
     </script>
+
+    <script src="{{ url_for('static', filename='js/menu.js') }}"></script>
+    
 </body>
 </html>

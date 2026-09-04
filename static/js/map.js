@@ -21,6 +21,7 @@ let selectedUtilityId = null;
 let activeUtilityId = null;
 let utilityRefreshInProgress = false;
 let activeShopId = null;
+let fullModalSelectedShopId = null;
 let utilityMapZoom = 1;
 let utilityMapPanX = 0;
 let utilityMapPanY = 0;
@@ -292,17 +293,68 @@ document.addEventListener("DOMContentLoaded", async function()
             closeUtilityDetails();
         }
     });
-    document.addEventListener("keydown", function(event)
-    {
-        if (event.key === "Escape" && !shopModal.hidden)
-        {
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && !shopModal.hidden) {
             closeShopDetails();
         }
-        if (event.key === "Escape" && !utilityModal.hidden)
-        {
+
+        if (event.key === "Escape" && !utilityModal.hidden) {
             closeUtilityDetails();
         }
+
+        const fullShopModal = document.getElementById("full-shop-modal");
+
+        if (
+            event.key === "Escape" &&
+            fullShopModal &&
+            fullShopModal.classList.contains("show")
+        ) 
+        {
+            fullShopModal.classList.remove("show");
+        }
     });
+
+    // FULL SHOP DETAILS MODAL
+    const fullShopModal = document.getElementById("full-shop-modal");
+
+    const fullModalClose = document.getElementById("full-modal-close");
+
+    const fullModalGoHere = document.getElementById("full-modal-go-here");
+
+    if (fullModalClose && fullShopModal) {
+        fullModalClose.addEventListener(
+            "click", function () {
+                fullShopModal.classList.remove("show");
+            }
+        );
+    }
+
+    if (fullModalGoHere && fullShopModal) {
+        fullModalGoHere.addEventListener(
+            "click", function () {
+                if (!fullModalSelectedShopId) {
+                    return;
+                }
+
+                fullShopModal.classList.remove("show");
+
+                document.getElementById("shop-modal").hidden = true;
+
+                startNavigation();
+            }
+        );
+    }
+
+    // CLICK DARK BACKGROUND TO CLOSE
+    if (fullShopModal) {
+        fullShopModal.addEventListener(
+            "click", function (event) {
+                if (event.target === fullShopModal) {
+                    fullShopModal.classList.remove("show");
+                }
+            }
+        );
+    }
 
     // Occupancy can change server-side without a page reload
     window.setInterval(refreshUtilityData, 5000);
@@ -1201,12 +1253,16 @@ async function selectShop(shopId)
         mapId: shopId,
         x: mapShop.x,
         y: mapShop.y,
+
         name: (dbShop && dbShop.display_name) || mapShop.name,
         category: dbShop && dbShop.category,
         unit: dbShop && dbShop.unit,
         operatingHours: (dbShop && dbShop.operating_hours) || null,
         floor: (dbShop && dbShop.floor_name) || mapShop.floor,
         description: dbShop && dbShop.description,
+        fullDescription: dbShop && dbShop.full_description,
+        productsServices: dbShop && dbShop.products_services,
+        website: dbShop && dbShop.website_url
     };
 
     selectedShopId = shopId;
@@ -1278,6 +1334,112 @@ function showShopDetails(shop)
     shopModal.hidden = false;
     positionMapPopover("shop-modal", `.shop-hotspot[data-shop-id="${shop.mapId}"]`);
     document.getElementById("close-shop-modal").focus();
+
+    const moreDetailsButton =
+        document.getElementById("more-details-btn");
+
+    if (moreDetailsButton) {
+        moreDetailsButton.onclick = function () {
+            openFullShopModal(shop.mapId);
+        };
+    }
+}
+
+function openFullShopModal(shopId)
+{
+    const mapShop =
+        mapData.shop_locations[shopId];
+
+    const dbShop =
+        shopDatabase[shopId];
+
+    if (!mapShop)
+    {
+        console.error(
+            "Shop not found:",
+            shopId
+        );
+
+        return;
+    }
+
+    fullModalSelectedShopId = shopId;
+
+    const shopName =
+        (dbShop && dbShop.display_name) || mapShop.name || "Unnamed Shop";
+
+    const category =
+        (dbShop && dbShop.category) || "";
+
+    const unit =
+        (dbShop && dbShop.unit) || "";
+
+    const floor =
+        (dbShop && dbShop.floor_name) || mapShop.floor || "";
+
+    const operatingHours =
+        (dbShop && dbShop.operating_hours) || "";
+
+    const fullDescription =
+        (dbShop && dbShop.full_description) || "No description available.";
+
+    const productsServices =
+        (dbShop && dbShop.products_services) || "Product information unavailable.";
+
+    const website =
+        (dbShop && dbShop.website_url) || "";
+
+    document.getElementById("full-modal-shop-name").textContent = shopName;
+
+    document.getElementById("full-modal-category").textContent = category ? `Category: ${category}` : "";
+
+    document.getElementById("full-modal-unit").textContent = unit ? `Unit: ${unit}` : "";
+
+    document.getElementById("full-modal-floor").textContent = floor;
+
+    document.getElementById(
+        "full-modal-hours"
+    ).textContent = operatingHours ? `Hours: ${operatingHours}` : "";
+
+    document.getElementById(
+        "full-modal-description"
+    ).textContent =
+        fullDescription;
+
+    document.getElementById(
+        "full-modal-products"
+    ).textContent =
+        productsServices;
+
+    const websiteSection =
+        document.getElementById(
+            "full-modal-website-section"
+        );
+
+    const websiteLink =
+        document.getElementById(
+            "full-modal-website"
+        );
+
+    if (website)
+    {
+        websiteSection.style.display = "block";
+        websiteLink.href = website;
+    }
+    else
+    {
+        websiteSection.style.display = "none";
+    }
+
+    // Close small white popup
+    document.getElementById(
+        "shop-modal"
+    ).hidden = true;
+
+    // Open cream full-details modal
+    document.getElementById(
+        "full-shop-modal"
+    ).classList.add("show");
 }
 
 function getShopMapPoint(shopId)
